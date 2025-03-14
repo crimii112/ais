@@ -16,7 +16,10 @@ HeaderWrapper.displayName = 'HeaderWrapper';
 const Logo = ({ className, children, ...props }) => {
   return (
     <div
-      className={cn('flex items-center justify-center h-full px-7', className)}
+      className={cn(
+        'flex w-auto items-center justify-center h-full px-7',
+        className
+      )}
       {...props}
     >
       {children}
@@ -27,7 +30,10 @@ Logo.displayName = 'Logo';
 
 const Navbar = ({ className, children, ...props }) => {
   return (
-    <div className={cn('flex flex-row h-full', className)} {...props}>
+    <div
+      className={cn('flex flex-1 h-full items-center', className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -48,7 +54,7 @@ NavbarMenu.displayName = 'NavbarMenu';
 
 const NavbarMenuItem = ({ className, children, ...props }) => {
   return (
-    <li className={cn('mx-12 text-lg', className)} {...props}>
+    <li className={cn('flex h-full px-12 text-lg', className)} {...props}>
       {children}
     </li>
   );
