@@ -9,10 +9,17 @@ import { AisNavProvider } from '@/context/AisNavContext';
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col max-w-[1440px] mx-auto min-h-screen">
+      <div className="flex flex-col max-w-[1440px] mx-auto min-h-screen overflow-x-hidden">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/ais" element={<AisNavProvider><Ais /></AisNavProvider>} />
+          <Route
+            path="/ais"
+            element={
+              <AisNavProvider>
+                <Ais />
+              </AisNavProvider>
+            }
+          />
           <Route
             path="/contact"
             element={
