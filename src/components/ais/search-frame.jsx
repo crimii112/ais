@@ -1,16 +1,16 @@
 import { cn } from '@/lib/utils';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/common';
 
 const SearchFrame = ({ children, handleClickSearchBtn }) => {
   return (
     <FrameWrapper>
       {/* <FrameTitle>검색</FrameTitle> */}
       <FrameContent>{children}</FrameContent>
-      <FrameButtonWrapper className="flex justify-center pb-2">
+      <FrameButtonWrapper>
         <Button
           onClick={handleClickSearchBtn}
-          className="w-20 bg-blue-600 text-white"
+          className="w-60 bg-blue-600 text-white text-lg"
         >
           검색
         </Button>
@@ -24,7 +24,10 @@ export { SearchFrame };
 const FrameWrapper = ({ className, children, ...props }) => {
   return (
     <div
-      className={cn('flex flex-col w-full h-full bg-gray-200', className)}
+      className={cn(
+        'flex flex-col w-full h-full border-2 border-gray-300',
+        className
+      )}
       {...props}
     >
       {children}
@@ -50,7 +53,7 @@ FrameTitle.displayName = 'FrameTitle';
 
 const FrameContent = ({ className, children, ...props }) => {
   return (
-    <div className={cn('grid grid-cols-2 p-2 gap-2', className)} {...props}>
+    <div className={cn('grid grid-cols-2 p-6 gap-6', className)} {...props}>
       {children}
     </div>
   );
@@ -59,7 +62,7 @@ FrameContent.displayName = 'FrameContent';
 
 const FrameButtonWrapper = ({ className, children, ...props }) => {
   return (
-    <div className={cn('flex justify-center pb-2', className)} {...props}>
+    <div className={cn('flex justify-center pb-6', className)} {...props}>
       {children}
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-import { Button } from '@/components/ui/button';
+import { Button, Select } from '@/components/ui/common';
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
 
@@ -56,26 +56,22 @@ const SearchStation = ({ title, setStationList }) => {
       <SearchCondFrame title={title}>
         <FlexRowWrapper className="gap-1 w-full h-full">
           <FlexRowWrapper className="grow">
-            <SelectBox multiple ref={multipleSelectRef}>
+            <Select multiple ref={multipleSelectRef}>
               {multipleStationList &&
                 multipleStationList.map(station => (
-                  <option key={station.siteCd}>{station.sideData}</option>
+                  <option key={station.siteCd}>{station.siteData}</option>
                 ))}
-            </SelectBox>
+            </Select>
           </FlexRowWrapper>
           <ButtonDiv className="flex flex-col gap-0.5">
             <Button
-              className="bg-blue-600 text-white"
+              className="border-2 border-blue-900 bg-white"
               onClick={handleClickSelectStationBtn}
             >
               측정소 선택
             </Button>
-            <Button className="text-sm" onClick={handleClickDeleteSelected}>
-              선택 삭제
-            </Button>
-            <Button className="text-sm" onClick={handleClickDeleteAll}>
-              전체 삭제
-            </Button>
+            <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
+            <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
           </ButtonDiv>
         </FlexRowWrapper>
       </SearchCondFrame>
@@ -100,21 +96,6 @@ const FlexRowWrapper = ({ className, children, ...props }) => {
   );
 };
 FlexRowWrapper.displayName = 'FlexRowWrapper';
-
-const SelectBox = ({ className, children, ...props }) => {
-  return (
-    <select
-      className={cn(
-        'w-full p-1 box-border border border-gray-300 rounded-sm text-base',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </select>
-  );
-};
-SelectBox.displayName = 'SelectBox';
 
 const ButtonDiv = ({ className, children, ...props }) => {
   return (

@@ -4,7 +4,7 @@ import moment from 'moment';
 import { cn } from '@/lib/utils';
 
 import { SearchCondFrame } from './search-cond-frame';
-import { Button } from '@/components/ui/button';
+import { Button, Input, Select } from '@/components/ui/common';
 
 const SearchDate = ({ setDateList }) => {
   const [multipleDateList, setMultipleDateList] = useState([]);
@@ -105,37 +105,43 @@ const SearchDate = ({ setDateList }) => {
     <SearchCondFrame title="기간">
       <FlexRowWrapper className="gap-1 w-full">
         <FlexRowWrapper className="grow gap-1">
-          <SelectBox ref={dataCategoryRef} className={'min-w-fit'}>
+          <Select ref={dataCategoryRef} className={'min-w-fit'}>
             <option value="auto">자동 선택</option>
             <option value="DATAR0">실시간 자료</option>
             <option value="DATAR1">1차 확정 자료</option>
             <option value="DATARF">확정 자료</option>
-          </SelectBox>
-          <InputDate
+          </Select>
+          <Input
             type="date"
             defaultValue={'2015-01-01'}
             ref={startDateRef}
+            className="px-2"
           />
-          <SelectBox defaultValue={'01'} ref={startTimeRef}>
+          <Select defaultValue={'01'} ref={startTimeRef}>
             {times.map(time => (
               <option key={time.value} value={time.value}>
                 {time.text}
               </option>
             ))}
-          </SelectBox>
+          </Select>
           &nbsp;~&nbsp;
-          <InputDate type="date" defaultValue={'2015-01-01'} ref={endDateRef} />
-          <SelectBox defaultValue={'24'} ref={endTimeRef}>
+          <Input
+            type="date"
+            defaultValue={'2015-01-01'}
+            ref={endDateRef}
+            className="px-2"
+          />
+          <Select defaultValue={'24'} ref={endTimeRef}>
             {times.map(time => (
               <option key={time.value} value={time.value}>
                 {time.text}
               </option>
             ))}
-          </SelectBox>
+          </Select>
         </FlexRowWrapper>
         <ButtonDiv>
           <Button
-            className="bg-blue-600 text-white"
+            className="border-2 border-blue-900 bg-white"
             onClick={handleClickSelectDate}
           >
             기간 선택
@@ -144,21 +150,17 @@ const SearchDate = ({ setDateList }) => {
       </FlexRowWrapper>
       <FlexRowWrapper className="gap-1 w-full">
         <FlexRowWrapper className="grow">
-          <SelectBox multiple ref={multipleSelectRef}>
+          <Select multiple ref={multipleSelectRef}>
             {multipleDateList &&
               multipleDateList.map(item => <option key={item}>{item}</option>)}
-          </SelectBox>
+          </Select>
         </FlexRowWrapper>
         <ButtonDiv className="flex flex-col gap-0.5 justify-between">
-          <Button className="bg-blue-600 text-white text-sm">
+          <Button className="px-0 border-2 border-blue-900 bg-white">
             관리기간선택
           </Button>
-          <Button className="text-sm" onClick={handleClickDeleteSelected}>
-            선택 삭제
-          </Button>
-          <Button className="text-sm" onClick={handleClickDeleteAll}>
-            전체 삭제
-          </Button>
+          <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
+          <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
         </ButtonDiv>
       </FlexRowWrapper>
     </SearchCondFrame>
@@ -202,35 +204,6 @@ const FlexRowWrapper = ({ className, children, ...props }) => {
   );
 };
 FlexRowWrapper.displayName = 'FlexRowWrapper';
-
-const SelectBox = ({ className, children, ...props }) => {
-  return (
-    <select
-      className={cn(
-        'w-full p-1 box-border border border-gray-300 rounded-sm text-base',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </select>
-  );
-};
-SelectBox.displayName = 'SelectBox';
-
-const InputDate = ({ className, children, ...props }) => {
-  return (
-    <input
-      type="date"
-      className={cn(
-        'p-1 px-2 border border-gray-300 rounded-sm text-base',
-        className
-      )}
-      {...props}
-    />
-  );
-};
-InputDate.displayName = 'InputDate';
 
 const ButtonDiv = ({ className, children, ...props }) => {
   return (

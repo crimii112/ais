@@ -147,7 +147,10 @@ TabContentRoot.displayName = 'TabContentRoot';
 
 const TabContent = ({ className, children, ...props }) => {
   return (
-    <div className={cn('w-full h-full p-2', className)} {...props}>
+    <div
+      className={cn('flex flex-col gap-4 w-full h-full p-4', className)}
+      {...props}
+    >
       {children}
     </div>
   );

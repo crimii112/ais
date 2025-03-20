@@ -11,7 +11,13 @@ export { SearchCondFrame };
 
 const FrameWrapper = ({ className, children, ...props }) => {
   return (
-    <div className={cn('flex flex-col shadow', className)} {...props}>
+    <div
+      className={cn(
+        'flex flex-col shadow-lg border-1 border-gray-300',
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -22,7 +28,7 @@ const FrameTitle = ({ className, children, ...props }) => {
   return (
     <div
       className={cn(
-        'p-2 bg-gray-100 text-gray-600 text-lg font-bold',
+        'flex items-center justify-center p-1 bg-gray-200 text-gray-600 text-xl font-bold',
         className
       )}
       {...props}
@@ -36,7 +42,7 @@ FrameTitle.displayName = 'SearchCondFrameTitle';
 const FrameContent = ({ className, children, ...props }) => {
   return (
     <div
-      className={cn('grow flex flex-col gap-1 p-1 bg-white', className)}
+      className={cn('grow flex flex-col gap-1 p-2 bg-white', className)}
       {...props}
     >
       {children}

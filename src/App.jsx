@@ -9,27 +9,29 @@ import { AisNavProvider } from '@/context/AisNavContext';
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col max-w-[1440px] mx-auto min-h-screen overflow-x-hidden">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/ais"
-            element={
-              <AisNavProvider>
-                <Ais />
-              </AisNavProvider>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <>
-                <MainNav />
-                <div className="p-3">Contact</div>
-              </>
-            }
-          />
-        </Routes>
+      <div className="min-h-screen overflow-x-hidden">
+        <div className="flex flex-col max-w-[1440px] mx-auto">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/ais"
+              element={
+                <AisNavProvider>
+                  <Ais />
+                </AisNavProvider>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <>
+                  <MainNav />
+                  <div className="p-3">Contact</div>
+                </>
+              }
+            />
+          </Routes>
+        </div>
       </div>
     </BrowserRouter>
   );

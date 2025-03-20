@@ -12,7 +12,7 @@ const ModalFrame = ({ className, children, ...props }) => {
     >
       <div
         className={cn(
-          'relative z-50 min-h-[650px] max-w-[1000px]  overflow-x-hidden rounded-sm bg-white shadow-lg sm:w-full',
+          'relative z-50 h-[650px] w-[1000px] overflow-x-hidden rounded-sm bg-white shadow-lg',
           className
         )}
         {...props}
@@ -28,13 +28,12 @@ const ModalHeader = ({ title, handleCloseModal, className, ...props }) => {
   return (
     <div
       className={cn(
-        'p-3 flex flex-row justify-between items-center',
+        'p-4 flex flex-row justify-between items-center bg-gray-200',
         className
       )}
-      {...props}
     >
       <div className="text-xl font-bold">{title}</div>
-      <X onClick={handleCloseModal} />
+      <X onClick={handleCloseModal} {...props} />
     </div>
   );
 };
@@ -42,11 +41,29 @@ ModalHeader.displayName = 'ModalHeader';
 
 const ModalContent = ({ className, children, ...props }) => {
   return (
-    <div className={cn('w-full p-3.5', className)} {...props}>
+    <div
+      className={cn('flex flex-col w-full h-[calc(100%-114px)] p-3', className)}
+      {...props}
+    >
       {children}
     </div>
   );
 };
 ModalContent.displayName = 'ModalContent';
 
-export { ModalFrame, ModalHeader, ModalContent };
+const ModalFooter = ({ className, children, ...props }) => {
+  return (
+    <div
+      className={cn(
+        'flex w-full justify-center items-center pb-3.5',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+ModalFooter.displayName = 'ModalFooter';
+
+export { ModalFrame, ModalHeader, ModalContent, ModalFooter };
