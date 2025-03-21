@@ -83,6 +83,7 @@ const SearchStation = ({ title, setStationList }) => {
         <SearchStationModal
           tabType={modalTabType}
           setIsModalOpened={setIsModalOpened}
+          initialStationList={multipleStationList}
           setMultipleStationList={setMultipleStationList}
         />
       )}

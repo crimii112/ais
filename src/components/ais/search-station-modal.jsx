@@ -21,19 +21,19 @@ import {
 const SearchStationModal = ({
   tabType,
   setIsModalOpened,
+  initialStationList,
   setMultipleStationList,
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [selectedStationList, setSelectedStationList] = useState([]); //선택한 측정소 - list
+  const [selectedStationList, setSelectedStationList] =
+    useState(initialStationList); //선택한 측정소 - list
   const [selectedOptions, setSelectedOptions] = useState([]); //선택한 측정소 - select onChange에 사용
 
   // 우측 상단 - tms 설정, 추이측정소
   const [tms, setTms] = useState({ airqltKndNm: '도시대기', progressYn: '0' });
 
   // SidoNm(방식에 따라 구분) - API 호출 시 필요
-  const [checkboxSidoNm, setCheckboxSidoNm] = useState([]);
   const [selectboxSidoNm, setSelectboxSidoNm] = useState([]);
-  const [radioSidoNm, setRadioSidoNm] = useState('전국');
 
   // 검색 방식
   const tbxSidoSearchRef = useRef(); //input
@@ -64,24 +64,7 @@ const SearchStationModal = ({
   ]);
 
   // api(/sido.do) 호출 함수
-  const getSearchStation = async () => {
-    if (activeTabIndex === 0 && checkboxSidoNm.length === 0) {
-      return;
-    }
-
-    /* activeTabIndex에 따라서 data 달라짐(sidoNm, tbxSidoSearch) */
-    let sidoNm;
-    let tbxSidoSearch = '';
-
-    if (activeTabIndex === 0) {
-      sidoNm = checkboxSidoNm;
-    } else if (activeTabIndex === 1) {
-      sidoNm = selectboxSidoNm;
-      tbxSidoSearch = tbxSidoSearchRef.current.value;
-    } else if (activeTabIndex === 2) {
-      sidoNm = radioSidoNm;
-    }
-
+  const getStationList = async sidoNm => {
     const apiData = {
       airqltKndNm: tms.airqltKndNm,
       progressYn: tms.progressYn,
@@ -95,15 +78,11 @@ const SearchStationModal = ({
       apiData
     );
 
-    if ([0, 2].includes(activeTabIndex)) {
-      setSelectedStationList(apiRes.data.sidoList);
-    } else if (activeTabIndex === 1) {
-      setSearchStationList(apiRes.data.sidoList);
-    }
+    return apiRes.data.sidoList;
   };
 
   // 시도 선택 방식 - 체크박스 onChange
-  const handleChangeCheckbox = e => {
+  const handleChangeCheckbox = async e => {
     const id = e.target.id;
     const checked = e.target.checked;
     if (checked) console.log(id + ': ' + checked);
@@ -132,18 +111,43 @@ const SearchStationModal = ({
 
     setSidoCheckboxList(arr); //checkbox item state 변경
 
-    const sidoNmArr = [];
-    arr.forEach(item => {
-      if (item.checked && item.text !== '전국' && item.text !== '수도권') {
-        sidoNmArr.push(item.text);
-      }
-    });
+    if (checked) {
+      const sidoNm = [];
 
-    setCheckboxSidoNm(sidoNmArr); //api 호출 데이터 state 변경
+      if (id === '전국') {
+        arr.forEach(item => {
+          if (item.text !== '전국' && item.text !== '수도권') {
+            sidoNm.push(item.text);
+          }
+        });
+      } else if (id === '수도권') {
+        ['서울', '경기', '인천'].forEach(sido => sidoNm.push(sido));
+      } else {
+        sidoNm.push(id);
+      }
+
+      const stationList = await getStationList(sidoNm);
+
+      // 중복 방지
+      let selectedStationArr = selectedStationList;
+      stationList.forEach(station => {
+        if (!selectedStationArr.find(item => item.siteCd === station.siteCd))
+          selectedStationArr.push(station);
+      });
+
+      setSelectedStationList([...selectedStationArr]);
+    }
+  };
+
+  // 검색 방식 - 검색 버튼 클릭 이벤트
+  const handleClickSearchBtn = async () => {
+    const sidoNm = selectboxSidoNm;
+    const stationList = await getStationList(sidoNm);
+    setSearchStationList(stationList);
   };
 
   // 검색 방식 - 선택 버튼 클릭 이벤트
-  const handleClickSearchBtn = () => {
+  const handleClickArrowRightBtn = () => {
     const selectedOptions = Array.from(
       searchStationRef.current.selectedOptions
     );
@@ -162,6 +166,13 @@ const SearchStationModal = ({
     });
 
     setSelectedStationList([...selectedStationArr]);
+  };
+
+  // 기타 방식 - 라디오 버튼 클릭 이벤트
+  const handleClickRadioBtn = async text => {
+    const sidoNm = text;
+    const stationList = await getStationList(sidoNm);
+    setSelectedStationList(stationList);
   };
 
   // Content 1) 시도 선택 방식
@@ -193,7 +204,6 @@ const SearchStationModal = ({
         <SquareArrowRight
           width="40px"
           height="40px"
-          onClick={getSearchStation}
           className="rounded-xl text-blue-900"
         />
       </FlexRowWrapper>
@@ -218,7 +228,7 @@ const SearchStationModal = ({
           <Input ref={tbxSidoSearchRef} className="rounded-none" />
           <Button
             className="bg-gray-600 text-white rounded-none"
-            onClick={getSearchStation}
+            onClick={handleClickSearchBtn}
           >
             검색
           </Button>
@@ -240,7 +250,7 @@ const SearchStationModal = ({
         <SquareArrowRight
           width="40px"
           height="40px"
-          onClick={handleClickSearchBtn}
+          onClick={handleClickArrowRightBtn}
           className="rounded-xl text-blue-900"
         />
       </FlexRowWrapper>
@@ -260,7 +270,7 @@ const SearchStationModal = ({
                 name="etc"
                 defaultChecked={etc.text === '전국' && 'checked'}
                 id={etc.text}
-                onClick={e => setRadioSidoNm(e.target.id)}
+                onClick={e => handleClickRadioBtn(e.target.id)}
                 className="mr-2"
               />
               {etc.text}
@@ -272,7 +282,6 @@ const SearchStationModal = ({
         <SquareArrowRight
           width="40px"
           height="40px"
-          onClick={getSearchStation}
           className="rounded-xl text-blue-900"
         />
       </FlexRowWrapper>
@@ -297,6 +306,7 @@ const SearchStationModal = ({
           { title: '검색 방식', content: ContentSearch },
         ];
 
+  // 모달창 닫기
   const handleCloseModal = () => {
     setIsModalOpened(false);
   };
@@ -307,7 +317,6 @@ const SearchStationModal = ({
       prev.forEach(item => (item.checked = false));
       return prev;
     });
-    setCheckboxSidoNm([]);
 
     document.getElementsByName(
       'searchTypeSidoNm'
@@ -317,13 +326,11 @@ const SearchStationModal = ({
     setSelectboxSidoNm([]);
 
     document.getElementsByName('etc')[0].checked = true;
-    setRadioSidoNm('전국');
   };
   // 좌측 상단 - 탭 버튼 클릭 이벤트
   const handleClickTabBtn = e => {
     initSearchData();
     setActiveTabIndex(Number(e.target.id));
-    setSelectedStationList([]);
   };
 
   // 우측 상단 - TMS 변경 이벤트
