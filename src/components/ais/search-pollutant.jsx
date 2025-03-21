@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
 
 import { SearchCondFrame } from './search-cond-frame';
+import { FlexRowWrapper, GridWrapper } from '@/components/ui/common';
 
 const SearchPollutant = ({
   pollutantList,
@@ -49,50 +49,54 @@ const SearchPollutant = ({
 
   return (
     <SearchCondFrame title="물질 및 소수점 자릿수">
-      <GridContainer className="grid-cols-4 gap-1">
+      <GridWrapper className="grid-cols-4 gap-1">
         {pollutantList &&
           pollutantList.map(poll => (
-            <FlexContainer key={poll.id}>
-              <FlexContainer>
-                <input
-                  type="checkbox"
-                  id={poll.id}
-                  defaultChecked={poll.checked}
-                  onChange={handleChangeChecked}
-                  className="ml-2 border-1 border-gray-300 rounded-sm"
-                />
-                <label className="text-sm">{poll.text}</label>
-              </FlexContainer>
-              <FlexContainer>
+            <FlexRowWrapper className="justify-between gap-0.5" key={poll.id}>
+              <FlexRowWrapper className="justify-between gap-0.5">
+                <label>
+                  <input
+                    type="checkbox"
+                    id={poll.id}
+                    defaultChecked={poll.checked}
+                    onChange={handleChangeChecked}
+                    className="mx-2 border-1 border-gray-300 rounded-sm"
+                  />
+                  {poll.text}
+                </label>
+              </FlexRowWrapper>
+              <FlexRowWrapper className="justify-between gap-0.5">
                 <input
                   type="number"
                   id={'sign1' + poll.id}
                   defaultValue={poll.signvalue}
                   onChange={handleChangeInputValue}
-                  className="w-10 p-1.5 border-1 border-gray-300 rounded-sm text-sm bg-white"
+                  className="w-10 p-1.5 border-1 border-gray-300 rounded-sm bg-white"
                 />
                 <input
                   type="number"
                   id={'sign2' + poll.id}
                   defaultValue={poll.signvalue2}
                   onChange={handleChangeInputValue}
-                  className="w-10 p-1.5 border-1 border-gray-300 rounded-sm text-sm bg-white"
+                  className="w-10 p-1.5 border-1 border-gray-300 rounded-sm bg-white"
                 />
-              </FlexContainer>
-            </FlexContainer>
+              </FlexRowWrapper>
+            </FlexRowWrapper>
           ))}
-      </GridContainer>
-      <GridContainer className="grid-cols-2 items-stretch gap-1">
+      </GridWrapper>
+      <GridWrapper className="items-stretch gap-1">
         {signList &&
           signList.map(sign => (
-            <FlexContainer key={sign.id}>
+            <FlexRowWrapper className="justify-between gap-0.5" key={sign.id}>
               <div>
-                <input
-                  type="checkbox"
-                  defaultChecked={sign.checked}
-                  className="ml-2 border-1 border-gray-300 rounded-sm"
-                />
-                <label className="text-sm">{sign.text}</label>
+                <label>
+                  <input
+                    type="checkbox"
+                    defaultChecked={sign.checked}
+                    className="mx-2 border-1 border-gray-300 rounded-sm"
+                  />
+                  {sign.text}
+                </label>
               </div>
               <div>
                 <input
@@ -103,38 +107,11 @@ const SearchPollutant = ({
                   className="w-auto p-1.5 border-1 border-gray-300 rounded-sm text-sm bg-white"
                 />
               </div>
-            </FlexContainer>
+            </FlexRowWrapper>
           ))}
-      </GridContainer>
+      </GridWrapper>
     </SearchCondFrame>
   );
 };
 
 export { SearchPollutant };
-
-const GridContainer = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn('grid items-stretch justify-stretch', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-GridContainer.displayName = 'GridContainer';
-
-const FlexContainer = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'flex flex-row items-center justify-between gap-0.5',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-FlexContainer.displayName = 'FlexContainer';

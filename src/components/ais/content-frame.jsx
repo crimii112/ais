@@ -1,8 +1,7 @@
 import copy from 'copy-to-clipboard';
 import * as XLSX from 'xlsx';
-import { cn } from '@/lib/utils';
 
-import { Button } from '@/components/ui/common';
+import { FlexRowWrapper, FlexColWrapper, Button } from '@/components/ui/common';
 import { Table } from '@/components/ui/table';
 
 const ContentFrame = ({ datas, fileName }) => {
@@ -63,8 +62,8 @@ const ContentFrame = ({ datas, fileName }) => {
   };
 
   return (
-    <FrameWrapper>
-      <ButtonWrapper>
+    <FlexColWrapper className="w-full p-6 border-2 border-gray-300 items-baseline">
+      <FlexRowWrapper className="gap-1.5 mb-1.5 justify-start">
         <Button
           className="w-fit bg-blue-900 text-white"
           onClick={handleClickCopyToClipboard}
@@ -77,37 +76,10 @@ const ContentFrame = ({ datas, fileName }) => {
         >
           데이터 저장
         </Button>
-      </ButtonWrapper>
+      </FlexRowWrapper>
       {datas && <Table datas={datas} />}
-    </FrameWrapper>
+    </FlexColWrapper>
   );
 };
 
 export { ContentFrame };
-
-const FrameWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={`${cn(
-        'flex flex-col w-full p-6 border-2 border-gray-300',
-        className
-      )}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-FrameWrapper.displayName = 'FrameWrapper';
-
-const ButtonWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={`${cn('flex flex-row gap-1.5 mb-1.5', className)}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-ButtonWrapper.displayName = 'ButtonWrapper';

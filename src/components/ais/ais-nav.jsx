@@ -109,12 +109,9 @@ const AisNav = () => {
                 {item.title}
                 <ChevronDown size={16} />
               </MenuButton>
-              <MenuItems
-                as="ul"
-                className="absolute gap-2 left-1/2 transform -translate-x-1/2 z-50 shadow-lg p-4 flex flex-col bg-white rounded-md border-2"
-              >
-                {item.subItems.map(subItem => (
-                  <MenuItem key={subItem.pathName}>
+              <MenuItems className="absolute gap-2 left-1/2 transform -translate-x-1/2 z-50 shadow-lg p-4 flex flex-col bg-white rounded-md border-2">
+                {item.subItems.map((subItem, idx) => (
+                  <MenuItem key={subItem.pathName} tabIndex={-1}>
                     <button
                       className={`px-4 py-1 whitespace-nowrap text-center w-full hover:bg-blue-900 hover:text-white`}
                       onClick={() => setTabList([...tabList, subItem])}

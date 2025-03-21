@@ -9,8 +9,8 @@ import { AisNavProvider } from '@/context/AisNavContext';
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen overflow-x-hidden">
-        <div className="flex flex-col max-w-[1440px] mx-auto">
+      <div className="min-h-screen overflow-x-hidden bg-gray-100">
+        <div className="flex flex-col max-w-[1440px] min-h-screen mx-auto bg-white">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route

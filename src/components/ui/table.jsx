@@ -27,7 +27,10 @@ const Table = ({ datas }) => {
                 <td className="p-2">{data}</td>
               </tr>
             ) : (
-              <tr key={data.groupdate + data.sido + idx}>
+              <tr
+                key={data.groupdate + data.sido + idx}
+                className="bg-white hover:bg-blue-50 transition duration-100"
+              >
                 {datas.headList.map((head, idx) => (
                   <td
                     key={idx}

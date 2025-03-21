@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAisNav } from '@/context/AisNavContext';
+import { FlexRowWrapper, FlexColWrapper, Button } from '@/components/ui/common';
 
 const AisContent = () => {
   const { tabList, setTabList } = useAisNav();
@@ -49,30 +50,35 @@ const AisContent = () => {
 
   return (
     <div className="relative w-full h-full">
-      <TabWrapper>
+      <FlexRowWrapper className="w-full h-12 justify-start overflow-x-auto scrollbar-hide whitespace-nowrap bg-blue-900 pt-1.5">
         {tabList.map((tab, idx) => (
-          <TabButtonWrapper
+          <FlexRowWrapper
             key={idx}
-            className={`${
+            className={`px-2.5 h-full transition-all bg-white ${
               idx === activeTabIndex
                 ? 'bg-white text-black'
                 : 'bg-blue-900 text-white'
-            }`}
+            } `}
           >
-            <TabButton id={idx} onClick={() => setActiveTabIndex(idx)}>
+            <Button
+              id={idx}
+              onClick={() => setActiveTabIndex(idx)}
+              className="px-1 rounded-none bg-transparent text-base"
+            >
               {tab.title}
-            </TabButton>
+            </Button>
             <X className="w-4 h-4 ml-1" onClick={() => handleRemoveTab(idx)} />
-          </TabButtonWrapper>
+          </FlexRowWrapper>
         ))}
-      </TabWrapper>
+      </FlexRowWrapper>
       {tabList.map((tab, idx) => (
         <TabContentWrapper
           key={idx}
           className={`flex-col ${idx === activeTabIndex ? 'flex' : 'hidden'}`}
         >
-          {/* <TabContentRoot>{tab.heading + ' > ' + tab.title}</TabContentRoot> */}
-          <TabContent>{tab.content}</TabContent>
+          <FlexColWrapper className="gap-4 w-full h-full p-4">
+            {tab.content}
+          </FlexColWrapper>
         </TabContentWrapper>
       ))}
     </div>
@@ -81,78 +87,12 @@ const AisContent = () => {
 
 export { AisContent };
 
-// tab 관련 UI - TabWrapper, TabButtonWrapper, TabButton, TabContentWrapper
-const TabWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'flex flex-row w-full h-12 items-center overflow-x-auto scrollbar-hide whitespace-nowrap bg-blue-900 pt-1.5',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-TabWrapper.displayName = 'TabWrapper';
-
-const TabButtonWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'flex flex-row items-center px-2.5 h-full transition-all bg-white',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-TabButtonWrapper.displayName = 'TabButtonWrapper';
-
-const TabButton = ({ className, children, ...props }) => {
-  return (
-    <button
-      className={cn('whitespace-nowrap w-full px-1', className)}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-TabButton.displayName = 'TabButton';
-
+// tab 관련 UI - TabContentWrapper
 const TabContentWrapper = ({ className, children, ...props }) => {
   return (
-    <div className={cn('absolute w-full', className)} {...props}>
+    <div className={cn('absolute w-full bg-white', className)} {...props}>
       {children}
     </div>
   );
 };
 TabContentWrapper.displayName = 'TabContentWrapper';
-
-const TabContentRoot = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn('w-full px-2 py-1 my-1 bg-gray-100 text-sm', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-TabContentRoot.displayName = 'TabContentRoot';
-
-const TabContent = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn('flex flex-col gap-4 w-full h-full p-4', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-TabContent.displayName = 'TabContent';

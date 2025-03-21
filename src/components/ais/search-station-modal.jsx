@@ -9,7 +9,14 @@ import {
   ModalContent,
   ModalFooter,
 } from '@/components/ui/modal';
-import { Button, Input, Select } from '@/components/ui/common';
+import {
+  FlexRowWrapper,
+  FlexColWrapper,
+  GridWrapper,
+  Button,
+  Input,
+  Select,
+} from '@/components/ui/common';
 
 const SearchStationModal = ({
   tabType,
@@ -59,12 +66,6 @@ const SearchStationModal = ({
   // api(/sido.do) 호출 함수
   const getSearchStation = async () => {
     if (activeTabIndex === 0 && checkboxSidoNm.length === 0) {
-      alert('시도를 선택해주십시오.');
-      return;
-    }
-    if (activeTabIndex === 1 && tbxSidoSearchRef.current.value === '') {
-      alert('검색어를 입력해주십시오.');
-      tbxSidoSearchRef.current.focus();
       return;
     }
 
@@ -87,7 +88,7 @@ const SearchStationModal = ({
       searchtype: 'tabpage' + activeTabIndex,
       sidoNm: sidoNm,
       siteType: '',
-      tbxSidoSearch: tbxSidoSearch,
+      tbxSidoSearch: tbxSidoSearchRef.current.value,
     };
     const apiRes = await axios.post(
       `${import.meta.env.VITE_API_URL}/ais/srch/sido.do`,
@@ -105,7 +106,7 @@ const SearchStationModal = ({
   const handleChangeCheckbox = e => {
     const id = e.target.id;
     const checked = e.target.checked;
-
+    if (checked) console.log(id + ': ' + checked);
     const arr = [...sidoCheckboxList];
 
     if (id === '전국') {
@@ -137,6 +138,7 @@ const SearchStationModal = ({
         sidoNmArr.push(item.text);
       }
     });
+
     setCheckboxSidoNm(sidoNmArr); //api 호출 데이터 state 변경
   };
 
@@ -164,10 +166,10 @@ const SearchStationModal = ({
 
   // Content 1) 시도 선택 방식
   const ContentSelectSido = (
-    <SearchStationWrapper>
-      <SelectBoxWrapper title="시도">
+    <GridWrapper className="grid-cols-[6fr_1fr] gap-2">
+      <FlexColWrapper className="items-stretch box-border border-1 border-gray-300">
         <SelectBoxTitle type="text">시도</SelectBoxTitle>
-        <div className="grow grid grid-cols-3 p-8">
+        <GridWrapper className="grow grid-cols-3 p-8">
           {sidoCheckboxList.map(sido => (
             <label
               key={sido.value}
@@ -185,23 +187,23 @@ const SearchStationModal = ({
               {sido.text}
             </label>
           ))}
-        </div>
-      </SelectBoxWrapper>
-      <ButtonWrapper>
+        </GridWrapper>
+      </FlexColWrapper>
+      <FlexRowWrapper>
         <SquareArrowRight
           width="40px"
           height="40px"
           onClick={getSearchStation}
           className="rounded-xl text-blue-900"
         />
-      </ButtonWrapper>
-    </SearchStationWrapper>
+      </FlexRowWrapper>
+    </GridWrapper>
   );
 
   // Content 2) 검색 방식
   const ContentSearch = (
-    <SearchStationWrapper>
-      <SelectBoxWrapper>
+    <GridWrapper className="grid-cols-[6fr_1fr] gap-2">
+      <FlexColWrapper className="items-stretch box-border border-1 border-gray-300">
         <SelectBoxTitle type="grid">
           <Select
             name="searchTypeSidoNm"
@@ -233,24 +235,24 @@ const SearchStationModal = ({
               ))}
           </Select>
         </div>
-      </SelectBoxWrapper>
-      <ButtonWrapper>
+      </FlexColWrapper>
+      <FlexRowWrapper>
         <SquareArrowRight
           width="40px"
           height="40px"
           onClick={handleClickSearchBtn}
           className="rounded-xl text-blue-900"
         />
-      </ButtonWrapper>
-    </SearchStationWrapper>
+      </FlexRowWrapper>
+    </GridWrapper>
   );
 
   // Content 3) 기타 방식
   const ContentEtc = (
-    <SearchStationWrapper>
-      <SelectBoxWrapper>
+    <GridWrapper className="grid-cols-[6fr_1fr] gap-2">
+      <FlexColWrapper className="items-stretch box-border border-1 border-gray-300">
         <SelectBoxTitle type="text">기타</SelectBoxTitle>
-        <div className="grow grid grid-cols-1 items-center p-12">
+        <GridWrapper className="grow grid-cols-1 items-center p-12">
           {EtcRadioBtnList.map(etc => (
             <label key={etc.text} className="flex items-center">
               <Input
@@ -264,17 +266,17 @@ const SearchStationModal = ({
               {etc.text}
             </label>
           ))}
-        </div>
-      </SelectBoxWrapper>
-      <ButtonWrapper>
+        </GridWrapper>
+      </FlexColWrapper>
+      <FlexRowWrapper>
         <SquareArrowRight
           width="40px"
           height="40px"
           onClick={getSearchStation}
           className="rounded-xl text-blue-900"
         />
-      </ButtonWrapper>
-    </SearchStationWrapper>
+      </FlexRowWrapper>
+    </GridWrapper>
   );
 
   // tabType에 따른 탭 구성
@@ -367,8 +369,8 @@ const SearchStationModal = ({
     <ModalFrame>
       <ModalHeader title="측정소 선택" onClick={handleCloseModal} />
       <ModalContent>
-        <TabWrapper>
-          <TabButtonWrapper>
+        <FlexRowWrapper className="justify-between w-full h-9">
+          <FlexRowWrapper className="gap-0.5 h-full">
             {tabList.map((tab, idx) => (
               <Button
                 key={tab.title}
@@ -383,10 +385,10 @@ const SearchStationModal = ({
                 {tab.title}
               </Button>
             ))}
-          </TabButtonWrapper>
+          </FlexRowWrapper>
           {/* tms 설정 on/off에 따라.. */}
-          <div className="flex flex-row h-9 gap-2.5 items-stretch justify-center py-1 px-2.5 mb-1 bg-gray-200 rounded-sm">
-            <span className="flex items-center text-sm font-semibold">TMS</span>
+          <FlexRowWrapper className="h-10 gap-2.5 items-stretch py-1 px-2.5 mb-2 bg-gray-200 rounded-sm">
+            <span className="flex items-center font-semibold">TMS</span>
             <Select
               defaultValue={tms.airqltKndNm}
               onChange={handleChangeAirqltKndNm}
@@ -398,16 +400,16 @@ const SearchStationModal = ({
                 </option>
               ))}
             </Select>
-            <label className="flex items-center text-sm">
+            <label className="flex items-center">
               <Input
                 type="checkbox"
                 onChange={handleChangeProgressYn}
-                className="mr-1.5"
+                className="mr-1"
               />
-              추이 측정소
+              추이측정소
             </label>
-          </div>
-        </TabWrapper>
+          </FlexRowWrapper>
+        </FlexRowWrapper>
         {tabList.map((tab, idx) => (
           <TabContentWrapper
             key={idx}
@@ -418,10 +420,10 @@ const SearchStationModal = ({
             }`}
           >
             {tab.content}
-            <div className="flex flex-col w-full h-full box-border border-1 border-gray-300">
-              <div className="flex items-center justify-center w-full h-10 border-b-2 border-b-gray-200 bg-gray-200 font-semibold">
+            <FlexColWrapper className="w-full h-full items-stretch box-border border-1 border-gray-300">
+              <FlexRowWrapper className="w-full h-10 border-b-2 border-b-gray-200 bg-gray-200 font-semibold">
                 선택한 측정소
-              </div>
+              </FlexRowWrapper>
               <Select
                 multiple
                 onChange={handleChangeMultipleSelect}
@@ -432,7 +434,7 @@ const SearchStationModal = ({
                     <option key={station.siteCd}>{station.siteData}</option>
                   ))}
               </Select>
-              <div className="flex flex-row gap-0.5 items-center justify-end p-1 border-t-2 border-t-gray-200">
+              <FlexRowWrapper className="gap-0.5 justify-end p-1 border-t-2 border-t-gray-200">
                 <Button onClick={handleClickDeleteBtn} className="w-fit px-3">
                   선택 삭제
                 </Button>
@@ -442,8 +444,8 @@ const SearchStationModal = ({
                 >
                   전체 삭제
                 </Button>
-              </div>
-            </div>
+              </FlexRowWrapper>
+            </FlexColWrapper>
           </TabContentWrapper>
         ))}
       </ModalContent>
@@ -502,30 +504,6 @@ const EtcRadioBtnList = [
   { text: '15개 주요 항만' },
 ];
 
-const TabWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'flex flex-row items-center justify-between w-full h-9',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-TabWrapper.displayName = 'TabWrapper';
-
-const TabButtonWrapper = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('flex flex-row gap-0.5 h-full', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-TabButtonWrapper.displayName = 'TabButtonWrapper';
-
 const TabContentWrapper = ({ className, children, ...props }) => {
   return (
     <div
@@ -538,47 +516,11 @@ const TabContentWrapper = ({ className, children, ...props }) => {
 };
 TabContentWrapper.displayName = 'TabContentWrapper';
 
-const SearchStationWrapper = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('grid grid-cols-[6fr_1fr] gap-2', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-SearchStationWrapper.displayName = 'SearchStationWrapper';
-
-const ButtonWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn('flex items-center justify-center', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-ButtonWrapper.displayName = 'ButtonWrapper';
-
-const SelectBoxWrapper = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'flex flex-col box-border border-1 border-gray-300',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-SelectBoxWrapper.displayName = 'SelectBoxWrapper';
-
 const SelectBoxTitle = ({ type, className, children, ...props }) => {
   const css =
     type === 'text'
       ? 'flex items-center justify-center w-full h-10 border-b-2 border-b-gray-200 bg-gray-200 font-semibold'
-      : 'grid grid-cols-[1fr_2fr_0.7fr] gap-1 p-0.5 h-10 border-b-2 border-b-gray-200 bg-gray-200 text-sm';
+      : 'grid grid-cols-[1fr_2fr_0.7fr] gap-1 p-0.5 h-11 border-b-2 border-b-gray-200 bg-gray-200 text-sm';
 
   return (
     <div className={cn(css, className)} {...props}>

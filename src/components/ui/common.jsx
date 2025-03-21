@@ -1,10 +1,49 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
+const FlexRowWrapper = ({ className, children, ...props }) => {
+  return (
+    <div
+      className={`${cn(
+        'flex flex-row items-center justify-center',
+        className
+      )}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+FlexRowWrapper.displayName = 'FlexRowWrapper';
+
+const FlexColWrapper = ({ className, children, ...props }) => {
+  return (
+    <div
+      className={`${cn(
+        'flex flex-col items-center justify-center',
+        className
+      )}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+FlexColWrapper.displayName = 'FlexColWrapper';
+
+const GridWrapper = ({ className, children, ...props }) => {
+  return (
+    <div className={`${cn('grid grid-cols-2', className)}`} {...props}>
+      {children}
+    </div>
+  );
+};
+GridWrapper.displayName = 'GridWrapper';
+
 const Button = forwardRef(({ className, children, ...props }, ref) => (
   <button
     className={cn(
-      'w-full p-1.5 border-0 rounded-sm bg-gray-200 whitespace-nowrap text-sm',
+      'w-full p-1.5 border-0 rounded-sm bg-gray-200 whitespace-nowrap text-base',
       className
     )}
     ref={ref}
@@ -18,7 +57,7 @@ Button.displayName = 'ButtonComponent';
 const Input = forwardRef(({ className, ...props }, ref) => (
   <input
     className={`${cn(
-      'p-1 border border-gray-300 rounded-sm bg-white text-sm',
+      'p-1 border border-gray-300 rounded-sm bg-white text-base',
       className
     )}`}
     ref={ref}
@@ -30,7 +69,7 @@ Input.displayName = 'InputComponent';
 const Select = forwardRef(({ className, children, ...props }, ref) => (
   <select
     className={`${cn(
-      'w-full p-1 box-border border border-gray-300 rounded-sm bg-white text-sm',
+      'w-full p-1 box-border border border-gray-300 rounded-sm bg-white text-base',
       className
     )}`}
     ref={ref}
@@ -40,4 +79,4 @@ const Select = forwardRef(({ className, children, ...props }, ref) => (
   </select>
 ));
 
-export { Button, Input, Select };
+export { FlexRowWrapper, FlexColWrapper, GridWrapper, Button, Input, Select };

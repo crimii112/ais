@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
 
-import { Button, Select } from '@/components/ui/common';
+import {
+  FlexRowWrapper,
+  FlexColWrapper,
+  Button,
+  Select,
+} from '@/components/ui/common';
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
 
@@ -54,8 +58,8 @@ const SearchStation = ({ title, setStationList }) => {
   return (
     <>
       <SearchCondFrame title={title}>
-        <FlexRowWrapper className="gap-1 w-full h-full">
-          <FlexRowWrapper className="grow">
+        <FlexRowWrapper className="items-stretch gap-1 w-full h-full">
+          <FlexRowWrapper className="items-stretch grow">
             <Select multiple ref={multipleSelectRef}>
               {multipleStationList &&
                 multipleStationList.map(station => (
@@ -63,7 +67,7 @@ const SearchStation = ({ title, setStationList }) => {
                 ))}
             </Select>
           </FlexRowWrapper>
-          <ButtonDiv className="flex flex-col gap-0.5">
+          <FlexColWrapper className="justify-baseline w-23 gap-0.5">
             <Button
               className="border-2 border-blue-900 bg-white"
               onClick={handleClickSelectStationBtn}
@@ -72,7 +76,7 @@ const SearchStation = ({ title, setStationList }) => {
             </Button>
             <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
             <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
-          </ButtonDiv>
+          </FlexColWrapper>
         </FlexRowWrapper>
       </SearchCondFrame>
       {isModalOpened && (
@@ -87,21 +91,3 @@ const SearchStation = ({ title, setStationList }) => {
 };
 
 export { SearchStation };
-
-const FlexRowWrapper = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('flex flex-row items-stretch', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-FlexRowWrapper.displayName = 'FlexRowWrapper';
-
-const ButtonDiv = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('w-20', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-ButtonDiv.displayName = 'ButtonDiv';

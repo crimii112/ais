@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment';
-import { cn } from '@/lib/utils';
 
 import { SearchCondFrame } from './search-cond-frame';
-import { Button, Input, Select } from '@/components/ui/common';
+import {
+  FlexRowWrapper,
+  FlexColWrapper,
+  Button,
+  Input,
+  Select,
+} from '@/components/ui/common';
 
 const SearchDate = ({ setDateList }) => {
   const [multipleDateList, setMultipleDateList] = useState([]);
@@ -20,7 +25,6 @@ const SearchDate = ({ setDateList }) => {
 
   useEffect(() => {
     setDateList(multipleDateList);
-    console.log(multipleDateList);
   }, [multipleDateList]);
 
   // 기간 선택 버튼 클릭 이벤트
@@ -103,8 +107,8 @@ const SearchDate = ({ setDateList }) => {
 
   return (
     <SearchCondFrame title="기간">
-      <FlexRowWrapper className="gap-1 w-full">
-        <FlexRowWrapper className="grow gap-1">
+      <FlexRowWrapper className="items-stretch gap-1 w-full">
+        <FlexRowWrapper className="items-stretch grow gap-1">
           <Select ref={dataCategoryRef} className={'min-w-fit'}>
             <option value="auto">자동 선택</option>
             <option value="DATAR0">실시간 자료</option>
@@ -139,29 +143,29 @@ const SearchDate = ({ setDateList }) => {
             ))}
           </Select>
         </FlexRowWrapper>
-        <ButtonDiv>
+        <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
           <Button
             className="border-2 border-blue-900 bg-white"
             onClick={handleClickSelectDate}
           >
             기간 선택
           </Button>
-        </ButtonDiv>
+        </FlexColWrapper>
       </FlexRowWrapper>
-      <FlexRowWrapper className="gap-1 w-full">
-        <FlexRowWrapper className="grow">
+      <FlexRowWrapper className="items-stretch gap-1 w-full">
+        <FlexRowWrapper className="items-stretch grow">
           <Select multiple ref={multipleSelectRef}>
             {multipleDateList &&
               multipleDateList.map(item => <option key={item}>{item}</option>)}
           </Select>
         </FlexRowWrapper>
-        <ButtonDiv className="flex flex-col gap-0.5 justify-between">
+        <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
           <Button className="px-0 border-2 border-blue-900 bg-white">
             관리기간선택
           </Button>
           <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
           <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
-        </ButtonDiv>
+        </FlexColWrapper>
       </FlexRowWrapper>
     </SearchCondFrame>
   );
@@ -195,21 +199,3 @@ const times = [
   { value: '23', text: '23' },
   { value: '24', text: '24' },
 ];
-
-const FlexRowWrapper = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('flex flex-row items-stretch', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-FlexRowWrapper.displayName = 'FlexRowWrapper';
-
-const ButtonDiv = ({ className, children, ...props }) => {
-  return (
-    <div className={cn('w-20', className)} {...props}>
-      {children}
-    </div>
-  );
-};
-ButtonDiv.displayName = 'ButtonDiv';

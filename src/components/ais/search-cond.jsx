@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
 
 import { SearchCondFrame } from './search-cond-frame';
-import { Input, Select } from '@/components/ui/common';
+import {
+  FlexRowWrapper,
+  GridWrapper,
+  Input,
+  Select,
+} from '@/components/ui/common';
 
 const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
   const [condJson, setCondJson] = useState(initialSearchCond);
@@ -19,16 +23,13 @@ const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
 
   return (
     <SearchCondFrame title="검색 조건">
-      <GridContainer className="grid-cols-2 gap-1.5">
+      <GridWrapper className="gap-1.5 items-stretch justify-stretch">
         {condList.map(cond =>
           cond.type === 'selectBox' ? (
-            <GridContainer
-              key={cond.id}
-              className="grid-cols-[1fr_1.5fr] gap-1"
-            >
-              <div className="flex items-center justify-center bg-gray-200 text-sm">
+            <GridWrapper key={cond.id} className="grid-cols-[1fr_1.5fr] gap-1">
+              <FlexRowWrapper className="bg-gray-200 font-semibold">
                 {cond.title}
-              </div>
+              </FlexRowWrapper>
               <Select
                 id={cond.id}
                 onChange={handleChangeCond}
@@ -40,14 +41,14 @@ const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
                   </option>
                 ))}
               </Select>
-            </GridContainer>
+            </GridWrapper>
           ) : (
             cond.type === 'textInput' && (
-              <GridContainer
+              <GridWrapper
                 key={cond.id}
                 className="grid-cols-[1fr_1.5fr] gap-1"
               >
-                <div className="flex items-center justify-center bg-gray-200 text-sm">
+                <div className="flex items-center justify-center bg-gray-200 font-semibold">
                   {cond.title}
                 </div>
                 <Input
@@ -57,25 +58,13 @@ const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
                   onChange={handleChangeCond}
                   className="w-full p-1.5"
                 />
-              </GridContainer>
+              </GridWrapper>
             )
           )
         )}
-      </GridContainer>
+      </GridWrapper>
     </SearchCondFrame>
   );
 };
 
 export { SearchCond };
-
-const GridContainer = ({ className, children, ...props }) => {
-  return (
-    <div
-      className={cn('grid items-stretch justify-stretch', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-GridContainer.displayName = 'GridContainer';
