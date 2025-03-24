@@ -5,6 +5,7 @@ import {
   FlexColWrapper,
   Button,
   Select,
+  Option,
 } from '@/components/ui/common';
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
@@ -22,7 +23,14 @@ const SearchStation = ({ title, setStationList }) => {
     if (['대기측정소', '기상대'].includes(title)) {
       setModalTabType(1);
     } else if (
-      ['TMS', '유해대기', '중금속', '산성강하물', '입경중량'].includes(title)
+      [
+        '광화학',
+        'TMS',
+        '유해대기',
+        '중금속',
+        '산성강하물',
+        '입경중량',
+      ].includes(title)
     ) {
       setModalTabType(2);
     }
@@ -63,7 +71,7 @@ const SearchStation = ({ title, setStationList }) => {
             <Select multiple ref={multipleSelectRef}>
               {multipleStationList &&
                 multipleStationList.map(station => (
-                  <option key={station.siteCd}>{station.siteData}</option>
+                  <Option key={station.siteCd}>{station.siteData}</Option>
                 ))}
             </Select>
           </FlexRowWrapper>

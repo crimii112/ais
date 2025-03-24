@@ -7,7 +7,7 @@ import {
 
 const SearchFrame = ({ children, handleClickSearchBtn }) => {
   return (
-    <FlexColWrapper className="w-full h-full border-2 border-gray-300">
+    <FlexColWrapper className="w-full h-full items-stretch border-2 border-gray-300">
       <GridWrapper className="grid-cols-2 gap-6 p-6">{children}</GridWrapper>
       <FlexRowWrapper className="pb-6">
         <Button

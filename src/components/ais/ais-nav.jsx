@@ -10,6 +10,7 @@ import {
   NavbarMenu,
 } from '@/components/ui/navbar';
 import { CmmnAir } from './contents/cmmnair';
+import { PhotoCh } from './contents/photoch';
 
 const data = {
   navItems: [
@@ -39,22 +40,22 @@ const data = {
     },
     {
       id: 1,
-      title: 'Nav2',
+      title: '특수 대기질 테이터 분석(광화학)',
       subItems: [
         {
-          heading: 'Nav2',
-          pathName: 'nav2-sub1',
-          title: 'nav2-sub1',
-          content: 'nav2-sub1',
+          heading: '특수 대기질 테이터 분석(광화학)',
+          pathName: 'pChem',
+          title: '광화학 분석',
+          content: <PhotoCh />,
         },
         {
-          heading: 'Nav2',
+          heading: '특수 대기질 테이터 분석(광화학)',
           pathName: 'nav2-sub2',
           title: 'nav2-sub2',
           content: 'nav2-sub2',
         },
         {
-          heading: 'Nav2',
+          heading: '특수 대기질 테이터 분석(광화학)',
           pathName: 'nav2-sub3',
           title: 'nav2-sub3',
           content: 'nav2-sub3',
@@ -104,20 +105,24 @@ const AisNav = () => {
             <Menu as="div" key={item.id} className="relative">
               <MenuButton
                 as="button"
-                className="flex items-center gap-1 px-4 py-2 rounded-md text-lg"
+                className="flex items-center gap-1 px-4 py-2 rounded-md text-lg cursor-pointer"
               >
                 {item.title}
                 <ChevronDown size={16} />
               </MenuButton>
               <MenuItems className="absolute gap-2 left-1/2 transform -translate-x-1/2 z-50 shadow-lg p-4 flex flex-col bg-white rounded-md border-2">
                 {item.subItems.map((subItem, idx) => (
-                  <MenuItem key={subItem.pathName} tabIndex={-1}>
-                    <button
-                      className={`px-4 py-1 whitespace-nowrap text-center w-full hover:bg-blue-900 hover:text-white`}
-                      onClick={() => setTabList([...tabList, subItem])}
-                    >
-                      {subItem.title}
-                    </button>
+                  <MenuItem key={subItem.pathName}>
+                    {({ active }) => (
+                      <button
+                        className={`px-4 py-1 whitespace-nowrap text-center w-full cursor-pointer ${
+                          active ? 'bg-blue-900 text-white' : ''
+                        }`}
+                        onClick={() => setTabList([...tabList, subItem])}
+                      >
+                        {subItem.title}
+                      </button>
+                    )}
                   </MenuItem>
                 ))}
               </MenuItems>

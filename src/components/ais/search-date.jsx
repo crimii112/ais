@@ -9,6 +9,7 @@ import {
   Button,
   Input,
   Select,
+  Option,
 } from '@/components/ui/common';
 
 const SearchDate = ({ setDateList }) => {
@@ -156,7 +157,7 @@ const SearchDate = ({ setDateList }) => {
         <FlexRowWrapper className="items-stretch grow">
           <Select multiple ref={multipleSelectRef}>
             {multipleDateList &&
-              multipleDateList.map(item => <option key={item}>{item}</option>)}
+              multipleDateList.map(item => <Option key={item}>{item}</Option>)}
           </Select>
         </FlexRowWrapper>
         <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">

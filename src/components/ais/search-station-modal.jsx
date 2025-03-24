@@ -16,6 +16,7 @@ import {
   Button,
   Input,
   Select,
+  Option,
 } from '@/components/ui/common';
 
 const SearchStationModal = ({
@@ -32,10 +33,8 @@ const SearchStationModal = ({
   // 우측 상단 - tms 설정, 추이측정소
   const [tms, setTms] = useState({ airqltKndNm: '도시대기', progressYn: '0' });
 
-  // SidoNm(방식에 따라 구분) - API 호출 시 필요
-  const [selectboxSidoNm, setSelectboxSidoNm] = useState([]);
-
   // 검색 방식
+  const [selectboxSidoNm, setSelectboxSidoNm] = useState([]); //select box(api 호출 시 사용)
   const tbxSidoSearchRef = useRef(); //input
   const [searchStationList, setSearchStationList] = useState([]); //검색 결과 list(선택 전 list)
   const searchStationRef = useRef(); //multiple select dom
@@ -85,7 +84,7 @@ const SearchStationModal = ({
   const handleChangeCheckbox = async e => {
     const id = e.target.id;
     const checked = e.target.checked;
-    if (checked) console.log(id + ': ' + checked);
+
     const arr = [...sidoCheckboxList];
 
     if (id === '전국') {
@@ -241,18 +240,22 @@ const SearchStationModal = ({
           >
             {searchStationList &&
               searchStationList.map(station => (
-                <option key={station.siteCd}>{station.siteData}</option>
+                <Option key={station.siteCd}>{station.siteData}</Option>
               ))}
           </Select>
         </div>
       </FlexColWrapper>
       <FlexRowWrapper>
-        <SquareArrowRight
-          width="40px"
-          height="40px"
+        <Button
           onClick={handleClickArrowRightBtn}
-          className="rounded-xl text-blue-900"
-        />
+          className="w-fit h-fit p-0 bg-transparent"
+        >
+          <SquareArrowRight
+            width="40px"
+            height="40px"
+            className="rounded-xl text-blue-900"
+          />
+        </Button>
       </FlexRowWrapper>
     </GridWrapper>
   );
@@ -268,7 +271,7 @@ const SearchStationModal = ({
               <Input
                 type="radio"
                 name="etc"
-                defaultChecked={etc.text === '전국' && 'checked'}
+                // defaultChecked={etc.text === '전국' && 'checked'}
                 id={etc.text}
                 onClick={e => handleClickRadioBtn(e.target.id)}
                 className="mr-2"
@@ -361,14 +364,7 @@ const SearchStationModal = ({
 
   // 측정소 적용 버튼 클릭 이벤트
   const handleClickSelectBtn = () => {
-    setMultipleStationList(prev => {
-      return [...prev, ...selectedStationList].reduce((acc, curr) => {
-        if (acc.findIndex(({ siteCd }) => siteCd === curr.siteCd) === -1) {
-          acc.push(curr);
-        }
-        return acc;
-      }, []);
-    });
+    setMultipleStationList([...selectedStationList]);
     setIsModalOpened(false);
   };
 
@@ -438,7 +434,7 @@ const SearchStationModal = ({
               >
                 {selectedStationList &&
                   selectedStationList.map(station => (
-                    <option key={station.siteCd}>{station.siteData}</option>
+                    <Option key={station.siteCd}>{station.siteData}</Option>
                   ))}
               </Select>
               <FlexRowWrapper className="gap-0.5 justify-end p-1 border-t-2 border-t-gray-200">

@@ -3,8 +3,9 @@ import * as XLSX from 'xlsx';
 
 import { FlexRowWrapper, FlexColWrapper, Button } from '@/components/ui/common';
 import { Table } from '@/components/ui/table';
+import { Loading } from '@/components/ui/loading';
 
-const ContentFrame = ({ datas, fileName }) => {
+const ContentFrame = ({ datas, isLoading, fileName }) => {
   // 클립보드 복사(react-copy-to-clipboard 라이브러리 사용)
   const handleClickCopyToClipboard = () => {
     if (datas === undefined) {
@@ -77,7 +78,7 @@ const ContentFrame = ({ datas, fileName }) => {
           데이터 저장
         </Button>
       </FlexRowWrapper>
-      {datas && <Table datas={datas} />}
+      {isLoading ? <Loading /> : datas && <Table datas={datas} />}
     </FlexColWrapper>
   );
 };

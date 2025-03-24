@@ -38,6 +38,7 @@ const CmmnAir = () => {
 
   // api result data
   const [contentData, setContentData] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleClickSearchBtn = async () => {
     if (dateList.length === 0) {
@@ -49,6 +50,7 @@ const CmmnAir = () => {
       return;
     }
 
+    setIsLoading(true);
     const apiData = {
       page: 'arpltn/cmmair',
       date: dateList,
@@ -60,6 +62,7 @@ const CmmnAir = () => {
       `${import.meta.env.VITE_API_URL}/ais/srch/datas.do`,
       apiData
     );
+    setIsLoading(false);
     console.log(apiData);
     console.log(apiRes.data);
 
@@ -95,7 +98,11 @@ const CmmnAir = () => {
           setPollutant={setPollutant}
         />
       </SearchFrame>
-      <ContentFrame datas={contentData} fileName="일반대기 검색" />
+      <ContentFrame
+        datas={contentData}
+        isLoading={isLoading}
+        fileName="일반대기 검색"
+      />
     </>
   );
 };
