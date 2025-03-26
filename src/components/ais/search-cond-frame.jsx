@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils';
 import { FlexRowWrapper, FlexColWrapper } from '@/components/ui/common';
 
 const SearchCondFrame = ({ children, title }) => (

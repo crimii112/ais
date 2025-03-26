@@ -21,6 +21,8 @@ import {
 
 const SearchStationModal = ({
   tabType,
+  siteType = '',
+  onTms,
   setIsModalOpened,
   initialStationList,
   setMultipleStationList,
@@ -65,13 +67,14 @@ const SearchStationModal = ({
   // api(/sido.do) 호출 함수
   const getStationList = async sidoNm => {
     const apiData = {
-      airqltKndNm: tms.airqltKndNm,
-      progressYn: tms.progressYn,
+      airqltKndNm: onTms ? tms.airqltKndNm : '',
+      ...(onTms && { progressYn: tms.progressYn }),
       searchtype: 'tabpage' + activeTabIndex,
       sidoNm: sidoNm,
-      siteType: '',
+      siteType: siteType,
       tbxSidoSearch: tbxSidoSearchRef.current.value,
     };
+
     const apiRes = await axios.post(
       `${import.meta.env.VITE_API_URL}/ais/srch/sido.do`,
       apiData
@@ -328,8 +331,11 @@ const SearchStationModal = ({
     setSearchStationList([]);
     setSelectboxSidoNm([]);
 
-    document.getElementsByName('etc')[0].checked = true;
+    if (document.getElementsByName('etc')[0] !== undefined) {
+      document.getElementsByName('etc')[0].checked = true;
+    }
   };
+
   // 좌측 상단 - 탭 버튼 클릭 이벤트
   const handleClickTabBtn = e => {
     initSearchData();
@@ -390,28 +396,30 @@ const SearchStationModal = ({
             ))}
           </FlexRowWrapper>
           {/* tms 설정 on/off에 따라.. */}
-          <FlexRowWrapper className="h-10 gap-2.5 items-stretch py-1 px-2.5 mb-2 bg-gray-200 rounded-sm">
-            <span className="flex items-center font-semibold">TMS</span>
-            <Select
-              defaultValue={tms.airqltKndNm}
-              onChange={handleChangeAirqltKndNm}
-              className="w-fit"
-            >
-              {TmsOptionList.map(tms => (
-                <option key={tms.text} value={tms.text}>
-                  {tms.text}
-                </option>
-              ))}
-            </Select>
-            <label className="flex items-center">
-              <Input
-                type="checkbox"
-                onChange={handleChangeProgressYn}
-                className="mr-1"
-              />
-              추이측정소
-            </label>
-          </FlexRowWrapper>
+          {onTms && (
+            <FlexRowWrapper className="h-10 gap-2.5 items-stretch py-1 px-2.5 mb-2 bg-gray-200 rounded-sm">
+              <span className="flex items-center font-semibold">TMS</span>
+              <Select
+                defaultValue={tms.airqltKndNm}
+                onChange={handleChangeAirqltKndNm}
+                className="w-fit"
+              >
+                {TmsOptionList.map(tms => (
+                  <option key={tms.text} value={tms.text}>
+                    {tms.text}
+                  </option>
+                ))}
+              </Select>
+              <label className="flex items-center">
+                <Input
+                  type="checkbox"
+                  onChange={handleChangeProgressYn}
+                  className="mr-1"
+                />
+                추이측정소
+              </label>
+            </FlexRowWrapper>
+          )}
         </FlexRowWrapper>
         {tabList.map((tab, idx) => (
           <TabContentWrapper

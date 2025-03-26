@@ -25,7 +25,10 @@ const ContentFrame = ({ datas, isLoading, fileName }) => {
     text += headNameList + '\n';
 
     datas.rstList.forEach(arr => {
-      datas.headList.map(headName => (text += arr[headName] + '\t'));
+      datas.headList.map(
+        headName =>
+          (text += (arr[headName] === undefined ? '' : arr[headName]) + '\t')
+      );
       text += '\n';
     });
 

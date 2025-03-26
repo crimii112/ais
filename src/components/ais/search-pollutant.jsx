@@ -4,6 +4,7 @@ import { SearchCondFrame } from './search-cond-frame';
 import { FlexRowWrapper, GridWrapper } from '@/components/ui/common';
 
 const SearchPollutant = ({
+  title = '물질 및 소수점 자릿수',
   pollutantList,
   signList,
   initialPollutant,
@@ -48,10 +49,10 @@ const SearchPollutant = ({
   };
 
   return (
-    <SearchCondFrame title="물질 및 소수점 자릿수">
-      <GridWrapper className="grid-cols-4 gap-1">
-        {pollutantList &&
-          pollutantList.map(poll => (
+    <SearchCondFrame title={title}>
+      {pollutantList && (
+        <GridWrapper className="grid-cols-4 gap-1">
+          {pollutantList.map(poll => (
             <FlexRowWrapper className="justify-between gap-0.5" key={poll.id}>
               <FlexRowWrapper className="justify-between gap-0.5">
                 <label>
@@ -83,16 +84,19 @@ const SearchPollutant = ({
               </FlexRowWrapper>
             </FlexRowWrapper>
           ))}
-      </GridWrapper>
-      <GridWrapper className="items-stretch gap-1">
-        {signList &&
-          signList.map(sign => (
+        </GridWrapper>
+      )}
+      {signList && (
+        <GridWrapper className="items-stretch gap-1">
+          {signList.map(sign => (
             <FlexRowWrapper className="justify-between gap-0.5" key={sign.id}>
               <div>
                 <label>
                   <input
                     type="checkbox"
+                    id={sign.id}
                     defaultChecked={sign.checked}
+                    onChange={handleChangeChecked}
                     className="mx-2 border-1 border-gray-300 rounded-sm"
                   />
                   {sign.text}
@@ -109,7 +113,8 @@ const SearchPollutant = ({
               </div>
             </FlexRowWrapper>
           ))}
-      </GridWrapper>
+        </GridWrapper>
+      )}
     </SearchCondFrame>
   );
 };

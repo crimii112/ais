@@ -55,8 +55,9 @@ const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
                   type="text"
                   id={cond.id}
                   placeholder={cond.placeholder}
+                  disabled={cond.disabled}
                   onChange={handleChangeCond}
-                  className="w-full p-1.5"
+                  className={`w-full p-1.5 ${cond.disabled && 'bg-gray-200'}`}
                 />
               </GridWrapper>
             )

@@ -10,7 +10,12 @@ import {
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
 
-const SearchStation = ({ title, setStationList }) => {
+const SearchStation = ({
+  title,
+  siteType = '',
+  onTms = true,
+  setStationList,
+}) => {
   const [multipleStationList, setMultipleStationList] = useState([]);
 
   const [isModalOpened, setIsModalOpened] = useState(false);
@@ -90,6 +95,8 @@ const SearchStation = ({ title, setStationList }) => {
       {isModalOpened && (
         <SearchStationModal
           tabType={modalTabType}
+          siteType={siteType}
+          onTms={onTms}
           setIsModalOpened={setIsModalOpened}
           initialStationList={multipleStationList}
           setMultipleStationList={setMultipleStationList}

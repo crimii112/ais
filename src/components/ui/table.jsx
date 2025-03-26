@@ -36,7 +36,9 @@ const Table = ({ datas }) => {
                     key={idx}
                     className="p-2 whitespace-nowrap overflow-hidden tracking-wider border-1 border-gray-300 border-t-0"
                   >
-                    {data[head] === '' ? '-' : data[head]}
+                    {data[head] === '' || data[head] === undefined
+                      ? '-'
+                      : data[head]}
                   </td>
                 ))}
               </tr>
