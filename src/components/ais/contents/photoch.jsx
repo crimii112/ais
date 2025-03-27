@@ -7,6 +7,7 @@ import { SearchStation } from '../search-station';
 import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
 import { ContentFrame } from '../content-frame';
+import { LineChart } from '@/components/ui/line-chart';
 
 const PhotoCh = () => {
   const [dateList, setDateList] = useState([]);
@@ -95,6 +96,7 @@ const PhotoCh = () => {
         isLoading={isLoading}
         fileName="광화학 분석"
       />
+      <LineChart datas={contentData} />
     </>
   );
 };
