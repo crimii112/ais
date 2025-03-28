@@ -6,8 +6,9 @@ import { SearchDate } from '../search-date';
 import { SearchStation } from '../search-station';
 import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
-import { ContentFrame } from '../content-frame';
-import { LineChart } from '@/components/ui/line-chart';
+import { ContentTableFrame } from '../content-table-frame';
+import { ContentChartFrame } from '../content-chart-frame';
+import { Loading } from '@/components/ui/loading';
 
 const PhotoCh = () => {
   const [dateList, setDateList] = useState([]);
@@ -91,12 +92,12 @@ const PhotoCh = () => {
           setPollutant={setPollutant}
         />
       </SearchFrame>
-      <ContentFrame
+      <ContentTableFrame
         datas={contentData}
         isLoading={isLoading}
         fileName="광화학 분석"
       />
-      <LineChart datas={contentData} />
+      <ContentChartFrame datas={contentData} isLoading={isLoading} />
     </>
   );
 };
@@ -109,18 +110,24 @@ const condList = [
     title: '데이터구분',
     id: 'sect',
     content: [
+      { value: 'time', text: '시간별' },
       { value: 'day', text: '일별' },
       { value: 'month', text: '월별' },
       { value: 'year', text: '연별' },
       { value: 'all', text: '전체기간별' },
+      { value: 'timezone', text: '시간대별' },
       { value: 'week', text: '요일별' },
       { value: 'season', text: '계절별' },
       { value: 'ys', text: '년도-계절별' },
       { value: 'lys', text: '전년도-계절별' },
-      { value: 'a5', text: '전체-월별' },
-      { value: 'accmonth', text: '년도-월별누적' },
+      { value: 'accmonth', text: '월별누적' },
       { value: 'accseason', text: '계절관리제누적' },
       { value: 'a1', text: '계절관리제연차누적' },
+      { value: 'a2', text: '년도-일별누적' },
+      { value: 'a3', text: '전체-일별누적' },
+      { value: 'a4', text: '년도-시간대별' },
+      { value: 'a5', text: '전체-월별' },
+      { value: 'a6', text: '계절관리제일별누적' },
     ],
   },
   {

@@ -10,8 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
-import { Button, FlexColWrapper, FlexRowWrapper, GridWrapper } from './common';
-import CustomMultiSelect from './chart-multiple-select';
+import { FlexColWrapper, GridWrapper } from './common';
+import CustomMultiSelect from './custom-multiple-select';
 import randomColor from 'randomcolor';
 
 const LineChart = ({ datas }) => {
@@ -22,6 +22,7 @@ const LineChart = ({ datas }) => {
   useEffect(() => {
     if (datas === undefined) return;
 
+    // option value, text
     const arr = [];
     datas.headList.map(head => {
       arr.push({ value: head });
@@ -32,12 +33,12 @@ const LineChart = ({ datas }) => {
 
     setPollutantList(arr.slice(2, 58));
 
+    // 물질 type 변경: string -> float
     datas.rstList.map(res =>
       arr
         .slice(2, 58)
         .map(head => (res[head.value] = parseFloat(res[head.value])))
     );
-    console.log(datas.rstList);
   }, [datas]);
 
   return (

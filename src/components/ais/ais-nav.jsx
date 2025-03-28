@@ -44,7 +44,7 @@ const data = {
       subItems: [
         {
           heading: '특수 대기질 테이터 분석(광화학)',
-          pathName: 'pChem',
+          pathName: 'photoCh',
           title: '광화학 분석',
           content: <PhotoCh />,
         },

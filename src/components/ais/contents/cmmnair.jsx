@@ -6,7 +6,7 @@ import { SearchDate } from '../search-date';
 import { SearchStation } from '../search-station';
 import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
-import { ContentFrame } from '../content-frame';
+import { ContentTableFrame } from '../content-table-frame';
 
 const CmmnAir = () => {
   const [dateList, setDateList] = useState([]);
@@ -98,7 +98,7 @@ const CmmnAir = () => {
           setPollutant={setPollutant}
         />
       </SearchFrame>
-      <ContentFrame
+      <ContentTableFrame
         datas={contentData}
         isLoading={isLoading}
         fileName="일반대기 검색"
