@@ -132,7 +132,7 @@ const SearchDate = ({ setDateList }) => {
           &nbsp;~&nbsp;
           <Input
             type="date"
-            defaultValue={'2015-01-01'}
+            defaultValue={'2015-01-31'}
             ref={endDateRef}
             className="px-2"
           />

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   FlexRowWrapper,
@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { Loading } from '@/components/ui/loading';
+import { LineChart } from '@/components/ui/line-chart';
 
 const ContentChartFrame = ({ datas, isLoading }) => {
-  const [pollutantList, setPollutantList] = useState([]);
-
+  const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
+  const [chartConfig, setChartConfig] = useState(null);
   const [yAxisSettings, setYAxisSettings] = useState([
     {
       label: 'Y-Left',
@@ -35,6 +36,7 @@ const ContentChartFrame = ({ datas, isLoading }) => {
   useEffect(() => {
     if (datas === undefined) return;
 
+    setChartConfig(null);
     // option value, text
     const arr = [];
     datas.headList.map(head => {
@@ -47,24 +49,32 @@ const ContentChartFrame = ({ datas, isLoading }) => {
     setPollutantList(arr.slice(2, 58));
   }, [datas]);
 
-  const handleChangeCheckbox = e => {
-    const inputs = document.querySelectorAll(`[id ^= ${e.target.id}]`);
+  const handleChangeCheckbox = (e, idx) => {
+    const checked = e.target.checked;
 
-    inputs.forEach(input => {
-      if (input.type === 'number') {
-        if (e.target.checked) input.readOnly = true;
-        else input.readOnly = false;
-      }
-    });
+    setYAxisSettings(prev =>
+      prev.map((axis, i) => (i === idx ? { ...axis, isAuto: checked } : axis))
+    );
   };
 
-  const handleChangeScaleInput = () => {};
+  const handleChangeScaleInput = (e, idx, key) => {
+    const value = e.target.value;
 
-  const setSelectedOptions = selectedOptions => {
-    console.log(selectedOptions);
+    setYAxisSettings(prev =>
+      prev.map((axis, i) =>
+        i === idx ? { ...axis, [key]: Number(value) } : axis
+      )
+    );
   };
+
+  const setSelectedOptions = (selectedOptions, idx) => {
+    setYAxisSettings(prev =>
+      prev.map((axis, i) => (i === idx ? { ...axis, selectedOptions } : axis))
+    );
+  };
+
   const handleClickDrawChart = () => {
-    console.log(yAxisSettings);
+    setChartConfig({ datas, yAxisSettings, pollutantList });
   };
 
   return (
@@ -72,88 +82,64 @@ const ContentChartFrame = ({ datas, isLoading }) => {
       {isLoading ? (
         <Loading />
       ) : (
-        <FlexRowWrapper className="w-full gap-2 items-stretch justify-between">
-          <FlexColWrapper className="gap-2">
-            {yAxisSettings.map(axis => (
-              <GridWrapper
-                key={axis.label}
-                className="grid-cols-[0.7fr_6fr_0.5fr_0.7fr_0.7fr] gap-2 items-stretch"
-              >
-                <label className="my-auto whitespace-nowrap">
-                  {axis.label}
-                </label>
-                <CustomMultiSelect
-                  options={pollutantList}
-                  setOutsideSelectedOptions={setSelectedOptions}
-                />
-                <label className="flex flex-row items-center whitespace-nowrap">
-                  <Input
-                    type="checkbox"
-                    id={axis.orientation}
-                    onChange={handleChangeCheckbox}
-                    className="mr-1"
-                    defaultChecked
+        <>
+          <FlexRowWrapper className="w-full gap-2 items-stretch justify-between">
+            <FlexColWrapper className="gap-2">
+              {yAxisSettings.map((axis, idx) => (
+                <GridWrapper
+                  key={axis.label}
+                  className="grid-cols-[0.7fr_6fr_0.5fr_0.7fr_0.7fr] gap-2 items-stretch"
+                >
+                  <label className="my-auto whitespace-nowrap">
+                    {axis.label}
+                  </label>
+                  <CustomMultiSelect
+                    options={pollutantList}
+                    setOutsideSelectedOptions={selected =>
+                      setSelectedOptions(selected, idx)
+                    }
                   />
-                  자동
-                </label>
-                <Input
-                  type="number"
-                  id={axis.orientation + 'min'}
-                  defaultValue={axis.min}
-                  onChange={handleChangeScaleInput}
-                  readOnly
-                  className="w-20 read-only:bg-gray-200 text-center"
-                />
-                <Input
-                  type="number"
-                  id={axis.orientation + 'max'}
-                  onChange={handleChangeScaleInput}
-                  defaultValue={axis.max}
-                  readOnly
-                  className="w-20 read-only:bg-gray-200 text-center"
-                />
-              </GridWrapper>
-            ))}
-
-            {/* <GridWrapper className="grid-cols-[0.7fr_6fr_0.5fr_0.7fr_0.7fr] gap-2 items-stretch">
-              <label className="my-auto whitespace-nowrap">Y-Right</label>
-              <CustomMultiSelect
-                options={pollutantList}
-                setOutsideSelectedOptions={setSelectedRightOptions}
-              />
-              <label className="flex flex-row items-center whitespace-nowrap">
-                <Input
-                  type="checkbox"
-                  id="right"
-                  onChange={handleChangeCheckbox}
-                  className="mr-1"
-                  defaultChecked
-                />
-                자동
-              </label>
-              <Input
-                type="number"
-                ref={rMinRef}
-                defaultValue={0}
-                readOnly
-                className="w-20 read-only:bg-gray-200 text-center"
-              />
-              <Input
-                type="number"
-                ref={rMaxRef}
-                defaultValue={100}
-                readOnly
-                className="w-20 read-only:bg-gray-200 text-center"
-              />
-            </GridWrapper> */}
-          </FlexColWrapper>
-          <Button
-            onClick={handleClickDrawChart}
-            className="w-fit px-5 bg-blue-900 text-white"
-          >
-            그래프 그리기
-          </Button>
-        </FlexRowWrapper>
+                  <label className="flex flex-row items-center whitespace-nowrap">
+                    <Input
+                      type="checkbox"
+                      checked={axis.isAuto}
+                      onChange={e => handleChangeCheckbox(e, idx)}
+                      className="mr-1"
+                    />
+                    자동
+                  </label>
+                  <Input
+                    type="number"
+                    value={axis.min}
+                    onChange={e => handleChangeScaleInput(e, idx, 'min')}
+                    readOnly={axis.isAuto}
+                    className="w-20 read-only:bg-gray-200 text-center"
+                  />
+                  <Input
+                    type="number"
+                    value={axis.max}
+                    onChange={e => handleChangeScaleInput(e, idx, 'max')}
+                    readOnly={axis.isAuto}
+                    className="w-20 read-only:bg-gray-200 text-center"
+                  />
+                </GridWrapper>
+              ))}
+            </FlexColWrapper>
+            <Button
+              onClick={handleClickDrawChart}
+              className="w-fit px-5 bg-blue-900 text-white"
+            >
+              그래프 그리기
+            </Button>
+          </FlexRowWrapper>
+          {chartConfig && (
+            <LineChart
+              datas={chartConfig.datas}
+              yAxisSettings={chartConfig.yAxisSettings}
+              pollutantList={chartConfig.pollutantList}
+            />
+          )}
+        </>
       )}
     </FlexColWrapper>
   );

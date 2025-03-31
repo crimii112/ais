@@ -42,6 +42,7 @@ const PhotoCh = () => {
     }
 
     setIsLoading(true);
+    setContentData(undefined);
     const apiData = {
       page: 'photoch/lineGraph',
       date: dateList,
