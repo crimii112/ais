@@ -16,7 +16,7 @@ const ContentChartFrame = ({ datas, isLoading }) => {
   const [chartConfig, setChartConfig] = useState(null);
   const [yAxisSettings, setYAxisSettings] = useState([
     {
-      label: 'Y-Left',
+      label: 'Y-Left1',
       orientation: 'left',
       isAuto: true,
       min: 0,
@@ -24,7 +24,23 @@ const ContentChartFrame = ({ datas, isLoading }) => {
       selectedOptions: [],
     },
     {
-      label: 'Y-Right',
+      label: 'Y-Right1',
+      orientation: 'right',
+      isAuto: true,
+      min: 0,
+      max: 100,
+      selectedOptions: [],
+    },
+    {
+      label: 'Y-Left2',
+      orientation: 'left',
+      isAuto: true,
+      min: 0,
+      max: 100,
+      selectedOptions: [],
+    },
+    {
+      label: 'Y-Right2',
       orientation: 'right',
       isAuto: true,
       min: 0,

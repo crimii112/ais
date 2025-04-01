@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import randomColor from 'randomcolor';
+import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
   ComposedChart,
@@ -10,133 +9,223 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import html2canvas from 'html2canvas';
+
+import { Button, FlexRowWrapper } from './common';
 
 const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
-  const typeCastingDatas = datas;
+  const [processedData, setProcessedData] = useState([]);
+  const colorMapRef = useRef({}); // 여기에 색상 저장
+  const colorIndexRef = useRef(0);
 
+  useEffect(() => console.log(yAxisSettings), [yAxisSettings]);
   useEffect(() => {
-    // 물질 type 변경: string -> float
-    typeCastingDatas.rstList.forEach(res => {
+    if (!datas || !datas.rstList) return;
+
+    // 데이터 clone해서 타입 변환(string -> float)
+    // clone 안하면 데이터 원본이 변경되어 table에 영향을 미치게 됨
+    const clonedData = datas.rstList.map(res => {
+      const newRes = { ...res };
       pollutantList.forEach(option => {
-        const val = res[option.value];
-        if (val !== undefined) res[option.value] = parseFloat(val);
+        const rawVal = newRes[option.value];
+        const parsed = parseFloat(rawVal);
+        newRes[option.value] =
+          rawVal !== undefined && rawVal !== '' && !isNaN(parsed)
+            ? parsed
+            : null;
       });
+
+      return newRes;
     });
 
-    console.log(typeCastingDatas);
-  }, [datas]);
+    setProcessedData(clonedData);
+  }, [datas, pollutantList]);
+
+  // Line 색상 지정
+  const getNextColor = () => {
+    const color = strongColors[colorIndexRef.current % strongColors.length];
+    colorIndexRef.current += 1;
+    return color;
+  };
+  const getColorByKey = key => {
+    if (!colorMapRef.current[key]) {
+      colorMapRef.current[key] = getNextColor();
+    }
+    return colorMapRef.current[key];
+  };
+
+  // 그래프 이미지로 저장
+  const handleSaveImage = async () => {
+    await document.fonts.ready;
+
+    const canvas = await html2canvas(document.getElementById('chart-wrapper'), {
+      backgroundColor: '#fff',
+      useCORS: true,
+      scale: 1.5,
+    });
+
+    const link = document.createElement('a');
+    link.download = 'lineChart.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
+  if (
+    !datas ||
+    !datas.rstList ||
+    !datas.rstList2 ||
+    processedData.length === 0
+  ) {
+    return (
+      <div className="flex flex-row w-full items-center justify-center py-5 text-xl font-semibold">
+        그래프를 그릴 데이터가 없습니다.
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={700}>
-      <ComposedChart data={typeCastingDatas.rstList}>
-        <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: '30px' }} />
-        <Tooltip />
-        <CartesianGrid strokeDasharray="3" vertical={false} />
-        <XAxis
-          dataKey="groupdate"
-          allowDuplicatedCategory={false}
-          label={{
-            value: '측정일자',
-            position: 'bottom',
-            fontWeight: 'bold',
-          }}
-        />
-        {yAxisSettings.map(axis => (
-          <YAxis
-            key={axis.label}
-            yAxisId={`${axis.orientation}`}
-            orientation={`${axis.orientation}`}
-            type="number"
-            domain={axis.isAuto ? ['dataMin', 'dataMax'] : [axis.min, axis.max]}
-            fontSize={12}
-            label={{
-              value: axis.selectedOptions.map(option => ' ' + option.text),
-              angle: -90,
-              position: `${
-                axis.orientation === 'left' ? 'insideLeft' : 'insideRight'
-              }`,
-              fontWeight: 'bold',
-            }}
-          />
-        ))}
-        {typeCastingDatas.rstList2.map(el =>
-          yAxisSettings.map(axis =>
-            axis.selectedOptions.map(option => (
-              <Line
-                key={el.groupNm + ' - ' + option.text}
-                data={typeCastingDatas.rstList.filter(
-                  data => data.groupNm === el.groupNm
-                )}
-                yAxisId={axis.orientation}
-                dataKey={option.value}
-                name={`${el.groupNm} - ${option.text}`}
-                stroke={getRandomColor()}
-                connectNulls={false}
-              />
-            ))
-          )
-        )}
-      </ComposedChart>
-    </ResponsiveContainer>
+    <>
+      <div id="chart-wrapper" className="w-full h-full p-2">
+        <ResponsiveContainer width="100%" height={700}>
+          <ComposedChart
+            data={processedData}
+            margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
+          >
+            <Legend
+              verticalAlign="bottom"
+              wrapperStyle={{
+                paddingTop: 40,
+                border: 'none',
+                outline: 'none',
+                backgroundColor: 'transparent',
+              }}
+            />
+            <Tooltip />
+            <CartesianGrid strokeDasharray="3" vertical={false} />
+            <XAxis
+              dataKey="groupdate"
+              allowDuplicatedCategory={false}
+              label={{
+                value: '측정일자',
+                position: 'bottom',
+                fontWeight: 'bold',
+              }}
+              tick={{ fontSize: 12 }}
+            />
+            {yAxisSettings.map(
+              axis =>
+                axis.selectedOptions.length !== 0 && (
+                  <YAxis
+                    key={axis.label}
+                    yAxisId={`${axis.label}`}
+                    orientation={`${axis.orientation}`}
+                    type="number"
+                    domain={
+                      axis.isAuto
+                        ? ['dataMin', 'dataMax']
+                        : [axis.min, axis.max]
+                    }
+                    fontSize={12}
+                    label={{
+                      value: axis.selectedOptions.map(
+                        option => ' ' + option.text
+                      ),
+                      angle: -90,
+                      position:
+                        axis.orientation === 'left'
+                          ? 'insideLeft'
+                          : 'insideRight',
+                      fontWeight: 'bold',
+                      dx: axis.orientation === 'left' ? 10 : -10,
+                      dy: axis.orientation === 'left' ? 50 : -50,
+                    }}
+                    allowDataOverflow={true}
+                    tickCount={10}
+                  />
+                )
+            )}
+            {datas.rstList2.map(el =>
+              yAxisSettings.map(axis =>
+                axis.selectedOptions.map(option => {
+                  const key = `${el.groupNm}-${option.text}`;
+                  return (
+                    <Line
+                      key={el.groupNm + ' - ' + option.text}
+                      data={processedData.filter(
+                        data => data.groupNm === el.groupNm
+                      )}
+                      yAxisId={axis.label}
+                      dataKey={option.value}
+                      name={`${el.groupNm} - ${option.text}`}
+                      stroke={getColorByKey(key)}
+                      connectNulls={false}
+                    />
+                  );
+                })
+              )
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <FlexRowWrapper className="w-full justify-end">
+        <Button onClick={handleSaveImage} className="w-fit ">
+          이미지 저장
+        </Button>
+      </FlexRowWrapper>
+    </>
   );
 };
 
 export { LineChart };
 
-function getRandomColor() {
-  const index = Math.floor(Math.random() * strongColors.length);
-  return strongColors[index];
-}
-
 const strongColors = [
-  '#FF0000',
-  '#E60026',
-  '#C70039',
-  '#900C3F',
-  '#8B0000',
-  '#FF5733',
-  '#FF6F00',
-  '#FF8C00',
-  '#FF9900',
-  '#FFB300',
-  '#FFA500',
-  '#CC5500',
-  '#B7410E',
-  '#A52A2A',
-  '#800000',
-  '#FF1493',
-  '#C71585',
-  '#8B008B',
-  '#6A0DAD',
-  '#4B0082',
-  '#2E0854',
-  '#1A1AFF',
-  '#0000FF',
-  '#0033A0',
-  '#00008B',
-  '#191970',
-  '#001f3f',
-  '#005f73',
-  '#008080',
-  '#006400',
-  '#228B22',
-  '#2E8B57',
-  '#006400',
-  '#013220',
-  '#0B3D91',
-  '#3D9970',
-  '#2F4F4F',
-  '#2C3E50',
-  '#1C1C1C',
-  '#111111',
-  '#333333',
-  '#4A4A4A',
-  '#555555',
-  '#666666',
-  '#800080',
-  '#9932CC',
-  '#9400D3',
-  '#7B68EE',
-  '#483D8B',
-  '#1E1E1E',
+  '#d32f2f',
+  '#f57c00',
+  '#7b1fa2',
+  '#689f38',
+  '#fbc02d',
+  '#4e342e',
+  '#0288d1',
+  '#33691e',
+  '#512da8',
+  '#0097a7',
+  '#afb42b',
+  '#8e24aa',
+  '#00695c',
+  '#1a237e',
+  '#e64a19',
+  '#5d4037',
+  '#1976d2',
+  '#c62828',
+  '#fbc02d',
+  '#6a1b9a',
+  '#2e7d32',
+  '#ef6c00',
+  '#3949ab',
+  '#00838f',
+  '#9e9d24',
+  '#ad1457',
+  '#00796b',
+  '#303f9f',
+  '#ffa000',
+  '#d84315',
+  '#1b5e20',
+  '#283593',
+  '#ff5722',
+  '#8d6e63',
+  '#00796b',
+  '#7c4dff',
+  '#00acc1',
+  '#827717',
+  '#d81b60',
+  '#009688',
+  '#3f51b5',
+  '#f44336',
+  '#4caf50',
+  '#e91e63',
+  '#ff9800',
+  '#9c27b0',
+  '#03a9f4',
+  '#cddc39',
+  '#673ab7',
 ];
