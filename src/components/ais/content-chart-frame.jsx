@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import html2canvas from 'html2canvas';
 
 import {
   FlexRowWrapper,
@@ -10,44 +11,63 @@ import {
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { Loading } from '@/components/ui/loading';
 import { LineChart } from '@/components/ui/line-chart';
+import { PieChart } from '@/components/ui/pie-chart';
 
-const ContentChartFrame = ({ datas, isLoading }) => {
+const ContentChartFrame = ({ datas, isLoading, type }) => {
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
   const [chartConfig, setChartConfig] = useState(null);
-  const [yAxisSettings, setYAxisSettings] = useState([
-    {
-      label: 'Y-Left1',
-      orientation: 'left',
-      isAuto: true,
-      min: 0,
-      max: 100,
-      selectedOptions: [],
-    },
-    {
-      label: 'Y-Left2',
-      orientation: 'left',
-      isAuto: true,
-      min: 0,
-      max: 100,
-      selectedOptions: [],
-    },
-    {
-      label: 'Y-Right1',
-      orientation: 'right',
-      isAuto: true,
-      min: 0,
-      max: 100,
-      selectedOptions: [],
-    },
-    {
-      label: 'Y-Right2',
-      orientation: 'right',
-      isAuto: true,
-      min: 0,
-      max: 100,
-      selectedOptions: [],
-    },
-  ]);
+  const [yAxisSettings, setYAxisSettings] = useState([]);
+
+  // chart type에 따른 yAxisSettings
+  useEffect(() => {
+    if (type === 'line') {
+      setYAxisSettings([
+        {
+          label: 'Y-Left1',
+          orientation: 'left',
+          isAuto: true,
+          min: 0,
+          max: 100,
+          selectedOptions: [],
+        },
+        {
+          label: 'Y-Left2',
+          orientation: 'left',
+          isAuto: true,
+          min: 0,
+          max: 100,
+          selectedOptions: [],
+        },
+        {
+          label: 'Y-Right1',
+          orientation: 'right',
+          isAuto: true,
+          min: 0,
+          max: 100,
+          selectedOptions: [],
+        },
+        {
+          label: 'Y-Right2',
+          orientation: 'right',
+          isAuto: true,
+          min: 0,
+          max: 100,
+          selectedOptions: [],
+        },
+      ]);
+    } else if (type === 'pie') {
+      setYAxisSettings([
+        {
+          label: 'Y-Left',
+          orientation: 'left',
+          isAuto: true,
+          min: 0,
+          max: 100,
+          selectedOptions: [],
+        },
+      ]);
+    }
+  }, [type]);
 
   useEffect(() => {
     if (datas === undefined) return;
@@ -89,8 +109,26 @@ const ContentChartFrame = ({ datas, isLoading }) => {
     );
   };
 
+  // 그래프 그리기 버튼 클릭 이벤트
   const handleClickDrawChart = () => {
     setChartConfig({ datas, yAxisSettings, pollutantList });
+  };
+
+  // 그래프 이미지로 저장
+  const handleSaveImage = async () => {
+    await document.fonts.ready;
+
+    const canvas = await html2canvas(document.getElementById('chart-wrapper'), {
+      backgroundColor: '#fff',
+      useCORS: true,
+      scale: 1.5,
+    });
+
+    const link = document.createElement('a');
+    if (type === 'line') link.download = 'lineChart.png';
+    else if (type === 'pie') link.download = 'pieChart.png';
+    link.href = canvas.toDataURL();
+    link.click();
   };
 
   return (
@@ -149,11 +187,23 @@ const ContentChartFrame = ({ datas, isLoading }) => {
             </Button>
           </FlexRowWrapper>
           {chartConfig && (
-            <LineChart
-              datas={chartConfig.datas}
-              yAxisSettings={chartConfig.yAxisSettings}
-              pollutantList={chartConfig.pollutantList}
-            />
+            <>
+              <div id="chart-wrapper" className="w-full h-full p-2">
+                {type === 'line' && (
+                  <LineChart
+                    datas={chartConfig.datas}
+                    yAxisSettings={chartConfig.yAxisSettings}
+                    pollutantList={chartConfig.pollutantList}
+                  />
+                )}
+                {type === 'pie' && <PieChart datas={chartConfig.datas} />}
+              </div>
+              <FlexRowWrapper className="w-full justify-end">
+                <Button onClick={handleSaveImage} className="w-fit ">
+                  이미지 저장
+                </Button>
+              </FlexRowWrapper>
+            </>
           )}
         </>
       )}

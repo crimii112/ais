@@ -6,6 +6,7 @@ import Home from '@/pages/Home';
 
 import { AisNavProvider } from '@/context/AisNavContext';
 import { MapFrame } from '@/components/map';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
             }
           />
         </Routes>
+        <ReactQueryDevtools initialIsOpen={false} />
       </div>
     </BrowserRouter>
   );

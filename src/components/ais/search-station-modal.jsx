@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import axios from 'axios';
 import { SquareArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +17,7 @@ import {
   Select,
   Option,
 } from '@/components/ui/common';
+import usePostRequest from '@/hooks/usePostRequest';
 
 const SearchStationModal = ({
   tabType,
@@ -27,6 +27,8 @@ const SearchStationModal = ({
   initialStationList,
   setMultipleStationList,
 }) => {
+  const postMutation = usePostRequest();
+
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [selectedStationList, setSelectedStationList] =
     useState(initialStationList); //선택한 측정소 - list
@@ -66,6 +68,8 @@ const SearchStationModal = ({
 
   // api(/sido.do) 호출 함수
   const getStationList = async sidoNm => {
+    if (postMutation.isLoading) return;
+
     const apiData = {
       airqltKndNm: onTms ? tms.airqltKndNm : '',
       ...(onTms && { progressYn: tms.progressYn }),
@@ -75,12 +79,12 @@ const SearchStationModal = ({
       tbxSidoSearch: tbxSidoSearchRef.current.value,
     };
 
-    const apiRes = await axios.post(
-      `${import.meta.env.VITE_API_URL}/ais/srch/sido.do`,
-      apiData
-    );
+    const apiRes = await postMutation.mutateAsync({
+      url: '/ais/srch/sido.do',
+      data: apiData,
+    });
 
-    return apiRes.data.sidoList;
+    return apiRes.sidoList;
   };
 
   // 시도 선택 방식 - 체크박스 onChange

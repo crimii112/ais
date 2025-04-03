@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 import moment from 'moment';
 
 import { SearchCondFrame } from './search-cond-frame';
@@ -11,8 +10,10 @@ import {
   Select,
   Option,
 } from '@/components/ui/common';
+import usePostRequest from '@/hooks/usePostRequest';
 
 const SearchDate = ({ setDateList }) => {
+  const postMutation = usePostRequest();
   const [multipleDateList, setMultipleDateList] = useState([]);
 
   // select, input 요소
@@ -63,6 +64,8 @@ const SearchDate = ({ setDateList }) => {
     let item = [];
     //auto => api 호출(select box 값 전송)
     if (dataCategoryRef.current.value === 'auto') {
+      if (postMutation.isLoading) return;
+
       const apiData = {
         date: [
           startDateTime.replaceAll('-', '').replace(' ', '') +
@@ -70,12 +73,13 @@ const SearchDate = ({ setDateList }) => {
             endDateTime.replaceAll('-', '').replace(' ', ''),
         ],
       };
-      const apiRes = await axios.post(
-        `${import.meta.env.VITE_API_URL}/ais/srch/date.do`,
-        apiData
-      );
 
-      item = apiRes.data.filter(item => item);
+      const apiRes = await postMutation.mutateAsync({
+        url: '/ais/srch/date.do',
+        data: apiData,
+      });
+
+      item = apiRes.filter(item => item);
     } else {
       //실시간/1차확정/확정 => 수동
       item = [

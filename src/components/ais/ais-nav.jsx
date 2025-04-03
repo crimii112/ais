@@ -40,22 +40,22 @@ const data = {
     },
     {
       id: 1,
-      title: '특수 대기질 테이터 분석(광화학)',
+      title: '특수 대기질 테이터 분석',
       subItems: [
         {
-          heading: '특수 대기질 테이터 분석(광화학)',
+          heading: '특수 대기질 테이터 분석',
           pathName: 'photoCh',
-          title: '광화학 분석',
-          content: <PhotoCh />,
+          title: '광화학 데이터 그래프',
+          content: <PhotoCh chartType="line" />,
         },
         {
-          heading: '특수 대기질 테이터 분석(광화학)',
-          pathName: 'nav2-sub2',
-          title: 'nav2-sub2',
-          content: 'nav2-sub2',
+          heading: '특수 대기질 테이터 분석',
+          pathName: 'photoChPie',
+          title: '광화학 성분 파이그래프',
+          content: <PhotoCh chartType="pie" />,
         },
         {
-          heading: '특수 대기질 테이터 분석(광화학)',
+          heading: '특수 대기질 테이터 분석',
           pathName: 'nav2-sub3',
           title: 'nav2-sub3',
           content: 'nav2-sub3',

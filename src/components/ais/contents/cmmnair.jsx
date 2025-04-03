@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
 import { SearchDate } from '../search-date';
@@ -9,6 +9,8 @@ import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
 
 const CmmnAir = () => {
+  const postMutation = usePostRequest();
+
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
   const [searchCond, setSearchCond] = useState({
@@ -50,6 +52,8 @@ const CmmnAir = () => {
       return;
     }
 
+    if (postMutation.isLoading) return;
+
     setIsLoading(true);
     const apiData = {
       page: 'arpltn/cmmair',
@@ -58,19 +62,19 @@ const CmmnAir = () => {
       cond: searchCond,
       polllist: pollutant,
     };
-    const apiRes = await axios.post(
-      `${import.meta.env.VITE_API_URL}/ais/srch/datas.do`,
-      apiData
-    );
+    let apiRes = await postMutation.mutateAsync({
+      url: '/ais/srch/datas.do',
+      data: apiData,
+    });
     setIsLoading(false);
     console.log(apiData);
-    console.log(apiRes.data);
+    console.log(apiRes);
 
     /*
      * 검색조건-데이터구분==='월별누적||계절관리제누적||계절관리제연차누적||년도일별누적||전체일별누적||계절관리제일별누적' &&
      * 물질및소수점자릿수-온도||습도==='checked'일 경우 NO DATA로 처리
      */
-    if (JSON.stringify(apiRes.data) === '{}') {
+    if (JSON.stringify(apiRes) === '{}') {
       apiRes.data = {
         headList: ['NO DATA'],
         headNameList: ['NO DATA'],
@@ -78,7 +82,7 @@ const CmmnAir = () => {
       };
     }
 
-    setContentData(apiRes.data);
+    setContentData(apiRes);
   };
 
   return (

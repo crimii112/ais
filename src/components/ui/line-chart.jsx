@@ -9,16 +9,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import html2canvas from 'html2canvas';
-
-import { Button, FlexRowWrapper } from './common';
 
 const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
   const [processedData, setProcessedData] = useState([]);
   const colorMapRef = useRef({}); // 여기에 색상 저장
   const colorIndexRef = useRef(0);
 
-  useEffect(() => console.log(yAxisSettings), [yAxisSettings]);
   useEffect(() => {
     if (!datas || !datas.rstList) return;
 
@@ -54,22 +50,6 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
     return colorMapRef.current[key];
   };
 
-  // 그래프 이미지로 저장
-  const handleSaveImage = async () => {
-    await document.fonts.ready;
-
-    const canvas = await html2canvas(document.getElementById('chart-wrapper'), {
-      backgroundColor: '#fff',
-      useCORS: true,
-      scale: 1.5,
-    });
-
-    const link = document.createElement('a');
-    link.download = 'lineChart.png';
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   if (
     !datas ||
     !datas.rstList ||
@@ -84,95 +64,80 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
   }
 
   return (
-    <>
-      <div id="chart-wrapper" className="w-full h-full p-2">
-        <ResponsiveContainer width="100%" height={700}>
-          <ComposedChart
-            data={processedData}
-            margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
-          >
-            <Legend
-              verticalAlign="bottom"
-              wrapperStyle={{
-                paddingTop: 40,
-                border: 'none',
-                outline: 'none',
-                backgroundColor: 'transparent',
-              }}
-            />
-            <Tooltip />
-            <CartesianGrid strokeDasharray="3" vertical={false} />
-            <XAxis
-              dataKey="groupdate"
-              allowDuplicatedCategory={false}
-              label={{
-                value: '측정일자',
-                position: 'bottom',
-                fontWeight: 'bold',
-              }}
-              tick={{ fontSize: 12 }}
-            />
-            {yAxisSettings.map(
-              axis =>
-                axis.selectedOptions.length !== 0 && (
-                  <YAxis
-                    key={axis.label}
-                    yAxisId={`${axis.label}`}
-                    orientation={`${axis.orientation}`}
-                    type="number"
-                    domain={
-                      axis.isAuto
-                        ? ['dataMin', 'dataMax']
-                        : [axis.min, axis.max]
-                    }
-                    fontSize={12}
-                    label={{
-                      value: axis.selectedOptions.map(
-                        option => ' ' + option.text
-                      ),
-                      angle: -90,
-                      position:
-                        axis.orientation === 'left'
-                          ? 'insideLeft'
-                          : 'insideRight',
-                      fontWeight: 'bold',
-                      dx: axis.orientation === 'left' ? 10 : -10,
-                      dy: axis.orientation === 'left' ? 50 : -50,
-                    }}
-                    allowDataOverflow={true}
-                    tickCount={10}
-                  />
-                )
-            )}
-            {datas.rstList2.map(el =>
-              yAxisSettings.map(axis =>
-                axis.selectedOptions.map(option => {
-                  const key = `${el.groupNm}-${option.text}`;
-                  return (
-                    <Line
-                      key={el.groupNm + ' - ' + option.text}
-                      data={processedData.filter(
-                        data => data.groupNm === el.groupNm
-                      )}
-                      yAxisId={axis.label}
-                      dataKey={option.value}
-                      name={`${el.groupNm} - ${option.text}`}
-                      stroke={getColorByKey(key)}
-                      connectNulls={false}
-                    />
-                  );
-                })
-              )
-            )}
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-      <FlexRowWrapper className="w-full justify-end">
-        <Button onClick={handleSaveImage} className="w-fit ">
-          이미지 저장
-        </Button>
-      </FlexRowWrapper>
-    </>
+    <ResponsiveContainer width="100%" height={700}>
+      <ComposedChart
+        data={processedData}
+        margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
+      >
+        <Legend
+          verticalAlign="bottom"
+          wrapperStyle={{
+            paddingTop: 40,
+            border: 'none',
+            outline: 'none',
+            backgroundColor: 'transparent',
+          }}
+        />
+        <Tooltip />
+        <CartesianGrid strokeDasharray="3" vertical={false} />
+        <XAxis
+          dataKey="groupdate"
+          allowDuplicatedCategory={false}
+          label={{
+            value: '측정일자',
+            position: 'bottom',
+            fontWeight: 'bold',
+          }}
+          tick={{ fontSize: 12 }}
+        />
+        {yAxisSettings.map(
+          axis =>
+            axis.selectedOptions.length !== 0 && (
+              <YAxis
+                key={axis.label}
+                yAxisId={`${axis.label}`}
+                orientation={`${axis.orientation}`}
+                type="number"
+                domain={
+                  axis.isAuto ? ['dataMin', 'dataMax'] : [axis.min, axis.max]
+                }
+                fontSize={12}
+                label={{
+                  value: axis.selectedOptions.map(option => ' ' + option.text),
+                  angle: -90,
+                  position:
+                    axis.orientation === 'left' ? 'insideLeft' : 'insideRight',
+                  fontWeight: 'bold',
+                  dx: axis.orientation === 'left' ? 10 : -10,
+                  dy: axis.orientation === 'left' ? 50 : -50,
+                }}
+                allowDataOverflow={true}
+                tickCount={10}
+              />
+            )
+        )}
+        {datas.rstList2.map(el =>
+          yAxisSettings.map(axis =>
+            axis.selectedOptions.map(option => {
+              const key = `${el.groupNm}-${option.text}`;
+              return (
+                <Line
+                  key={el.groupNm + ' - ' + option.text}
+                  data={processedData.filter(
+                    data => data.groupNm === el.groupNm
+                  )}
+                  yAxisId={axis.label}
+                  dataKey={option.value}
+                  name={`${el.groupNm} - ${option.text}`}
+                  stroke={getColorByKey(key)}
+                  connectNulls={false}
+                />
+              );
+            })
+          )
+        )}
+      </ComposedChart>
+    </ResponsiveContainer>
   );
 };
 

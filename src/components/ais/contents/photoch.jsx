@@ -1,5 +1,10 @@
+/**
+ * 광화학 컴포넌트
+ * chartType => 'line' || 'pie' || 'bar'
+ */
+
 import { useState } from 'react';
-import axios from 'axios';
+import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
 import { SearchDate } from '../search-date';
@@ -8,9 +13,10 @@ import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
 import { ContentChartFrame } from '../content-chart-frame';
-import { Loading } from '@/components/ui/loading';
 
-const PhotoCh = () => {
+const PhotoCh = ({ chartType }) => {
+  const postMutation = usePostRequest();
+
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
   const [searchCond, setSearchCond] = useState({
@@ -41,6 +47,8 @@ const PhotoCh = () => {
       return;
     }
 
+    if (postMutation.isLoading) return;
+
     setIsLoading(true);
     setContentData(undefined);
     const apiData = {
@@ -51,24 +59,24 @@ const PhotoCh = () => {
       polllist: pollutant,
       type: 'line',
     };
-    const apiRes = await axios.post(
-      `${import.meta.env.VITE_API_URL}/ais/srch/datas.do`,
-      apiData
-    );
+    let apiRes = await postMutation.mutateAsync({
+      url: 'ais/srch/datas.do',
+      data: apiData,
+    });
 
     setIsLoading(false);
     console.log(apiData);
     console.log(apiRes);
 
-    if (JSON.stringify(apiRes.data) === '{}') {
-      apiRes.data = {
+    if (JSON.stringify(apiRes) === '{}') {
+      apiRes = {
         headList: ['NO DATA'],
         headNameList: ['NO DATA'],
         rstList: ['NO DATA'],
       };
     }
 
-    setContentData(apiRes.data);
+    setContentData(apiRes);
   };
 
   return (
@@ -98,7 +106,11 @@ const PhotoCh = () => {
         isLoading={isLoading}
         fileName="광화학 분석"
       />
-      <ContentChartFrame datas={contentData} isLoading={isLoading} />
+      <ContentChartFrame
+        datas={contentData}
+        isLoading={isLoading}
+        type={chartType}
+      />
     </>
   );
 };

@@ -1,6 +1,4 @@
-// import React from 'react';
-// import { FixedSizeList as List } from 'react-window';
-
+import { useEffect, useRef, useState } from 'react';
 import {
   createColumnHelper,
   flexRender,
@@ -8,98 +6,80 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRef } from 'react';
 
-// const Table = ({ datas }) => {
-//   const rowHeight = 40; // 각 row 높이
-//   const rowCount = datas.rstList.length;
+// 텍스트 길이 측정 함수
+const measureTextWidth = (text, font = '14px Pretendard GOV') => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.font = font;
+  return ctx.measureText(text).width;
+};
 
-//   const Row = ({ index, style }) => {
-//     const data = datas.rstList[index];
+// 열 너비 자동 계산 함수
+const calculateColumnWidths = (
+  data,
+  headList,
+  headNameList,
+  sampleSize = 20
+) => {
+  const font = '14px Pretendard GOV';
+  const result = {};
 
-//     if (data === 'NO DATA') {
-//       return (
-//         <div
-//           style={style}
-//           className="flex items-center justify-center h-10 text-gray-500 border-b border-gray-300"
-//         >
-//           NO DATA
-//         </div>
-//       );
-//     }
+  headList.forEach((key, idx) => {
+    const headerText = headNameList[idx]?.replaceAll('&lt;/br&gt;', '') ?? key;
+    let maxWidth = measureTextWidth(headerText, font);
 
-//     return (
-//       <div
-//         style={style}
-//         key={data.groupdate + data.sido + index}
-//         className="flex bg-white hover:bg-blue-50 transition duration-100 border-b border-gray-200"
-//       >
-//         {datas.headList.map((head, idx) => (
-//           <div
-//             key={idx}
-//             className="flex-1 min-w-fit p-2 whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-100 text-center"
-//           >
-//             {data[head] === '' || data[head] === undefined ? '-' : data[head]}
-//           </div>
-//         ))}
-//       </div>
-//     );
-//   };
+    for (let i = 0; i < Math.min(sampleSize, data.length); i++) {
+      const value = String(data[i][key] ?? '-');
+      const width = measureTextWidth(value, font);
+      if (width > maxWidth) maxWidth = width;
+    }
 
-//   return (
-//     <div className="w-full max-h-[820px] border border-gray-300">
-//       {/* Header */}
-//       <div className="flex bg-gray-200 sticky top-0 z-10 text-center font-semibold border-b border-gray-300">
-//         {datas.headNameList.map((name, idx) =>
-//           name === 'NO DATA' ? (
-//             <div
-//               key={name}
-//               className="flex items-center justify-center h-10 text-gray-500 border-b border-gray-300"
-//             >
-//               {name}
-//             </div>
-//           ) : (
-//             <div
-//               key={name}
-//               className="flex-1 min-w-fit p-2 whitespace-nowrap overflow-hidden text-ellipsis border-r border-gray-300"
-//             >
-//               {name.replaceAll('&lt;/br&gt;', '')}
-//             </div>
-//           )
-//         )}
-//       </div>
+    result[key] = Math.ceil(maxWidth + 32);
+  });
 
-//       {/* Body (virtualized rows) */}
-//       <List height={780} itemCount={rowCount} itemSize={rowHeight} width="100%">
-//         {Row}
-//       </List>
-//     </div>
-//   );
-// };
-// Table.displayName = 'Table';
+  return result;
+};
 
+// Table 컴포넌트
 const Table = ({ datas }) => {
   const parentRef = useRef();
+  const [columns, setColumns] = useState([]);
 
-  // 📌 1. 컬럼 정의
+  // 컬럼 정의
   const columnHelper = createColumnHelper();
+  useEffect(() => {
+    if (!datas?.headList?.length || !datas?.rstList?.length) return;
 
-  const columns = datas.headList.map((key, idx) =>
-    columnHelper.accessor(row => row[key], {
-      id: key,
-      header: () => datas.headNameList[idx]?.replaceAll('&lt;/br&gt;', ''),
-      cell: info => info.getValue() ?? '-',
-    })
-  );
+    const columnWidths = calculateColumnWidths(
+      datas.rstList,
+      datas.headList,
+      datas.headNameList
+    );
 
-  // 📌 2. 테이블 세팅
+    const newColumns = datas.headList.map((key, idx) =>
+      columnHelper.accessor(row => row[key], {
+        id: key,
+        size: columnWidths[key],
+        header: () => datas.headNameList[idx]?.replaceAll('&lt;/br&gt;', ''),
+        cell: info =>
+          info.getValue() === '' || info.getValue() === undefined
+            ? '-'
+            : info.getValue(),
+      })
+    );
+
+    setColumns(newColumns);
+  }, [datas]);
+
+  // 테이블 세팅
   const table = useReactTable({
     data: datas.rstList,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // 📌 3. 가상화 세팅
+  // 가상화 세팅
   const rowVirtualizer = useVirtualizer({
     count: table.getRowModel().rows.length,
     getScrollElement: () => parentRef.current,
@@ -115,14 +95,15 @@ const Table = ({ datas }) => {
       className="w-full max-h-[820px] overflow-auto border-1 border-gray-300 border-t-2 border-t-gray-900"
       ref={parentRef}
     >
-      <table className="min-w-full table-auto text-center border-collapse">
+      <table className="w-full table-fixed text-center border-collapse">
         <thead className="sticky bg-gray-200 z-10">
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
                 <th
                   key={header.id}
-                  className="p-2 whitespace-nowrap overflow-hidden tracking-wider border-1 border-gray-300 border-t-0"
+                  className="p-2 whitespace-nowrap border-1 border-gray-300 border-t-0 "
+                  style={{ width: `${header.getSize()}px` }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -145,14 +126,17 @@ const Table = ({ datas }) => {
                   transform: `translateY(${virtualRow.start}px)`,
                   display: 'table',
                   width: '100%',
-                  tableLayout: 'fixed',
                 }}
                 className="hover:bg-blue-50 border-b border-gray-100"
               >
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-2 min-w-fit whitespace-nowrap border-r border-gray-200 text-ellipsis overflow-hidden"
+                    className="p-2 whitespace-nowrap border-1 border-gray-200"
+                    style={{
+                      width: `${cell.column.getSize()}px`,
+                      textAlign: 'center',
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
