@@ -233,7 +233,7 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
                 )}
                 {type === 'bar' && (
                   <div className="w-full h-full p-2 text-center text-xl font-semibold">
-                    Bar 차트 기능은 현재 개발 중입니다.
+                    📊 Bar 차트 기능은 현재 개발 중입니다.
                   </div>
                 )}
               </div>
