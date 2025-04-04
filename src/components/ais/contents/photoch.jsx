@@ -50,12 +50,12 @@ const PhotoCh = ({ chartType }) => {
     setContentData(undefined);
 
     const apiData = {
-      page: `photoch/${chartType}Graph`,
+      page: config.page,
       date: dateList,
       site: stationList,
       cond: searchCond,
       polllist: pollutant,
-      type: chartType,
+      type: config.type,
     };
 
     try {
@@ -262,15 +262,21 @@ const PHOTOCH_SETTINGS = {
     condList: condList,
     sect: 'time',
     region: 'site',
+    page: 'photoch/lineGraph',
+    type: 'line',
   },
   pie: {
     condList: pieCondList,
     sect: 'all',
     region: 'all',
+    page: 'photoch/pieGraph',
+    type: 'pie',
   },
   bar: {
     condList: condList,
     sect: 'time',
     region: 'site',
+    page: 'photoch/lineGraph',
+    type: 'line',
   },
 };

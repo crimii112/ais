@@ -12,58 +12,81 @@ import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { Loading } from '@/components/ui/loading';
 import { LineChart } from '@/components/ui/line-chart';
 import { PieChart } from '@/components/ui/pie-chart';
+import { BarChart } from '@/components/ui/bar-chart';
+
+const CHART_SETTINGS = {
+  line: {
+    onScale: true,
+    yAxisSettings: [
+      {
+        label: 'Y-Left1',
+        orientation: 'left',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Left2',
+        orientation: 'left',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Right1',
+        orientation: 'right',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Right2',
+        orientation: 'right',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+    ],
+  },
+  pie: {
+    onScale: false,
+    yAxisSettings: [
+      {
+        label: '물질',
+        selectedOptions: [],
+      },
+    ],
+  },
+  bar: {
+    onScale: true,
+    yAxisSettings: [
+      {
+        label: '물질',
+        orientation: 'left',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+    ],
+  },
+};
 
 const ContentChartFrame = ({ datas, isLoading, type, title }) => {
+  const config = CHART_SETTINGS[type];
+
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
   const [chartConfig, setChartConfig] = useState(null);
   const [yAxisSettings, setYAxisSettings] = useState([]);
 
   // chart type에 따른 yAxisSettings
   useEffect(() => {
-    if (type === 'line') {
-      setYAxisSettings([
-        {
-          label: 'Y-Left1',
-          orientation: 'left',
-          isAuto: true,
-          min: 0,
-          max: 100,
-          selectedOptions: [],
-        },
-        {
-          label: 'Y-Left2',
-          orientation: 'left',
-          isAuto: true,
-          min: 0,
-          max: 100,
-          selectedOptions: [],
-        },
-        {
-          label: 'Y-Right1',
-          orientation: 'right',
-          isAuto: true,
-          min: 0,
-          max: 100,
-          selectedOptions: [],
-        },
-        {
-          label: 'Y-Right2',
-          orientation: 'right',
-          isAuto: true,
-          min: 0,
-          max: 100,
-          selectedOptions: [],
-        },
-      ]);
-    } else if (type === 'pie') {
-      setYAxisSettings([
-        {
-          label: '물질',
-          selectedOptions: [],
-        },
-      ]);
-    }
-  }, [type]);
+    setYAxisSettings(config.yAxisSettings);
+  }, []);
 
   useEffect(() => {
     if (datas === undefined) return;
@@ -152,7 +175,7 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
                       setSelectedOptions(selected, idx)
                     }
                   />
-                  {type === 'line' && (
+                  {config.onScale && (
                     <>
                       <label className="flex flex-row items-center whitespace-nowrap">
                         <Input
@@ -208,11 +231,16 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
                     yAxisSettings={chartConfig.yAxisSettings}
                   />
                 )}
+                {type === 'bar' && (
+                  <div className="w-full h-full p-2 text-center text-xl font-semibold">
+                    Bar 차트 기능은 현재 개발 중입니다.
+                  </div>
+                )}
               </div>
               <FlexRowWrapper className="w-full justify-end">
                 <Button
                   onClick={handleSaveImage}
-                  className="w-fit p-4 bg-blue-900 text-white"
+                  className="w-fit px-4 bg-blue-900 text-white"
                 >
                   이미지 저장
                 </Button>
