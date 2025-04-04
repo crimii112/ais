@@ -34,6 +34,7 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
       return newRes;
     });
 
+    console.log(clonedData);
     setProcessedData(clonedData);
   }, [datas, pollutantList]);
 

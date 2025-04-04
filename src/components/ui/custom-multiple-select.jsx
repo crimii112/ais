@@ -7,6 +7,7 @@ export default function CustomMultiSelect({
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [dropdownPosition, setDropdownPosition] = useState('bottom');
 
   const wrapperRef = useRef(null);
   const scrollRef = useRef();
@@ -68,10 +69,28 @@ export default function CustomMultiSelect({
     setOutsideSelectedOptions(selectedOptions);
   }, [selectedOptions]);
 
-  // 드롭다운 열릴 때 인덱스 초기화
   useEffect(() => {
-    if (isOpen) {
-      setHighlightedIndex(0);
+    // 드롭다운 열릴 때 인덱스 초기화
+    if (isOpen) setHighlightedIndex(0);
+
+    // 드롭다운 열릴 때 위치를 계산하여 열리는 방향 설정(top/bottom)
+    if (isOpen && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const dropdownHeight = 240; // 드롭다운 예상 최대 높이 (tailwind: max-h-60 = 240px)
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+        setDropdownPosition('top');
+      } else {
+        setDropdownPosition('bottom');
+      }
+
+      // 스크롤도 함께
+      wrapperRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
     }
   }, [isOpen]);
 
@@ -148,7 +167,12 @@ export default function CustomMultiSelect({
             if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'Escape')
               setIsOpen(false);
           }}
-          className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow max-h-60 overflow-y-auto z-10"
+          className={`absolute left-0 right-0 bg-white border border-gray-300 rounded shadow max-h-60 overflow-y-auto z-10
+           ${
+             dropdownPosition === 'bottom'
+               ? 'top-full mt-1'
+               : 'bottom-full mb-1'
+           }`}
         >
           {filteredOptions.map((option, idx) => (
             <div

@@ -62,27 +62,34 @@ const CmmnAir = () => {
       cond: searchCond,
       polllist: pollutant,
     };
-    let apiRes = await postMutation.mutateAsync({
-      url: '/ais/srch/datas.do',
-      data: apiData,
-    });
-    setIsLoading(false);
-    console.log(apiData);
-    console.log(apiRes);
 
-    /*
-     * 검색조건-데이터구분==='월별누적||계절관리제누적||계절관리제연차누적||년도일별누적||전체일별누적||계절관리제일별누적' &&
-     * 물질및소수점자릿수-온도||습도==='checked'일 경우 NO DATA로 처리
-     */
-    if (JSON.stringify(apiRes) === '{}') {
-      apiRes.data = {
-        headList: ['NO DATA'],
-        headNameList: ['NO DATA'],
-        rstList: ['NO DATA'],
-      };
+    try {
+      let apiRes = await postMutation.mutateAsync({
+        url: 'ais/srch/datas.do',
+        data: apiData,
+      });
+
+      /*
+       * 검색조건-데이터구분==='월별누적||계절관리제누적||계절관리제연차누적||년도일별누적||전체일별누적||계절관리제일별누적' &&
+       * 물질및소수점자릿수-온도||습도==='checked'일 경우 NO DATA로 처리
+       */
+      if (JSON.stringify(apiRes) === '{}') {
+        apiRes = {
+          headList: ['NO DATA'],
+          headNameList: ['NO DATA'],
+          rstList: ['NO DATA'],
+        };
+      }
+
+      console.log(apiData);
+      console.log(apiRes);
+
+      setContentData(apiRes);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setContentData(apiRes);
   };
 
   return (

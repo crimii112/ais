@@ -56,9 +56,9 @@ const data = {
         },
         {
           heading: '특수 대기질 테이터 분석',
-          pathName: 'nav2-sub3',
-          title: 'nav2-sub3',
-          content: 'nav2-sub3',
+          pathName: 'photoChBar',
+          title: '광화학 성분 막대그래프',
+          content: <PhotoCh chartType="bar" />,
         },
       ],
     },
@@ -111,7 +111,7 @@ const AisNav = () => {
                 <ChevronDown size={16} />
               </MenuButton>
               <MenuItems className="absolute gap-2 left-1/2 transform -translate-x-1/2 z-50 shadow-lg p-4 flex flex-col bg-white rounded-md border-2">
-                {item.subItems.map((subItem, idx) => (
+                {item.subItems.map(subItem => (
                   <MenuItem key={subItem.pathName}>
                     {({ active }) => (
                       <button

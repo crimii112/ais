@@ -13,7 +13,7 @@ import { Loading } from '@/components/ui/loading';
 import { LineChart } from '@/components/ui/line-chart';
 import { PieChart } from '@/components/ui/pie-chart';
 
-const ContentChartFrame = ({ datas, isLoading, type }) => {
+const ContentChartFrame = ({ datas, isLoading, type, title }) => {
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
   const [chartConfig, setChartConfig] = useState(null);
   const [yAxisSettings, setYAxisSettings] = useState([]);
@@ -58,11 +58,7 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
     } else if (type === 'pie') {
       setYAxisSettings([
         {
-          label: 'Y-Left',
-          orientation: 'left',
-          isAuto: true,
-          min: 0,
-          max: 100,
+          label: '물질',
           selectedOptions: [],
         },
       ]);
@@ -118,15 +114,18 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
   const handleSaveImage = async () => {
     await document.fonts.ready;
 
-    const canvas = await html2canvas(document.getElementById('chart-wrapper'), {
-      backgroundColor: '#fff',
-      useCORS: true,
-      scale: 1.5,
-    });
+    const canvas = await html2canvas(
+      document.getElementById(`${title}-${type}-chart-wrapper`),
+      {
+        backgroundColor: '#fff',
+        useCORS: true,
+        scale: 1.5,
+      }
+    );
 
     const link = document.createElement('a');
-    if (type === 'line') link.download = 'lineChart.png';
-    else if (type === 'pie') link.download = 'pieChart.png';
+    if (type === 'line') link.download = `${title}-LineChart.png`;
+    else if (type === 'pie') link.download = `${title}-PieChart.png`;
     link.href = canvas.toDataURL();
     link.click();
   };
@@ -137,7 +136,7 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
         <Loading />
       ) : (
         <>
-          <FlexRowWrapper className="w-full gap-2 items-stretch justify-between">
+          <FlexRowWrapper className="w-full gap-2 items-stretch justify-between pb-4 border-b-2 border-gray-500">
             <FlexColWrapper className="gap-2">
               {yAxisSettings.map((axis, idx) => (
                 <GridWrapper
@@ -153,29 +152,33 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
                       setSelectedOptions(selected, idx)
                     }
                   />
-                  <label className="flex flex-row items-center whitespace-nowrap">
-                    <Input
-                      type="checkbox"
-                      checked={axis.isAuto}
-                      onChange={e => handleChangeCheckbox(e, idx)}
-                      className="mr-1"
-                    />
-                    자동
-                  </label>
-                  <Input
-                    type="number"
-                    value={axis.min}
-                    onChange={e => handleChangeScaleInput(e, idx, 'min')}
-                    readOnly={axis.isAuto}
-                    className="w-20 read-only:bg-gray-200 text-center"
-                  />
-                  <Input
-                    type="number"
-                    value={axis.max}
-                    onChange={e => handleChangeScaleInput(e, idx, 'max')}
-                    readOnly={axis.isAuto}
-                    className="w-20 read-only:bg-gray-200 text-center"
-                  />
+                  {type === 'line' && (
+                    <>
+                      <label className="flex flex-row items-center whitespace-nowrap">
+                        <Input
+                          type="checkbox"
+                          checked={axis.isAuto}
+                          onChange={e => handleChangeCheckbox(e, idx)}
+                          className="mr-1"
+                        />
+                        자동
+                      </label>
+                      <Input
+                        type="number"
+                        value={axis.min}
+                        onChange={e => handleChangeScaleInput(e, idx, 'min')}
+                        readOnly={axis.isAuto}
+                        className="w-20 read-only:bg-gray-200 text-center"
+                      />
+                      <Input
+                        type="number"
+                        value={axis.max}
+                        onChange={e => handleChangeScaleInput(e, idx, 'max')}
+                        readOnly={axis.isAuto}
+                        className="w-20 read-only:bg-gray-200 text-center"
+                      />
+                    </>
+                  )}
                 </GridWrapper>
               ))}
             </FlexColWrapper>
@@ -188,7 +191,10 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
           </FlexRowWrapper>
           {chartConfig && (
             <>
-              <div id="chart-wrapper" className="w-full h-full p-2">
+              <div
+                id={`${title}-${type}-chart-wrapper`}
+                className="w-full h-full p-2"
+              >
                 {type === 'line' && (
                   <LineChart
                     datas={chartConfig.datas}
@@ -196,10 +202,18 @@ const ContentChartFrame = ({ datas, isLoading, type }) => {
                     pollutantList={chartConfig.pollutantList}
                   />
                 )}
-                {type === 'pie' && <PieChart datas={chartConfig.datas} />}
+                {type === 'pie' && (
+                  <PieChart
+                    datas={chartConfig.datas}
+                    yAxisSettings={chartConfig.yAxisSettings}
+                  />
+                )}
               </div>
               <FlexRowWrapper className="w-full justify-end">
-                <Button onClick={handleSaveImage} className="w-fit ">
+                <Button
+                  onClick={handleSaveImage}
+                  className="w-fit p-4 bg-blue-900 text-white"
+                >
                   이미지 저장
                 </Button>
               </FlexRowWrapper>
