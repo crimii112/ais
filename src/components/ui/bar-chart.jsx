@@ -88,6 +88,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
         data={processedData}
         margin={{ top: 20, right: 30, bottom: 30, left: 10 }}
         barGap={0}
+        stackOffset="expand"
       >
         <CartesianGrid strokeDasharray="3" vertical={false} />
         <XAxis
@@ -135,7 +136,8 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
                   dataKey={option.value}
                   name={key}
                   fill={getColorByKey(key)}
-                  {...(graphType === 'stack' && { stackId: axis.label })}
+                  stackId={graphType === 'stack' ? axis.label : undefined}
+                  isAnimationActive={graphType === 'stack' ? false : true}
                 />
               );
             })

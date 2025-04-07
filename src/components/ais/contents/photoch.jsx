@@ -16,24 +16,16 @@ import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
 import { ContentChartFrame } from '../content-chart-frame';
 
-const PhotoCh = ({ chartType }) => {
+const PhotoCh = ({ type }) => {
   const postMutation = usePostRequest();
 
   // chartType에 따라 검색 조건 설정
-  const config = PHOTOCH_SETTINGS[chartType];
+  const config = PHOTOCH_SETTINGS[type];
 
   // 검색 조건 설정
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
-  const [searchCond, setSearchCond] = useState({
-    sect: config.sect,
-    region: config.region,
-    stats: 'avg',
-    unit: 'ppbV',
-    digit: 3,
-    percentile: 0.99,
-    statsDisabled: false,
-  });
+  const [searchCond, setSearchCond] = useState(config.initCond);
   const [pollutant, setPollutant] = useState([
     { id: 'Low', checked: true, signvalue: '#' },
   ]);
@@ -55,7 +47,7 @@ const PhotoCh = ({ chartType }) => {
       site: stationList,
       cond: searchCond,
       polllist: pollutant,
-      type: config.type,
+      ...(config.type && { type: config.type }),
     };
 
     try {
@@ -86,7 +78,11 @@ const PhotoCh = ({ chartType }) => {
   return (
     <>
       <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-        <SearchDate setDateList={setDateList} />
+        <SearchDate
+          setDateList={setDateList}
+          dateType={config.page === 'photoch/medianGraph' ? 'day' : 'all'}
+          type="photoch"
+        />
         <SearchStation
           title="광화학"
           siteType="photoch"
@@ -114,7 +110,7 @@ const PhotoCh = ({ chartType }) => {
       <ContentChartFrame
         datas={contentData}
         isLoading={isLoading}
-        type={chartType}
+        type={config.chartType}
         title="광화학"
       />
     </>
@@ -253,30 +249,110 @@ const pieCondList = [
   },
 ];
 
+const medianCondList = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [{ value: 'day', text: '일별' }],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터권역',
+    id: 'region',
+    content: [{ value: 'site', text: '측정소별' }],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터통계',
+    id: 'stats',
+    content: [{ value: 'avg', text: '평균' }],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터단위',
+    id: 'unit',
+    content: [
+      { value: 'ppbV', text: 'ppbV' },
+      { value: 'ppbC', text: 'ppbC' },
+      { value: 'kOH', text: 'kOH' },
+    ],
+  },
+  {
+    type: 'textInput',
+    title: '퍼센타일',
+    id: 'percentile',
+    placeholder: '0.99',
+    disabled: true,
+  },
+  {
+    type: 'textInput',
+    title: '소수점자릿수',
+    id: 'digit',
+    placeholder: '3',
+  },
+];
+
 const signList = [
   { id: 'Low', text: '~60% 미만', checked: true, signvalue: '#' },
 ];
 
 const PHOTOCH_SETTINGS = {
   line: {
-    condList: condList,
-    sect: 'time',
-    region: 'site',
     page: 'photoch/lineGraph',
+    chartType: 'line',
     type: 'line',
+    initCond: {
+      sect: 'time',
+      region: 'site',
+      stats: 'avg',
+      unit: 'ppbV',
+      digit: 3,
+      percentile: 0.99,
+      statsDisabled: false,
+    },
+    condList: condList,
   },
   pie: {
-    condList: pieCondList,
-    sect: 'all',
-    region: 'all',
     page: 'photoch/pieGraph',
+    chartType: 'pie',
     type: 'pie',
+    initCond: {
+      sect: 'all',
+      region: 'all',
+      stats: 'avg',
+      unit: 'ppbV',
+      digit: 3,
+      percentile: 0.99,
+    },
+    condList: pieCondList,
   },
   bar: {
-    condList: condList,
-    sect: 'time',
-    region: 'site',
     page: 'photoch/lineGraph',
+    chartType: 'bar',
     type: 'line',
+    initCond: {
+      sect: 'time',
+      region: 'site',
+      stats: 'avg',
+      unit: 'ppbV',
+      digit: 3,
+      percentile: 0.99,
+      statsDisabled: false,
+    },
+    condList: condList,
+  },
+  medianLine: {
+    page: 'photoch/medianGraph',
+    chartType: 'line',
+    initCond: {
+      sect: 'day',
+      region: 'site',
+      stats: 'avg',
+      unit: 'ppbV',
+      digit: 3,
+      percentile: 0.99,
+    },
+    condList: medianCondList,
   },
 };

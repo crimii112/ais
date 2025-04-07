@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/common';
 import usePostRequest from '@/hooks/usePostRequest';
 
-const SearchDate = ({ setDateList }) => {
+const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const postMutation = usePostRequest();
   const [multipleDateList, setMultipleDateList] = useState([]);
 
@@ -32,8 +32,15 @@ const SearchDate = ({ setDateList }) => {
   // 기간 선택 버튼 클릭 이벤트
   const handleClickSelectDate = async () => {
     const dataCategory = dataCategoryRef.current.value;
-    const startDateTime = `${startDateRef.current.value} ${startTimeRef.current.value}`;
-    const endDateTime = `${endDateRef.current.value} ${endTimeRef.current.value}`;
+    let startDateTime = '',
+      endDateTime = '';
+    if (dateType === 'all') {
+      startDateTime = `${startDateRef.current.value} ${startTimeRef.current.value}`;
+      endDateTime = `${endDateRef.current.value} ${endTimeRef.current.value}`;
+    } else if (dateType === 'day') {
+      startDateTime = `${startDateRef.current.value} 01`;
+      endDateTime = `${endDateRef.current.value} 24`;
+    }
 
     if (moment(startDateTime) > moment(endDateTime)) {
       alert('입력하신 끝 날짜가 시작 날짜보다 빠릅니다.');
@@ -72,6 +79,7 @@ const SearchDate = ({ setDateList }) => {
             ';' +
             endDateTime.replaceAll('-', '').replace(' ', ''),
         ],
+        ...(type !== undefined && { type: type }),
       };
 
       const apiRes = await postMutation.mutateAsync({
@@ -110,43 +118,74 @@ const SearchDate = ({ setDateList }) => {
   // 전체 삭제 버튼 클릭 이벤트
   const handleClickDeleteAll = () => setMultipleDateList([]);
 
+  const allDateSelect = (
+    <>
+      <Select ref={dataCategoryRef} className={'min-w-fit'}>
+        <option value="auto">자동 선택</option>
+        <option value="DATAR0">실시간 자료</option>
+        <option value="DATAR1">1차 확정 자료</option>
+        <option value="DATARF">확정 자료</option>
+      </Select>
+      <Input
+        type="date"
+        defaultValue={'2015-01-01'}
+        ref={startDateRef}
+        className="px-2"
+      />
+      <Select defaultValue={'01'} ref={startTimeRef}>
+        {times.map(time => (
+          <option key={time.value} value={time.value}>
+            {time.text}
+          </option>
+        ))}
+      </Select>
+      &nbsp;~&nbsp;
+      <Input
+        type="date"
+        defaultValue={'2015-01-31'}
+        ref={endDateRef}
+        className="px-2"
+      />
+      <Select defaultValue={'24'} ref={endTimeRef}>
+        {times.map(time => (
+          <option key={time.value} value={time.value}>
+            {time.text}
+          </option>
+        ))}
+      </Select>
+    </>
+  );
+
+  const daySelect = (
+    <>
+      <Select ref={dataCategoryRef} className="w-[130px]">
+        <option value="auto">자동 선택</option>
+        <option value="DATAR0">실시간 자료</option>
+        <option value="DATAR1">1차 확정 자료</option>
+        <option value="DATARF">확정 자료</option>
+      </Select>
+      <Input
+        type="date"
+        defaultValue={'2015-01-01'}
+        ref={startDateRef}
+        className="px-4"
+      />
+      &nbsp;~&nbsp;
+      <Input
+        type="date"
+        defaultValue={'2015-01-31'}
+        ref={endDateRef}
+        className="px-4"
+      />
+    </>
+  );
+
   return (
     <SearchCondFrame title="기간">
       <FlexRowWrapper className="items-stretch gap-1 w-full">
-        <FlexRowWrapper className="items-stretch grow gap-1">
-          <Select ref={dataCategoryRef} className={'min-w-fit'}>
-            <option value="auto">자동 선택</option>
-            <option value="DATAR0">실시간 자료</option>
-            <option value="DATAR1">1차 확정 자료</option>
-            <option value="DATARF">확정 자료</option>
-          </Select>
-          <Input
-            type="date"
-            defaultValue={'2015-01-01'}
-            ref={startDateRef}
-            className="px-2"
-          />
-          <Select defaultValue={'01'} ref={startTimeRef}>
-            {times.map(time => (
-              <option key={time.value} value={time.value}>
-                {time.text}
-              </option>
-            ))}
-          </Select>
-          &nbsp;~&nbsp;
-          <Input
-            type="date"
-            defaultValue={'2015-01-31'}
-            ref={endDateRef}
-            className="px-2"
-          />
-          <Select defaultValue={'24'} ref={endTimeRef}>
-            {times.map(time => (
-              <option key={time.value} value={time.value}>
-                {time.text}
-              </option>
-            ))}
-          </Select>
+        <FlexRowWrapper className="items-stretch grow gap-1 justify-baseline">
+          {dateType === 'all' && allDateSelect}
+          {dateType === 'day' && daySelect}
         </FlexRowWrapper>
         <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
           <Button
