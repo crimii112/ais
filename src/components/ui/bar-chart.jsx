@@ -38,9 +38,25 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
       return newRes;
     });
 
-    console.log(clonedData);
-    setProcessedData(clonedData);
-  }, [datas, pollutantList]);
+    if (graphType === '100-stack') {
+      const stackedData = clonedData.map(data => {
+        const newItem = { ...data };
+
+        pollutantList.forEach(option => {
+          const key = `${data.groupNm}_${option.value}`;
+          newItem[key] = data[option.value];
+        });
+
+        return newItem;
+      });
+
+      console.log(stackedData);
+      setProcessedData(stackedData);
+    } else {
+      console.log(clonedData);
+      setProcessedData(clonedData);
+    }
+  }, [datas, pollutantList, graphType]);
 
   const getNextColor = () => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
@@ -71,7 +87,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
             className="mr-1"
             onChange={handleChangeGraphType}
           />
-          기본형
+          기본
         </label>
         <label>
           <input
@@ -81,14 +97,24 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
             className="mr-1"
             onChange={handleChangeGraphType}
           />
-          스택형
+          누적 스택
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="type"
+            value="100-stack"
+            className="mr-1"
+            onChange={handleChangeGraphType}
+          />
+          100% 스택
         </label>
       </FlexRowWrapper>
       <BChart
         data={processedData}
         margin={{ top: 20, right: 30, bottom: 30, left: 10 }}
         barGap={0}
-        stackOffset="expand"
+        stackOffset={graphType === '100-stack' ? 'expand' : 'none'}
       >
         <CartesianGrid strokeDasharray="3" vertical={false} />
         <XAxis
@@ -105,10 +131,20 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           <YAxis
             key={axis.label}
             type="number"
-            domain={axis.isAuto ? ['auto', 'auto'] : [axis.min, axis.max]}
+            // domain={axis.isAuto ? ['auto', 'auto'] : [axis.min, axis.max]}
+            domain={
+              graphType === '100-stack'
+                ? [0, 1]
+                : axis.isAuto
+                ? ['auto', 'auto']
+                : [axis.min, axis.max]
+            }
             tickCount={10}
             fontSize={12}
             allowDataOverflow={true}
+            tickFormatter={value => {
+              return graphType === '100-stack' ? value * 100 + '%' : value;
+            }}
           />
         ))}
 
@@ -127,17 +163,26 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           yAxisSettings.map(axis =>
             axis.selectedOptions.map(option => {
               const key = `${el.groupNm}-${option.text}`;
+              console.log(key);
+
+              const filteredData = processedData.filter(
+                data => data.groupNm === el.groupNm
+              );
+              console.log(filteredData);
+
               return (
                 <Bar
                   key={key}
-                  data={processedData.filter(
-                    data => data.groupNm === el.groupNm
-                  )}
-                  dataKey={option.value}
+                  data={filteredData}
+                  dataKey={
+                    graphType === '100-stack'
+                      ? `${el.groupNm}_${option.value}`
+                      : option.value
+                  }
                   name={key}
                   fill={getColorByKey(key)}
-                  stackId={graphType === 'stack' ? axis.label : undefined}
-                  isAnimationActive={graphType === 'stack' ? false : true}
+                  // stackId={graphType === 'stack' ? el.groupNm : undefined}
+                  stackId={graphType === 'default' ? undefined : 'stackgroup'}
                 />
               );
             })
