@@ -38,25 +38,29 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
       return newRes;
     });
 
-    if (graphType === '100-stack') {
-      const stackedData = clonedData.map(data => {
-        const newItem = { ...data };
+    // 데이터 가공
+    // groupdate가 같은 데이터끼리 묶기
+    const newMap = {};
+    clonedData.forEach(data => {
+      const groupdate = data.groupdate;
+      const groupNm = data.groupNm;
 
-        pollutantList.forEach(option => {
-          const key = `${data.groupNm}_${option.value}`;
-          newItem[key] = data[option.value];
+      if (!newMap[groupdate]) newMap[groupdate] = { groupdate: groupdate };
+
+      Object.keys(data).forEach(key => {
+        yAxisSettings[0].selectedOptions.forEach(option => {
+          if (key === option.value) {
+            const newKey = `${groupNm}-${key}`;
+            newMap[groupdate][newKey] = data[key];
+          }
         });
-
-        return newItem;
       });
+    });
 
-      console.log(stackedData);
-      setProcessedData(stackedData);
-    } else {
-      console.log(clonedData);
-      setProcessedData(clonedData);
-    }
-  }, [datas, pollutantList, graphType]);
+    console.log(Object.values(newMap));
+
+    setProcessedData(Object.values(newMap));
+  }, [datas, pollutantList, graphType, yAxisSettings]);
 
   const getNextColor = () => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
@@ -78,43 +82,25 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
   return (
     <ResponsiveContainer width="100%" height={600}>
       <FlexRowWrapper className="justify-end gap-3 mr-3">
-        <label>
-          <input
-            type="radio"
-            name="type"
-            value="default"
-            defaultChecked
-            className="mr-1"
-            onChange={handleChangeGraphType}
-          />
-          기본
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="type"
-            value="stack"
-            className="mr-1"
-            onChange={handleChangeGraphType}
-          />
-          누적 스택
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="type"
-            value="100-stack"
-            className="mr-1"
-            onChange={handleChangeGraphType}
-          />
-          100% 스택
-        </label>
+        {chartTypeItems.map((item, idx) => (
+          <label>
+            <input
+              type="radio"
+              name="type"
+              value={item.value}
+              className="mr-1"
+              onChange={handleChangeGraphType}
+              defaultChecked={idx === 0 ? true : false}
+            />
+            {item.label}
+          </label>
+        ))}
       </FlexRowWrapper>
       <BChart
         data={processedData}
         margin={{ top: 20, right: 30, bottom: 30, left: 10 }}
         barGap={0}
-        stackOffset={graphType === '100-stack' ? 'expand' : 'none'}
+        stackOffset={graphType.startsWith('100-stack') ? 'expand' : 'none'}
       >
         <CartesianGrid strokeDasharray="3" vertical={false} />
         <XAxis
@@ -131,9 +117,8 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           <YAxis
             key={axis.label}
             type="number"
-            // domain={axis.isAuto ? ['auto', 'auto'] : [axis.min, axis.max]}
             domain={
-              graphType === '100-stack'
+              graphType.startsWith('100-stack')
                 ? [0, 1]
                 : axis.isAuto
                 ? ['auto', 'auto']
@@ -143,7 +128,9 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
             fontSize={12}
             allowDataOverflow={true}
             tickFormatter={value => {
-              return graphType === '100-stack' ? value * 100 + '%' : value;
+              return graphType.startsWith('100-stack')
+                ? value * 100 + '%'
+                : value;
             }}
           />
         ))}
@@ -159,40 +146,40 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           }}
         />
 
-        {datas.rstList2.map(el =>
-          yAxisSettings.map(axis =>
-            axis.selectedOptions.map(option => {
-              const key = `${el.groupNm}-${option.text}`;
-              console.log(key);
-
-              const filteredData = processedData.filter(
-                data => data.groupNm === el.groupNm
-              );
-              console.log(filteredData);
-
-              return (
-                <Bar
-                  key={key}
-                  data={filteredData}
-                  dataKey={
-                    graphType === '100-stack'
-                      ? `${el.groupNm}_${option.value}`
-                      : option.value
-                  }
-                  name={key}
-                  fill={getColorByKey(key)}
-                  // stackId={graphType === 'stack' ? el.groupNm : undefined}
-                  stackId={graphType === 'default' ? undefined : 'stackgroup'}
-                />
-              );
-            })
-          )
+        {datas.rstList2.map(item =>
+          yAxisSettings[0].selectedOptions.map(option => {
+            const key = `${item.groupNm}-${option.text}`;
+            return (
+              <Bar
+                key={key}
+                data={processedData}
+                dataKey={`${item.groupNm}-${option.value}`}
+                name={key}
+                fill={getColorByKey(key)}
+                stackId={
+                  graphType === 'default'
+                    ? undefined
+                    : graphType.includes('stack-group')
+                    ? item.groupNm
+                    : 'stackgroup'
+                }
+              />
+            );
+          })
         )}
       </BChart>
     </ResponsiveContainer>
   );
 };
 export { BarChart };
+
+const chartTypeItems = [
+  { value: 'default', label: '기본' },
+  { value: 'stack', label: '누적 스택' },
+  { value: 'stack-group', label: '누적 스택(그룹)' },
+  { value: '100-stack', label: '100% 스택' },
+  { value: '100-stack-group', label: '100% 스택(그룹)' },
+];
 
 const COLORS = [
   '#0088FE',
