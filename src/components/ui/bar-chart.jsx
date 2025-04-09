@@ -57,8 +57,6 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
       });
     });
 
-    console.log(Object.values(newMap));
-
     setProcessedData(Object.values(newMap));
   }, [datas, pollutantList, graphType, yAxisSettings]);
 
@@ -79,11 +77,62 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
     setGraphType(selectedType);
   };
 
+  // tooltip 커스텀
+  // null값 -> '-'로 표시
+  const CustomTooltip = ({ active, payload, label }) => {
+    const dataKeys = Object.keys(processedData[0]);
+    const allKeys = dataKeys.filter(key => key !== 'groupdate');
+
+    const payloadDataKeys = payload.map(p => p.dataKey);
+
+    const difference = allKeys.filter(key => !payloadDataKeys.includes(key));
+
+    if (active && payload && payload.length) {
+      return (
+        <div
+          style={{
+            background: '#fff',
+            padding: '10px',
+            border: '1px solid #ccc',
+          }}
+        >
+          <p className="pb-2">
+            <strong>{label}</strong>
+          </p>
+          {difference &&
+            difference.map(key => {
+              let newKey;
+              yAxisSettings[0].selectedOptions.forEach(option => {
+                if (key.includes(option.value)) {
+                  newKey = key.replace(option.value, option.text);
+                }
+              });
+
+              return (
+                <p key={key} style={{ color: getColorByKey(key) }}>
+                  {newKey} : -
+                </p>
+              );
+            })}
+          {payload.map((entry, index) => {
+            return (
+              <p key={index} style={{ color: entry.color }}>
+                {entry.name} : {entry.value != null ? entry.value : '-'}
+              </p>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <ResponsiveContainer width="100%" height={600}>
       <FlexRowWrapper className="justify-end gap-3 mr-3">
         {chartTypeItems.map((item, idx) => (
-          <label>
+          <label key={item.value}>
             <input
               type="radio"
               name="type"
@@ -135,7 +184,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           />
         ))}
 
-        <Tooltip />
+        <Tooltip content={CustomTooltip} />
         <Legend
           verticalAlign="bottom"
           wrapperStyle={{
@@ -155,13 +204,14 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
                 data={processedData}
                 dataKey={`${item.groupNm}-${option.value}`}
                 name={key}
-                fill={getColorByKey(key)}
+                fill={getColorByKey(`${item.groupNm}-${option.value}`)}
                 stackId={
                   graphType === 'default'
                     ? undefined
                     : graphType.includes('stack-group')
                     ? item.groupNm
                     : 'stackgroup'
+                  // ? option.value
                 }
               />
             );

@@ -32,7 +32,7 @@ const ContentTableFrame = ({ datas, isLoading, fileName }) => {
       text += '\n';
     });
 
-    copy(text);
+    copy(text, { format: 'text/plain' });
 
     alert('데이터가 복사되었습니다.');
   };
