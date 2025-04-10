@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { Loading } from '@/components/ui/loading';
-import { LineChart } from '@/components/ui/line-chart';
-import { PieChart } from '@/components/ui/pie-chart';
-import { BarChart } from '@/components/ui/bar-chart';
+import { LineChart } from '@/components/ui/chart-line';
+import { PieChart } from '@/components/ui/chart-pie';
+import { BarChart } from '@/components/ui/chart-bar';
 
 const CHART_SETTINGS = {
   line: {
@@ -100,7 +100,12 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
       arr[idx].text = headName;
     });
 
-    setPollutantList(arr.slice(2, 58));
+    // 'FLAG' 위치
+    const flagIndex = arr.findIndex(key => {
+      return key['value'] === 'rflag';
+    });
+
+    setPollutantList(arr.slice(2, flagIndex));
   }, [datas]);
 
   const handleChangeCheckbox = (e, idx) => {

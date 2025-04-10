@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/navbar';
 import { CmmnAir } from './contents/cmmnair';
 import { PhotoCh } from './contents/photoch';
+import { Toxic } from './contents/toxic';
+import { Test } from './contents/test';
 
 const data = {
   navItems: [
@@ -66,6 +68,12 @@ const data = {
           title: '광화학 일중간값 그래프',
           content: <PhotoCh type="medianLine" />,
         },
+        {
+          heading: '특수 대기질 테이터 분석',
+          pathName: 'toxic',
+          title: '유해자동 데이터 그래프',
+          content: <Toxic type="line" />,
+        },
       ],
     },
     {
@@ -74,9 +82,9 @@ const data = {
       subItems: [
         {
           heading: 'Nav3',
-          pathName: 'nav3-sub1',
-          title: 'nav3-sub1',
-          content: 'nav3-sub1',
+          pathName: 'test',
+          title: '테스트',
+          content: <Test />,
         },
         {
           heading: 'Nav3',
