@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   CartesianGrid,
-  ComposedChart,
+  LineChart as LChart,
   Legend,
   Line,
   ResponsiveContainer,
@@ -65,7 +65,7 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
 
   return (
     <ResponsiveContainer width="100%" height={700}>
-      <ComposedChart
+      <LChart
         data={processedData}
         margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
       >
@@ -136,7 +136,7 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
             })
           )
         )}
-      </ComposedChart>
+      </LChart>
     </ResponsiveContainer>
   );
 };
