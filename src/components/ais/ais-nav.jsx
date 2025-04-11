@@ -74,6 +74,24 @@ const data = {
           title: '유해자동 데이터 그래프',
           content: <Toxic type="line" />,
         },
+        {
+          heading: '특수 대기질 테이터 분석',
+          pathName: 'toxicPie',
+          title: '유해자동 파이그래프',
+          content: <Toxic type="pie" />,
+        },
+        {
+          heading: '특수 대기질 테이터 분석',
+          pathName: 'toxicBar',
+          title: '유해자동 막대그래프',
+          content: <Toxic type="bar" />,
+        },
+        {
+          heading: '특수 대기질 테이터 분석',
+          pathName: 'toxicMedian',
+          title: '유해자동 일중간값 그래프',
+          content: <Toxic type="medianLine" />,
+        },
       ],
     },
     {
@@ -82,8 +100,8 @@ const data = {
       subItems: [
         {
           heading: 'Nav3',
-          pathName: 'test',
-          title: '테스트',
+          pathName: 'testLog',
+          title: '테스트(log scale)',
           content: <Test />,
         },
         {

@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
-
-import { ContentChartFrame } from '../content-chart-frame';
-import { FlexRowWrapper, Button, Select, Option } from '@/components/ui/common';
 import {
+  CartesianGrid,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
+  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+
+import { FlexRowWrapper, Button, Select, Option } from '@/components/ui/common';
 import { ContentTableFrame } from '../content-table-frame';
 
 const Test = () => {
   const postMutation = usePostRequest();
 
+  const [apiData, setApiData] = useState();
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,6 +62,7 @@ const Test = () => {
         };
       }
 
+      setApiData(apiData);
       console.log(apiData);
       console.log(apiRes);
 
@@ -114,6 +117,7 @@ const Test = () => {
 
   return (
     <>
+      {apiData && <div>{JSON.stringify(apiData)}</div>}
       <Button onClick={handleClickSearchBtn}>검색</Button>
       <ContentTableFrame
         datas={contentData}
@@ -166,21 +170,88 @@ const Test = () => {
       )}
       {chartData && (
         <ResponsiveContainer width="100%" height={700}>
-          <ScatterChart>
-            <XAxis type="number" dataKey="x" name="성분" scale="log" />
-            <YAxis type="number" dataKey="y" name="" />
-            <Scatter data={chartData} />
+          <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }}>
+            <CartesianGrid strokeDasharray="3" vertical={false} />
+            <XAxis
+              type="number"
+              dataKey="x"
+              scale="log"
+              domain={[10.6, 10000]}
+              ticks={[10, 100, 1000, 10000]}
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis
+              type="number"
+              dataKey="y"
+              label={{
+                value: chartData[0].type + '(' + units[chartData[0].type] + ')',
+                angle: -90,
+                position: 'insideLeft',
+              }}
+              tick={{ fontSize: 12 }}
+            />
+            <Scatter data={chartData} fill={COLORS[0]} />
+            <Tooltip />
           </ScatterChart>
         </ResponsiveContainer>
       )}
-
-      {/* <ContentChartFrame
-        datas={contentData}
-        isLoading={isLoading}
-        type="line"
-        title="text"
-      /> */}
     </>
   );
 };
 export { Test };
+
+const units = {
+  'dN/dlogdP': '#/cm3',
+  'dS/dlogdP': 'um3/cm3',
+  'dV/dlogdP': 'ug/cm3',
+  'dM/dlogdP': 'm2#/cm3',
+};
+
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#a05195',
+  '#1f77b4',
+  '#d45087',
+  '#2ca02c',
+  '#17becf',
+  '#f95d6a',
+  '#9467bd',
+  '#ff7c43',
+  '#003f88',
+  '#d62728',
+  '#ffa600',
+  '#8c564b',
+  '#ff5733',
+  '#e377c2',
+  '#7f7f7f',
+  '#bcbd22',
+  '#4e79a7',
+  '#f28e2c',
+  '#e15759',
+  '#76b7b2',
+  '#59a14f',
+  '#edc949',
+  '#af7aa1',
+  '#b10026',
+  '#666666',
+  '#6a3d9a',
+  '#e31a1c',
+  '#b15928',
+  '#1b9e77',
+  '#084081',
+  '#fc4e2a',
+  '#7570b3',
+  '#fd8d3c',
+  '#0868ac',
+  '#e7298a',
+  '#feb24c',
+  '#66a61e',
+  '#fed976',
+  '#2b8cbe',
+  '#d95f02',
+  '#e6ab02',
+  '#4eb3d3',
+];

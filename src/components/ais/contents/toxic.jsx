@@ -1,3 +1,9 @@
+/*
+ * 유해대기 컴포넌트
+ * [유해자동 데이터 그래프 | 유해자동 파이그래프 | 유해자동 막대그래프 | 유해자동 일중간값 그래프]
+ * type => 'line' || 'pie' || 'bar' || 'medianLine'
+ */
+
 import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
@@ -69,7 +75,11 @@ const Toxic = ({ type }) => {
   return (
     <>
       <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-        <SearchDate setDateList={setDateList} type="toxic" />
+        <SearchDate
+          setDateList={setDateList}
+          dateType={config.page === 'toxic/medianGraph' ? 'day' : 'all'}
+          type="toxic"
+        />
         <SearchStation
           title="유해대기"
           siteType="toxic"
@@ -185,6 +195,128 @@ const condList = [
   },
 ];
 
+const pieCondList = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [{ value: 'all', text: '전체기간별' }],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터권역',
+    id: 'region',
+    content: [{ value: 'all', text: '전체' }],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터통계',
+    id: 'stats',
+    content: [
+      { value: 'avg', text: '평균' },
+      { value: 'min', text: '최소' },
+      { value: 'max', text: '최대' },
+      { value: 'count', text: '개수' },
+      { value: 'stdv', text: '표준편차' },
+      { value: 'median', text: '중앙값' },
+      { value: 'percentile', text: '백분위수' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터단위',
+    id: 'unit',
+    content: [
+      { value: 'ppb', text: 'ppb' },
+      { value: 'ug/m3', text: 'ug/m3' },
+    ],
+  },
+  {
+    type: 'textInput',
+    title: '퍼센타일',
+    id: 'percentile',
+    placeholder: '0.99',
+    disabled: true,
+  },
+  {
+    type: 'textInput',
+    title: '소수점자릿수',
+    id: 'digit',
+    placeholder: '3',
+  },
+];
+
+const medianCondList = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [
+      { value: 'day', text: '일별' },
+      { value: 'month', text: '월별' },
+      { value: 'year', text: '연별' },
+      { value: 'all', text: '전체기간별' },
+      { value: 'week', text: '요일별' },
+      { value: 'season', text: '계절별' },
+      { value: 'ys', text: '년도-계절별' },
+      { value: 'lys', text: '전년도-계절별' },
+      { value: 'accmonth', text: '월별누적' },
+      { value: 'accseason', text: '계절관리제누적' },
+      { value: 'allbymonth', text: '전체기간월별' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터권역',
+    id: 'region',
+    content: [
+      { value: 'site', text: '측정소별' },
+      { value: 'sido', text: '시도' },
+      { value: 'group1', text: '형별' },
+      { value: 'group2', text: '권역별' },
+      { value: 'group12', text: '형별/권역별' },
+      { value: 'all', text: '전체' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터통계',
+    id: 'stats',
+    content: [
+      { value: 'avg', text: '평균' },
+      { value: 'min', text: '최소' },
+      { value: 'max', text: '최대' },
+      { value: 'count', text: '개수' },
+      { value: 'stdv', text: '표준편차' },
+      { value: 'median', text: '중앙값' },
+      { value: 'percentile', text: '백분위수' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '데이터단위',
+    id: 'unit',
+    content: [
+      { value: 'ppbV', text: 'ppbV' },
+      { value: 'ppbC', text: 'ppbC' },
+      { value: 'kOH', text: 'kOH' },
+    ],
+  },
+  {
+    type: 'textInput',
+    title: '퍼센타일',
+    id: 'percentile',
+    placeholder: '0.99',
+    disabled: true,
+  },
+  {
+    type: 'textInput',
+    title: '소수점자릿수',
+    id: 'digit',
+    placeholder: '3',
+  },
+];
+
 const signList = [
   { id: 'Low', text: '~60% 미만', checked: true, signvalue: '#' },
 ];
@@ -203,5 +335,47 @@ const TOXIC_SETTINGS = {
       percentile: 0.99,
     },
     condList: condList,
+  },
+  pie: {
+    page: 'toxic/pieGraph',
+    chartType: 'pie',
+    type: 'line',
+    initCond: {
+      sect: 'all',
+      region: 'all',
+      stats: 'avg',
+      unit: 'ppb',
+      digit: 3,
+      percentile: 0.99,
+    },
+    condList: pieCondList,
+  },
+  bar: {
+    page: 'toxic/lineGraph',
+    chartType: 'bar',
+    type: 'line',
+    initCond: {
+      sect: 'time',
+      region: 'site',
+      stats: 'avg',
+      unit: 'ppb',
+      digit: 3,
+      percentile: 0.99,
+    },
+    condList: condList,
+  },
+  medianLine: {
+    page: 'toxic/medianGraph',
+    chartType: 'line',
+    type: 'line',
+    initCond: {
+      sect: 'day',
+      region: 'site',
+      stats: 'avg',
+      unit: 'ppb',
+      digit: 3,
+      percentile: 0.99,
+    },
+    condList: medianCondList,
   },
 };
