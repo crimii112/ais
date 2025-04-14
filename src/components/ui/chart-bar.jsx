@@ -89,13 +89,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
 
     if (active && payload && payload.length) {
       return (
-        <div
-          style={{
-            background: '#fff',
-            padding: '10px',
-            border: '1px solid #ccc',
-          }}
-        >
+        <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
           <p className="pb-2">
             <strong>{label}</strong>
           </p>

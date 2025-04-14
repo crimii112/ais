@@ -13,6 +13,7 @@ import { CmmnAir } from './contents/cmmnair';
 import { PhotoCh } from './contents/photoch';
 import { Toxic } from './contents/toxic';
 import { Test } from './contents/test';
+import { IntensivePsize } from './contents/intensive-psize';
 
 const data = {
   navItems: [
@@ -106,9 +107,9 @@ const data = {
         },
         {
           heading: 'Nav3',
-          pathName: 'nav3-sub2',
-          title: 'nav3-sub2',
-          content: 'nav3-sub2',
+          pathName: 'intensivePsize',
+          title: '(단일)입경크기분포',
+          content: <IntensivePsize />,
         },
         {
           heading: 'Nav3',

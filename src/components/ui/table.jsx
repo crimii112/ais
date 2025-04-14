@@ -20,7 +20,7 @@ const calculateColumnWidths = (
   data,
   headList,
   headNameList,
-  sampleSize = 20
+  sampleSize = 10000
 ) => {
   const font = '14px Pretendard GOV';
   const result = {};
@@ -96,14 +96,17 @@ const Table = ({ datas }) => {
       ref={parentRef}
     >
       <table className="w-full table-fixed text-center border-collapse">
-        <thead className="sticky bg-gray-200 z-10">
+        <thead className="sticky top-0 bg-gray-200 z-10">
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map(header => (
                 <th
                   key={header.id}
-                  className="p-2 whitespace-nowrap border-1 border-gray-300 border-t-0 "
-                  style={{ width: `${header.getSize()}px` }}
+                  className={`p-2 whitespace-nowrap border-1 border-gray-300 border-t-0`}
+                  style={{
+                    width: `${header.getSize()}px`,
+                    minWidth: `${header.getSize()}px`,
+                  }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -114,7 +117,13 @@ const Table = ({ datas }) => {
             </tr>
           ))}
         </thead>
-        <tbody style={{ height: `${totalSize}px`, position: 'relative' }}>
+        <tbody
+          style={{
+            display: 'block',
+            height: `${totalSize}px`,
+            position: 'relative',
+          }}
+        >
           {virtualRows.map(virtualRow => {
             const row = table.getRowModel().rows[virtualRow.index];
             return (
@@ -124,7 +133,7 @@ const Table = ({ datas }) => {
                   position: 'absolute',
                   top: 0,
                   transform: `translateY(${virtualRow.start}px)`,
-                  display: 'table',
+                  display: 'flex',
                   width: '100%',
                 }}
                 className="hover:bg-blue-50 border-b border-gray-100"
@@ -136,6 +145,7 @@ const Table = ({ datas }) => {
                     style={{
                       width: `${cell.column.getSize()}px`,
                       textAlign: 'center',
+                      flex: `0 0 ${cell.column.getSize()}px`,
                     }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

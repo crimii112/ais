@@ -33,7 +33,8 @@ const SearchCond = ({ condList, initialSearchCond, setSearchCond }) => {
               <Select
                 id={cond.id}
                 onChange={handleChangeCond}
-                className="p-1.5"
+                className={`p-1.5 ${cond.disabled && 'bg-gray-200'}`}
+                disabled={cond.disabled}
               >
                 {cond.content.map(item => (
                   <option key={item.value} value={item.value}>

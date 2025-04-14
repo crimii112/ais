@@ -2,6 +2,7 @@ import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 import {
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
@@ -11,6 +12,7 @@ import {
 } from 'recharts';
 
 import { FlexRowWrapper, Button, Select, Option } from '@/components/ui/common';
+import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { ContentTableFrame } from '../content-table-frame';
 
 const Test = () => {
@@ -27,8 +29,8 @@ const Test = () => {
   const handleClickSearchBtn = async () => {
     const apiData = {
       page: 'intensive/psize',
-      date: ['DATARF;2015/01/01 01;2015/01/05 24'],
-      site: [823001, 111001],
+      date: ['DATARF;2015/01/01 01;2015/01/01 24'],
+      site: [111001, 823001],
       cond: {
         sect: 'time',
         poll: 'calc',
@@ -70,7 +72,12 @@ const Test = () => {
         ...new Set(apiRes.rstList.map(item => item.groupdate)),
       ];
       const type = [...new Set(apiRes.rstList.map(item => item.type))];
-      const groupNm = apiRes.rstList2.map(item => item.groupNm);
+      const groupNm = apiRes.rstList2.map(item => ({
+        value: item.groupNm,
+        text: item.groupNm,
+      }));
+
+      console.log(groupNm);
 
       setOptions({
         groupdate: groupdate[0],
@@ -92,28 +99,65 @@ const Test = () => {
     const rawData = contentData.rstList.filter(data => {
       if (
         data.groupdate === options.groupdate &&
-        data.groupNm === options.groupNm &&
+        options.groupNm.some(item => item.value === data.groupNm) &&
         data.type === options.type
       ) {
         return data;
       }
     });
 
-    const { groupdate, groupNm, type, ...dataPoints } = rawData[0];
+    console.log(rawData);
 
-    const processedData = Object.entries(dataPoints)
-      .filter(([key, _]) => !isNaN(key))
-      .map(([key, value]) => ({
-        groupdate,
-        groupNm,
-        type,
-        x: Number(key) / 10,
-        y: parseFloat(value),
-      }));
+    if (rawData.length === 0) {
+      alert('그래프를 그릴 데이터가 없습니다. 조건을 확인해주세요.');
+      return;
+    }
+
+    const processedData = [];
+    rawData.forEach(data => {
+      const { groupdate, groupNm, type, ...dataPoints } = data;
+      const datas = Object.entries(dataPoints)
+        .filter(([key, _]) => !isNaN(key))
+        .map(([key, value]) => ({
+          groupdate,
+          groupNm,
+          type,
+          x: Number(key) / 10,
+          y: parseFloat(value),
+        }));
+
+      processedData.push(...datas);
+    });
 
     console.log(processedData);
     setChartData(processedData);
   };
+
+  const setSelectedGroupNms = selectedOptions => {
+    setOptions(prev => ({ ...prev, groupNm: selectedOptions }));
+  };
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+          <p className="font-semibold pb-1">{`${payload[0].payload.groupNm}`}</p>
+          <p>{`μg/m³ : ${payload[0].payload.x}`}</p>
+          <p>{`${payload[0].payload.type} : ${payload[0].payload.y}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  let groupedData = null;
+  if (chartData) {
+    groupedData = chartData.reduce((acc, curr) => {
+      if (!acc[curr.groupNm]) acc[curr.groupNm] = [];
+      acc[curr.groupNm].push(curr);
+      return acc;
+    }, {});
+  }
 
   return (
     <>
@@ -126,7 +170,7 @@ const Test = () => {
       />
 
       {optionSettings && (
-        <FlexRowWrapper className="w-full justify-start">
+        <FlexRowWrapper className="w-full justify-start items-stretch gap-2">
           <Select
             className="w-fit"
             onChange={e =>
@@ -139,18 +183,13 @@ const Test = () => {
               </Option>
             ))}
           </Select>
-          <Select
-            className="w-fit"
-            onChange={e =>
-              setOptions(prev => ({ ...prev, groupNm: e.target.value }))
+          <CustomMultiSelect
+            className="w-100"
+            options={optionSettings.groupNm}
+            setOutsideSelectedOptions={selected =>
+              setSelectedGroupNms(selected)
             }
-          >
-            {optionSettings.groupNm.map(name => (
-              <Option key={name} value={name}>
-                {name}
-              </Option>
-            ))}
-          </Select>
+          />
           <Select
             className="w-fit"
             onChange={e =>
@@ -168,7 +207,7 @@ const Test = () => {
           </Button>
         </FlexRowWrapper>
       )}
-      {chartData && (
+      {groupedData && (
         <ResponsiveContainer width="100%" height={700}>
           <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }}>
             <CartesianGrid strokeDasharray="3" vertical={false} />
@@ -190,8 +229,17 @@ const Test = () => {
               }}
               tick={{ fontSize: 12 }}
             />
-            <Scatter data={chartData} fill={COLORS[0]} />
-            <Tooltip />
+            {Object.entries(groupedData).map(([group, data], idx) => (
+              <Scatter
+                key={group}
+                name={group}
+                data={data}
+                fill={COLORS[idx % COLORS.length]}
+                stroke="black"
+              />
+            ))}
+            <Tooltip content={CustomTooltip} />
+            <Legend />
           </ScatterChart>
         </ResponsiveContainer>
       )}

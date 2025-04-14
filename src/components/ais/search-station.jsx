@@ -35,6 +35,7 @@ const SearchStation = ({
         '중금속',
         '산성강하물',
         '입경중량',
+        '대기환경연구소',
       ].includes(title)
     ) {
       setModalTabType(2);

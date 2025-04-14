@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function CustomMultiSelect({
   options,
   setOutsideSelectedOptions,
+  className,
 }) {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -127,7 +129,10 @@ export default function CustomMultiSelect({
   }, [highlightedIndex, isOpen]);
 
   return (
-    <div ref={wrapperRef} className="w-140 whitespace-normal relative">
+    <div
+      ref={wrapperRef}
+      className={cn('w-140 whitespace-normal relative', className)}
+    >
       {/* 셀렉트 박스 */}
       <div
         ref={scrollRef}
