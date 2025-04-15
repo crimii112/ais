@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronDown } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { useAisNav } from '@/context/AisNavContext';
 import {
@@ -151,7 +152,7 @@ const AisNav = () => {
                         className={`px-4 py-1 whitespace-nowrap text-center w-full cursor-pointer ${
                           active ? 'bg-blue-900 text-white' : ''
                         }`}
-                        onClick={() => setTabList([...tabList, subItem])}
+                        onClick={() => setTabList([...tabList, {...subItem, id: uuidv4()}])}
                       >
                         {subItem.title}
                       </button>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import html2canvas from 'html2canvas';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -15,10 +16,12 @@ import {
   Option,
 } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
+import { ScatterChart } from '@/components/ui/chart-scatter';
 
 const IntensivePsize = () => {
   const postMutation = usePostRequest();
 
+  // 검색 조건 설정
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
   const [pollutant, setPollutant] = useState([
@@ -37,15 +40,18 @@ const IntensivePsize = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
+  // 그래프 데이터 설정
   const [optionSettings, setOptionSettings] = useState({
     groupdate: [],
     type: [],
     groupNm: [],
-  });
-  const [options, setOptions] = useState({});
-  const [chartData, setChartData] = useState();
+  }); // 선택한 그래프 옵션들
+  const [options, setOptions] = useState({}); // select box에 들어갈 옵션들
+  const [chartSettings, setChartSettings] = useState();
 
   const handleClickSearchBtn = async () => {
+    setChartSettings(undefined);
+
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
@@ -65,7 +71,6 @@ const IntensivePsize = () => {
       ],
       digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
     };
-    console.log(apiData);
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -80,9 +85,6 @@ const IntensivePsize = () => {
           rstList: ['NO DATA'],
         };
       }
-
-      console.log(apiData);
-      console.log(apiRes);
 
       const groupdate = [
         ...new Set(apiRes.rstList.map(item => item.groupdate)),
@@ -99,8 +101,7 @@ const IntensivePsize = () => {
         groupNm: groupNm[0],
       });
 
-      setOptionSettings({ groupdate: groupdate, type: type, groupNm: groupNm });
-
+      setOptionSettings({ groupdate, type, groupNm });
       setContentData(apiRes);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -113,8 +114,85 @@ const IntensivePsize = () => {
     setOptions(prev => ({ ...prev, groupNm: selectedOptions }));
   };
 
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload?.length) {
+      const { groupNm, x, type, y } = payload[0].payload;
+      return (
+        <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+          <p className="font-semibold pb-1">{groupNm}</p>
+          <p>{`μg/m³ : ${x}`}</p>
+          <p>{`${type} : ${y}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // 그래프 그리기 버튼 클릭 핸들러
+  const handleClickDrawChart = () => {
+    const rawData = contentData.rstList.filter(
+      data =>
+        data.groupdate === options.groupdate &&
+        options.groupNm.some(item => item.value === data.groupNm) &&
+        data.type === options.type
+    );
+
+    if (!rawData.length) {
+      alert('그래프를 그릴 데이터가 없습니다. 조건을 확인해주세요.');
+      return;
+    }
+
+    const processedData = rawData.flatMap(
+      ({ groupdate, groupNm, type, ...dataPoints }) =>
+        Object.entries(dataPoints)
+          .filter(([key, _]) => !isNaN(key))
+          .map(([key, value]) => ({
+            groupdate,
+            groupNm,
+            type,
+            x: Number(key) / 10,
+            y: parseFloat(value),
+          }))
+    );
+
+    const groupedData = processedData.reduce((acc, curr) => {
+      acc[curr.groupNm] = acc[curr.groupNm] || [];
+      acc[curr.groupNm].push(curr);
+      return acc;
+    }, {});
+
+    setChartSettings({
+      xAxis: {
+        dataKey: 'x',
+        scale: 'log',
+        domain: [10.6, 10000],
+        ticks: [10, 100, 1000, 10000],
+      },
+      yAxis: {
+        dataKey: 'y',
+        label: `${options.type} (${typeUnits[options.type]})`,
+      },
+      data: groupedData,
+      tooltip: CustomTooltip,
+    });
+  };
+
+  // 그래프 이미지로 저장
+  const handleSaveImage = async () => {
+    await document.fonts.ready;
+    const canvas = await html2canvas(
+      document.getElementById(`입경크기분포-scatter-chart-wrapper`),
+      { backgroundColor: '#fff', useCORS: true, scale: 1.5 }
+    );
+    const link = document.createElement('a');
+    link.download = `입경크기분포-scatterChart.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
   return (
     <>
+      {/* 데이터 검색 조건 설정 */}
       <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
         <SearchDate setDateList={setDateList} type="intensive" />
         <SearchStation
@@ -136,15 +214,18 @@ const IntensivePsize = () => {
         />
       </SearchFrame>
 
+      {/* 결과 테이블 */}
       <ContentTableFrame
         datas={contentData}
         isLoading={isLoading}
         fileName="(단일)입경크기분포"
       />
+
+      {/* 그래프 검색 조건 설정 */}
       <FlexColWrapper className="w-full p-6 gap-2 border-2 border-gray-300 items-baseline">
         <FlexRowWrapper className="w-full justify-start items-stretch gap-2">
           <Select
-            className="w-fit"
+            className="w-fit min-w-40"
             onChange={e =>
               setOptions(prev => ({ ...prev, groupdate: e.target.value }))
             }
@@ -158,12 +239,10 @@ const IntensivePsize = () => {
           <CustomMultiSelect
             className="w-100"
             options={optionSettings.groupNm}
-            setOutsideSelectedOptions={selected =>
-              setSelectedGroupNms(selected)
-            }
+            setOutsideSelectedOptions={setSelectedGroupNms}
           />
           <Select
-            className="w-fit"
+            className="w-fit min-w-40"
             onChange={e =>
               setOptions(prev => ({ ...prev, type: e.target.value }))
             }
@@ -174,15 +253,34 @@ const IntensivePsize = () => {
               </Option>
             ))}
           </Select>
-          <Button className="w-fit">그래프 그리기</Button>
+          <Button
+            className="w-fit px-5 bg-blue-900 text-white"
+            onClick={handleClickDrawChart}
+          >
+            그래프 그리기
+          </Button>
         </FlexRowWrapper>
+
+        {/* 그래프 그리기 */}
+        {chartSettings && (
+          <>
+            <div
+              id={`입경크기분포-scatter-chart-wrapper`}
+              className="w-full h-full p-2"
+            >
+              <ScatterChart chartSettings={chartSettings} />
+            </div>
+            <FlexRowWrapper className="w-full justify-end">
+              <Button
+                onClick={handleSaveImage}
+                className="w-fit px-4 bg-blue-900 text-white"
+              >
+                이미지 저장
+              </Button>
+            </FlexRowWrapper>
+          </>
+        )}
       </FlexColWrapper>
-      {/* <ContentChartFrame
-        datas={contentData}
-        isLoading={isLoading}
-        type="scatter"
-        title="(단일)입경크기분포"
-      /> */}
     </>
   );
 };
@@ -249,3 +347,10 @@ const condList = [
     ],
   },
 ];
+
+const typeUnits = {
+  'dN/dlogdP': '#/cm3',
+  'dS/dlogdP': 'um3/cm3',
+  'dV/dlogdP': 'ug/cm3',
+  'dM/dlogdP': 'm2#/cm3',
+};

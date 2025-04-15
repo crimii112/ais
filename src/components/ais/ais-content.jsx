@@ -1,15 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAisNav } from '@/context/AisNavContext';
 import { FlexRowWrapper, FlexColWrapper, Button } from '@/components/ui/common';
 
+
 const AisContent = () => {
   const { tabList, setTabList } = useAisNav();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [prevTabListLength, setPrevTabListLength] = useState(0);
   const [clickedCloseBtnIdx, setClickedCloseBtnIdx] = useState();
+
+  // 탭 콘텐츠 캐싱용 ref
+  const tabContentCacheRef = useRef({});
+
+  // 캐시 초기화/추가 처리
+  const memoizedTabContents = useMemo(() => {
+    const cache = { ...tabContentCacheRef.current };
+
+    tabList.forEach((tab) => {
+      if (!cache[tab.id]) {
+        cache[tab.id] = (
+          <FlexColWrapper className="gap-4 w-full h-full p-4">
+            {tab.content}
+          </FlexColWrapper>
+        );
+      }
+    });
+
+    tabContentCacheRef.current = cache;
+    return cache;
+  }, [tabList]);
 
   // activeTab 관리
   useEffect(() => {
@@ -24,9 +46,9 @@ const AisContent = () => {
       if (tabList.length === activeTabIndex) {
         setActiveTabIndex(tabList.length - 1);
       } else if (clickedCloseBtnIdx > activeTabIndex) {
-        if (clickedCloseBtnIdx != tabList.length) {
+        if (clickedCloseBtnIdx !== tabList.length) {
           setActiveTabIndex(activeTabIndex);
-        } else if (clickedCloseBtnIdx - activeTabIndex != 1) {
+        } else if (clickedCloseBtnIdx - activeTabIndex !== 1) {
           setActiveTabIndex(activeTabIndex);
         } else {
           setActiveTabIndex(tabList.length - 1);
@@ -73,12 +95,10 @@ const AisContent = () => {
       </FlexRowWrapper>
       {tabList.map((tab, idx) => (
         <TabContentWrapper
-          key={idx}
+          key={tab.id}
           className={`flex-col ${idx === activeTabIndex ? 'flex' : 'hidden'}`}
         >
-          <FlexColWrapper className="gap-4 w-full h-full p-4">
-            {tab.content}
-          </FlexColWrapper>
+          {memoizedTabContents[tab.id]}
         </TabContentWrapper>
       ))}
     </div>

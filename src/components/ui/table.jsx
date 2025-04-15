@@ -124,36 +124,51 @@ const Table = ({ datas }) => {
             position: 'relative',
           }}
         >
-          {virtualRows.map(virtualRow => {
-            const row = table.getRowModel().rows[virtualRow.index];
-            return (
-              <tr
-                key={row.id}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  transform: `translateY(${virtualRow.start}px)`,
-                  display: 'flex',
-                  width: '100%',
-                }}
-                className="hover:bg-blue-50 border-b border-gray-100"
+          {datas.rstList[0] === 'NO DATA' ? (
+            <tr style={{ display: 'flex', width: '100%' }}>
+              <td
+                colSpan={columns.length}
+                className="text-center p-2 bg-gray-50"
+                style={{ flex: '1 1 100%' }}
               >
-                {row.getVisibleCells().map(cell => (
-                  <td
-                    key={cell.id}
-                    className="p-2 whitespace-nowrap border-1 border-gray-200"
-                    style={{
-                      width: `${cell.column.getSize()}px`,
-                      textAlign: 'center',
-                      flex: `0 0 ${cell.column.getSize()}px`,
-                    }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
+                NO DATA
+              </td>
+            </tr>
+          ) : (
+            virtualRows.map(virtualRow => {
+              const row = table.getRowModel().rows[virtualRow.index];
+              return (
+                <tr
+                  key={row.id}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    display: 'flex',
+                    width: '100%',
+                  }}
+                  className="border-b border-gray-100"
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <td
+                      key={cell.id}
+                      className="p-2 whitespace-nowrap hover:bg-blue-50 border-1 border-gray-200 "
+                      style={{
+                        width: `${cell.column.getSize()}px`,
+                        textAlign: 'center',
+                        flex: `0 0 ${cell.column.getSize()}px`,
+                      }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>

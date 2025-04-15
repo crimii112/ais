@@ -157,6 +157,8 @@ const Test = () => {
       acc[curr.groupNm].push(curr);
       return acc;
     }, {});
+
+    console.log(groupedData);
   }
 
   return (

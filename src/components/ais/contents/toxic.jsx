@@ -44,7 +44,6 @@ const Toxic = ({ type }) => {
       cond: searchCond,
       polllist: pollutant,
       type: config.type,
-      // ...(config.type && { type: config.type }),
     };
 
     try {
