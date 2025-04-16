@@ -28,7 +28,7 @@ const AisContent = () => {
     tabList.forEach(tab => {
       if (!cache[tab.id]) {
         cache[tab.id] = (
-          <FlexColWrapper className="gap-4 w-full h-full p-6 bg-gradient-to-br from-blue-50 to-blue-100">
+          <FlexColWrapper className="gap-4 w-full h-full p-6">
             {tab.content}
           </FlexColWrapper>
         );
@@ -77,7 +77,7 @@ const AisContent = () => {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full h-full">
       <FlexRowWrapper className="w-full h-12 justify-start overflow-x-auto scrollbar-hide whitespace-nowrap bg-gradient-to-r from-blue-900 to-blue-800 shadow-md">
         {tabList.map((tab, idx) => (
           <FlexRowWrapper
@@ -138,7 +138,7 @@ const TabContentWrapper = ({ className, children, ...props }) => {
   return (
     <div 
       className={cn(
-        'absolute w-full bg-white/90 backdrop-blur-sm', 
+        'absolute w-full bg-white', 
         className
       )} 
       {...props}
