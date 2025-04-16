@@ -12,6 +12,19 @@ import {
 } from '@/components/ui/common';
 import usePostRequest from '@/hooks/usePostRequest';
 
+
+/**
+ * 기간 선택 컴포넌트
+ * - dateType에 따라 선택 항목이 달라집니다.
+ * 1. 'all': 년-월-일 시간 선택
+ * 2. 'day': 년-월-일 선택
+ * @param {function} setDateList - 기간 리스트 설정 함수
+ * @param {string} dateType - 기간 타입 ['all', 'day']
+ * @param {string} type - 기간 타입 ['photoch', 'toxic', 'intensive']
+ * @returns {React.ReactNode} 기간 선택 컴포넌트
+ */
+
+
 const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const postMutation = usePostRequest();
   const [multipleDateList, setMultipleDateList] = useState([]);
@@ -118,6 +131,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   // 전체 삭제 버튼 클릭 이벤트
   const handleClickDeleteAll = () => setMultipleDateList([]);
 
+  // 기간 선택 컴포넌트 - 년-월-일 시간 선택
   const allDateSelect = (
     <>
       <Select ref={dataCategoryRef} className={'min-w-fit'}>
@@ -156,6 +170,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     </>
   );
 
+  // 기간 선택 컴포넌트 - 년-월-일 선택
   const daySelect = (
     <>
       <Select ref={dataCategoryRef} className="w-[130px]">
@@ -189,7 +204,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
         </FlexRowWrapper>
         <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
           <Button
-            className="border-2 border-blue-900 bg-white"
+            className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
             onClick={handleClickSelectDate}
           >
             기간 선택
@@ -204,7 +219,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
           </Select>
         </FlexRowWrapper>
         <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
-          <Button className="px-0 border-2 border-blue-900 bg-white">
+          <Button className="px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
             관리기간선택
           </Button>
           <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>

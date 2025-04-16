@@ -3,6 +3,18 @@ import { useEffect, useState } from 'react';
 import { SearchCondFrame } from './search-cond-frame';
 import { FlexRowWrapper, GridWrapper } from '@/components/ui/common';
 
+
+/**
+ * 물질 및 소수점 자릿수 || 자료획득률 선택 컴포넌트  
+ * @param {string} title - 컴포넌트 타이틀 ['물질 및 소수점 자릿수' | '자료획득률']
+ * @param {Object} pollutantList - 물질 리스트
+ * @param {Object} signList - 자료 획득률 리스트
+ * @param {Object} initialPollutant - 초기 리스트
+ * @param {function} setPollutant - 물질 또는 자료획득률 리스트 설정 함수
+ * @returns {React.ReactNode} 물질 및 소수점 자릿수 || 자료획득률 선택 컴포넌트
+ */
+
+
 const SearchPollutant = ({
   title = '물질 및 소수점 자릿수',
   pollutantList,
@@ -16,6 +28,7 @@ const SearchPollutant = ({
     setPollutant(pollutantJson);
   }, [pollutantJson]);
 
+  // 체크박스 변경 이벤트
   const handleChangeChecked = e => {
     const pollId = e.target.id;
     const pollChecked = e.target.checked;
@@ -28,6 +41,7 @@ const SearchPollutant = ({
     setPollutantJson(pollutantJson);
   };
 
+  // 입력 값 변경 이벤트
   const handleChangeInputValue = e => {
     const pollValueCategory = e.target.id.substring(0, 5);
     const pollId = e.target.id.substring(5);
@@ -50,7 +64,7 @@ const SearchPollutant = ({
 
   return (
     <SearchCondFrame title={title}>
-      {pollutantList && (
+      {pollutantList && (     // 물질 리스트 존재 시
         <GridWrapper className="grid-cols-4 gap-1">
           {pollutantList.map(poll => (
             <FlexRowWrapper className="justify-between gap-0.5" key={poll.id}>
@@ -86,7 +100,7 @@ const SearchPollutant = ({
           ))}
         </GridWrapper>
       )}
-      {signList && (
+      {signList && (     // 자료획득률 리스트 존재 시
         <GridWrapper className="items-stretch gap-1">
           {signList.map(sign => (
             <FlexRowWrapper className="justify-between gap-0.5" key={sign.id}>

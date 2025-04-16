@@ -1,6 +1,11 @@
 import { FadeLoader } from 'react-spinners';
 import { FlexRowWrapper } from './common';
 
+/**
+ * 로딩 컴포넌트
+ * @returns {React.ReactNode}
+ * @example <Loading />
+ */
 const Loading = () => {
   return (
     <FlexRowWrapper className="w-full py-12">

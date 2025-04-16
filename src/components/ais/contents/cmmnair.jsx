@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -7,6 +7,14 @@ import { SearchStation } from '../search-station';
 import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
+
+
+/**
+ * 일반대기 검색
+ * - 기간, 대기측정소, 검색조건, 물질 선택 후 검색 버튼 클릭 시 데이터 조회
+ * @returns {React.ReactNode} 일반대기 검색 페이지
+ */
+
 
 const CmmnAir = () => {
   const postMutation = usePostRequest();
@@ -38,30 +46,26 @@ const CmmnAir = () => {
     { id: 'Low', checked: true, signvalue: '##' },
   ]);
 
-  // api result data
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClickSearchBtn = async () => {
-    if (dateList.length === 0) {
-      alert('기간을 설정하여 주십시오.');
-      return;
-    }
-    if (stationList.length === 0) {
-      alert('대기측정소를 설정하여 주십시오.');
-      return;
-    }
+  // API 데이터 메모이제이션
+  const apiData = useMemo(() => ({
+    page: 'arpltn/cmmair',
+    date: dateList,
+    site: stationList,
+    cond: searchCond,
+    polllist: pollutant,
+  }), [dateList, stationList, searchCond, pollutant]);
 
+  // 검색 버튼 핸들러 메모이제이션
+  const handleClickSearchBtn = useCallback(async () => {
+    if (!dateList.length) return alert('기간을 설정하여 주십시오.');
+    if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
 
     setIsLoading(true);
-    const apiData = {
-      page: 'arpltn/cmmair',
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-    };
+    setContentData(undefined);
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -69,10 +73,7 @@ const CmmnAir = () => {
         data: apiData,
       });
 
-      /*
-       * 검색조건-데이터구분==='월별누적||계절관리제누적||계절관리제연차누적||년도일별누적||전체일별누적||계절관리제일별누적' &&
-       * 물질및소수점자릿수-온도||습도==='checked'일 경우 NO DATA로 처리
-       */
+      // apiRes가 비어있을 경우 기본값 설정
       if (JSON.stringify(apiRes) === '{}') {
         apiRes = {
           headList: ['NO DATA'],
@@ -90,7 +91,7 @@ const CmmnAir = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiData, postMutation, dateList.length, stationList.length]);
 
   return (
     <>
@@ -120,6 +121,11 @@ const CmmnAir = () => {
 
 export { CmmnAir };
 
+/**
+ * 검색 조건 리스트
+ * @type {Array}
+ * @description SearchCond 컴포넌트에 전달할 리스트입니다.
+ */
 const condList = [
   {
     type: 'selectBox',
@@ -207,6 +213,11 @@ const condList = [
   },
 ];
 
+/**
+ * 물질 및 소수점 자릿수 리스트
+ * @type {Array}
+ * @description SearchPollutant 컴포넌트에 전달할 리스트입니다.
+ */
 const pollutantList = [
   {
     id: 'so2',

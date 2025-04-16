@@ -1,6 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
+
+/**
+ * 커스텀 다중 선택 컴포넌트
+ * @param {Object[]} options - 옵션 배열
+ * @param {Function} setOutsideSelectedOptions - 외부 선택된 옵션 설정 함수
+ * @param {string} className - 클래스 이름
+ * @example options = [{value: '1', text: '옵션1'}, {value: '2', text: '옵션2'}, ...]
+ * @returns {React.ReactNode} 커스텀 다중 선택 컴포넌트
+ */
+
+
 export default function CustomMultiSelect({
   options,
   setOutsideSelectedOptions,
@@ -15,10 +26,12 @@ export default function CustomMultiSelect({
   const scrollRef = useRef();
   const optionRefs = useRef([]);
 
+  // 선택되지 않은 옵션 필터링
   const filteredOptions = options.filter(
     option => !selectedOptions.includes(option)
   );
 
+  // 옵션 추가
   const addOption = option => {
     if (!selectedOptions.includes(option)) {
       setSelectedOptions([...selectedOptions, option]);
@@ -26,6 +39,7 @@ export default function CustomMultiSelect({
     setIsOpen(false); // 드롭다운 닫기
   };
 
+  // 옵션 제거
   const removeOption = option => {
     setSelectedOptions(selectedOptions.filter(o => o !== option));
   };
@@ -71,6 +85,7 @@ export default function CustomMultiSelect({
     setOutsideSelectedOptions(selectedOptions);
   }, [selectedOptions]);
 
+  // 드롭다운 열릴 때
   useEffect(() => {
     // 드롭다운 열릴 때 인덱스 초기화
     if (isOpen) setHighlightedIndex(0);
@@ -149,7 +164,7 @@ export default function CustomMultiSelect({
           {selectedOptions.map(option => (
             <div
               key={option.value}
-              className="border-2 border-blue-900 px-2 py-0.5 rounded flex items-center gap-0.5"
+              className="border-2 border-blue-700 px-2 py-0.5 rounded flex items-center gap-0.5"
               onClick={e => {
                 e.stopPropagation();
                 removeOption(option);

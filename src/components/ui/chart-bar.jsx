@@ -12,13 +12,30 @@ import {
 
 import { FlexRowWrapper } from './common';
 
-const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
-  const [processedData, setProcessedData] = useState([]);
+
+/**
+ * 바 차트 컴포넌트
+ * - 정해진 datas, axisSettings 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
+ * - X축은 측정일자(groupdate) 고정, Y축은 선택한 물질 데이터 값 표시
+ * @param {Object} datas - 데이터(rstList 형태 고정)
+ * @param {Object} axisSettings - 축 설정 
+ * @param {Object} pollutantList - 물질 리스트 
+ * @example datas = [rstList: [{groupdate: '2024-01-01', groupNm: '인천.강화군.석모리', data01: 10, data02: 20, ..., rflag: null, ...}, ...], ...]
+ * @example axisSettings = [{ label: '물질', selectedOptions: [{value: 'data04', text: '4)Propylene'}] }]
+ * @example pollutantList = [{value: 'data01', text: '1)Ethane'}, {value: 'data02', text: '2)Ethylene'}]
+ * @returns {React.ReactNode} 바 차트 컴포넌트
+ */
+
+
+const BarChart = ({ datas, axisSettings, pollutantList }) => {
+  const [processedData, setProcessedData] = useState([]); // 처리된 데이터([{groupdate: '2015/01/01 01', '인천.강화군.석모리-data04': 10, '인천.남동구.구월동-data04': 20, ...}])
   const colorMapRef = useRef({}); // 여기에 색상 저장
   const colorIndexRef = useRef(0);
 
-  const [graphType, setGraphType] = useState('default');
+  // 그래프 타입(['default', 'stack', 'stack-group', '100-stack', '100-stack-group'])
+  const [graphType, setGraphType] = useState('default'); 
 
+  // 데이터 처리
   useEffect(() => {
     if (!datas || !datas.rstList) return;
 
@@ -38,7 +55,6 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
       return newRes;
     });
 
-    // 데이터 가공
     // groupdate가 같은 데이터끼리 묶기
     const newMap = {};
     clonedData.forEach(data => {
@@ -48,7 +64,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
       if (!newMap[groupdate]) newMap[groupdate] = { groupdate: groupdate };
 
       Object.keys(data).forEach(key => {
-        yAxisSettings[0].selectedOptions.forEach(option => {
+        axisSettings[0].selectedOptions.forEach(option => {
           if (key === option.value) {
             const newKey = `${groupNm}-${key}`;
             newMap[groupdate][newKey] = data[key];
@@ -58,7 +74,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
     });
 
     setProcessedData(Object.values(newMap));
-  }, [datas, pollutantList, graphType, yAxisSettings]);
+  }, [datas, pollutantList, graphType, axisSettings]);
 
   const getNextColor = () => {
     const color = COLORS[colorIndexRef.current % COLORS.length];
@@ -72,13 +88,13 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
     return colorMapRef.current[key];
   };
 
+  // 그래프 타입 변경 핸들러
   const handleChangeGraphType = e => {
     const selectedType = e.target.value;
     setGraphType(selectedType);
   };
 
-  // tooltip 커스텀
-  // null값 -> '-'로 표시
+  // 툴팁 커스텀(null값 -> '-'로 표시)
   const CustomTooltip = ({ active, payload, label }) => {
     const dataKeys = Object.keys(processedData[0]);
     const allKeys = dataKeys.filter(key => key !== 'groupdate');
@@ -96,7 +112,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           {difference &&
             difference.map(key => {
               let newKey;
-              yAxisSettings[0].selectedOptions.forEach(option => {
+              axisSettings[0].selectedOptions.forEach(option => {
                 if (key.includes(option.value)) {
                   newKey = key.replace(option.value, option.text);
                 }
@@ -143,7 +159,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
         data={processedData}
         margin={{ top: 20, right: 30, bottom: 30, left: 10 }}
         barGap={0}
-        stackOffset={graphType.startsWith('100-stack') ? 'expand' : 'none'}
+        stackOffset={graphType.startsWith('100-stack') ? 'expand' : 'none'} // 100% 스택 그래프 타입일 경우 스택 오프셋 설정
       >
         <CartesianGrid strokeDasharray="3" vertical={false} />
         <XAxis
@@ -156,12 +172,12 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
           }}
           tick={{ fontSize: 12 }}
         />
-        {yAxisSettings.map(axis => (
+        {axisSettings.map(axis => (
           <YAxis
             key={axis.label}
             type="number"
             domain={
-              graphType.startsWith('100-stack')
+              graphType.startsWith('100-stack')  // 100% 스택 그래프 타입일 경우 도메인 설정
                 ? [0, 1]
                 : axis.isAuto
                 ? ['auto', 'auto']
@@ -171,7 +187,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
             fontSize={12}
             allowDataOverflow={true}
             tickFormatter={value => {
-              return graphType.startsWith('100-stack')
+              return graphType.startsWith('100-stack')  // 100% 스택 그래프 타입일 경우 비율로 표시
                 ? value * 100 + '%'
                 : value;
             }}
@@ -190,7 +206,7 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
         />
 
         {datas.rstList2.map(item =>
-          yAxisSettings[0].selectedOptions.map(option => {
+          axisSettings[0].selectedOptions.map(option => {
             const key = `${item.groupNm}-${option.text}`;
             return (
               <Bar
@@ -205,7 +221,6 @@ const BarChart = ({ datas, yAxisSettings, pollutantList }) => {
                     : graphType.includes('stack-group')
                     ? item.groupNm
                     : 'stackgroup'
-                  // ? option.value
                 }
               />
             );

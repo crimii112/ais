@@ -14,10 +14,11 @@ import { LineChart } from '@/components/ui/chart-line';
 import { PieChart } from '@/components/ui/chart-pie';
 import { BarChart } from '@/components/ui/chart-bar';
 
+// 그래프 옵션 설정
 const CHART_SETTINGS = {
   line: {
     onScale: true,
-    yAxisSettings: [
+    axisSettings: [
       { label: 'Y-Left1', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: [] },
       { label: 'Y-Left2', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: [] },
       { label: 'Y-Right1', orientation: 'right', isAuto: true, min: 0, max: 100, selectedOptions: [] },
@@ -26,20 +27,28 @@ const CHART_SETTINGS = {
   },
   pie: {
     onScale: false,
-    yAxisSettings: [{ label: '물질', selectedOptions: [] }],
+    axisSettings: [{ label: '물질', selectedOptions: [] }],
   },
   bar: {
     onScale: true,
-    yAxisSettings: [{ label: '물질', isAuto: true, min: 0, max: 100, selectedOptions: [] }],
+    axisSettings: [{ label: '물질', isAuto: true, min: 0, max: 100, selectedOptions: [] }],
   },
 };
 
+/**
+ * 그래프 프레임 컴포넌트
+ * @param {Object} datas - 데이터
+ * @param {boolean} isLoading - 로딩 여부
+ * @param {string} type - 그래프 타입
+ * @param {string} title - 그래프 제목
+ * @returns {React.ReactNode} 그래프 프레임 컴포넌트
+ */
 const ContentChartFrame = ({ datas, isLoading, type, title }) => {
   const config = CHART_SETTINGS[type];
 
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
   const [chartConfig, setChartConfig] = useState(null);
-  const [yAxisSettings, setYAxisSettings] = useState(config.yAxisSettings);
+  const [axisSettings, setAxisSettings] = useState(config.axisSettings);
 
   useEffect(() => {
     if (!datas) return;
@@ -55,15 +64,15 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
     setPollutantList(options.slice(2, flagIndex));
   }, [datas]);
 
-  const updateYAxisSettings = (idx, updates) => {
-    setYAxisSettings(prev =>
+  const updateAxisSettings = (idx, updates) => {
+    setAxisSettings(prev =>
       prev.map((axis, i) => (i === idx ? { ...axis, ...updates } : axis))
     );
   };
 
   // 그래프 그리기 버튼 클릭 이벤트
   const handleClickDrawChart = () => {
-    setChartConfig({ datas, yAxisSettings, pollutantList });
+    setChartConfig({ datas, axisSettings, pollutantList });
   };
 
   // 그래프 이미지로 저장
@@ -80,85 +89,107 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
   };
 
   return (
-    <FlexColWrapper className="w-full p-6 gap-2 border-2 border-gray-300 items-baseline">
+    <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
       {isLoading ? (
-        <Loading />
+        <div className="w-full h-[400px] flex items-center justify-center">
+          <Loading />
+        </div>
       ) : (
         <>
-          <FlexRowWrapper className="w-full gap-2 items-stretch justify-between pb-4 border-b-2 border-gray-500">
-            <FlexColWrapper className="gap-2">
-              {yAxisSettings.map((axis, idx) => (
-                <GridWrapper
-                  key={axis.label}
-                  className="grid-cols-[0.7fr_6fr_0.5fr_0.7fr_0.7fr] gap-2 items-stretch"
-                >
-                  <label className="my-auto whitespace-nowrap">{axis.label}</label>
-                  <CustomMultiSelect
-                    options={pollutantList}
-                    setOutsideSelectedOptions={selected =>
-                      updateYAxisSettings(idx, {selectedOptions: selected})
-                    }
-                  />
+          <FlexRowWrapper className="w-full gap-10 mb-4 items-start justify-between">
+            <div className="mt-1.5 text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
+              그래프 설정
+            </div>
+            <FlexColWrapper className="w-full items-start justify-between gap-3">
+              {axisSettings.map((axis, idx) => (
+                <FlexRowWrapper key={axis.label} className="items-center gap-4">
+                  <div className="w-20 text-center">
+                    <span className="text-base font-medium text-gray-700">{axis.label}</span>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <CustomMultiSelect
+                      options={pollutantList}
+                      setOutsideSelectedOptions={selected =>
+                        updateAxisSettings(idx, {selectedOptions: selected})
+                      }
+                    />
+                  </div>
+
                   {config.onScale && (
-                    <>
-                      <label className="flex flex-row items-center whitespace-nowrap">
+                    <FlexRowWrapper className="items-center gap-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-600">
                         <Input
                           type="checkbox"
                           checked={axis.isAuto}
-                          onChange={e => updateYAxisSettings(idx, {isAuto: e.target.checked})}
-                          className="mr-1"
+                          onChange={e => updateAxisSettings(idx, {isAuto: e.target.checked})}
+                          className="w-4 h-4 rounded border-gray-300"
                         />
                         자동
                       </label>
+                      
                       <Input
                         type="number"
                         value={axis.min}
-                        onChange={e => updateYAxisSettings(idx, {min: Number(e.target.value)})}
+                        onChange={e => updateAxisSettings(idx, {min: Number(e.target.value)})}
                         readOnly={axis.isAuto}
-                        className="w-20 read-only:bg-gray-200 text-center"
+                        className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded read-only:bg-gray-50 text-center"
                       />
+                      <span className="text-gray-400 pt-1.5">~</span>
                       <Input
                         type="number"
                         value={axis.max}
-                        onChange={e => updateYAxisSettings(idx, {max: Number(e.target.value)})}
+                        onChange={e => updateAxisSettings(idx, {max: Number(e.target.value)})}
                         readOnly={axis.isAuto}
-                        className="w-20 read-only:bg-gray-200 text-center"
+                        className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded read-only:bg-gray-50 text-center"
                       />
-                    </>
+                    </FlexRowWrapper>
                   )}
-                </GridWrapper>
+                </FlexRowWrapper>
               ))}
             </FlexColWrapper>
-            <Button onClick={handleClickDrawChart} className="w-fit px-5 bg-blue-900 text-white">
-              그래프 그리기
-            </Button>
+            <FlexRowWrapper className="gap-2 mt-1.5">
+              <Button
+                onClick={handleClickDrawChart}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              >
+                그래프 그리기
+              </Button>
+            </FlexRowWrapper>
           </FlexRowWrapper>
+
+          
+
           {chartConfig && (
             <>
-              <div id={`${title}-${type}-chart-wrapper`} className="w-full h-full p-2">
+              <div className="w-full border-t border-gray-200" />
+              <div id={`${title}-${type}-chart-wrapper`} className="w-full h-full py-6">
                 {type === 'line' && (
                   <LineChart
                     datas={chartConfig.datas}
-                    yAxisSettings={chartConfig.yAxisSettings}
+                    axisSettings={chartConfig.axisSettings}
                     pollutantList={chartConfig.pollutantList}
                   />
                 )}
                 {type === 'pie' && (
                   <PieChart
                     datas={chartConfig.datas}
-                    yAxisSettings={chartConfig.yAxisSettings}
+                    axisSettings={chartConfig.axisSettings}
                   />
                 )}
                 {type === 'bar' && (
                   <BarChart
                     datas={chartConfig.datas}
-                    yAxisSettings={chartConfig.yAxisSettings}
+                    axisSettings={chartConfig.axisSettings}
                     pollutantList={chartConfig.pollutantList}
                   />
                 )}
               </div>
-              <FlexRowWrapper className="w-full justify-end">
-                <Button onClick={handleSaveImage} className="w-fit px-4 bg-blue-900 text-white">
+              <FlexRowWrapper className="w-full justify-end gap-2">
+                <Button 
+                  onClick={handleSaveImage} 
+                  className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
+                >
                   이미지 저장
                 </Button>
               </FlexRowWrapper>

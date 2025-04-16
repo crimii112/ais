@@ -19,6 +19,19 @@ import {
 } from '@/components/ui/common';
 import usePostRequest from '@/hooks/usePostRequest';
 
+
+/**
+ * 측정소 선택 모달
+ * @param {number} tabType - 탭 타입
+ * @param {string} siteType - 측정소 타입
+ * @param {boolean} onTms - TMS 설정 여부
+ * @param {function} setIsModalOpened - 모달 닫기 함수
+ * @param {array} initialStationList - 초기 측정소 리스트
+ * @param {function} setMultipleStationList - 측정소 리스트 설정 함수
+ * @returns {React.ReactNode} 측정소 선택 모달
+ */
+
+
 const SearchStationModal = ({
   tabType,
   siteType = '',

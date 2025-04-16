@@ -1,10 +1,3 @@
-/*
- * Main Navigation Component
- * url 변경되는 Navigation
- * dropdown 기능 없음
- * data만 변경하여 사용 가능
- */
-
 import { Link } from 'react-router-dom';
 import {
   HeaderWrapper,
@@ -15,6 +8,7 @@ import {
   NavbarMenuItemButton,
 } from './ui/navbar';
 
+/** 메인 네비게이션 데이터 */
 const data = {
   navItems: [
     {
@@ -35,6 +29,12 @@ const data = {
   ],
 };
 
+/** 
+ * 메인 네비게이션 컴포넌트
+ * - url 변경되는 Navigation
+ * - dropdown 기능 없음
+ * - data만 변경하여 사용 가능
+ *  */
 function MainNav() {
   return (
     <HeaderWrapper>

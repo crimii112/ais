@@ -7,19 +7,32 @@ import {
   Tooltip,
 } from 'recharts';
 
-const PieChart = ({ datas, yAxisSettings }) => {
-  const [processedData, setProcessedData] = useState([]);
-  const [totalSum, setTotalSum] = useState(0);
 
+/**
+ * 파이 차트 컴포넌트
+ * - 정해진 datas, axisSettings 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
+ * @param {Object} datas - 데이터(rstList 형태 고정)
+ * @param {Object} axisSettings - 축 설정 
+ * @example datas = [rstList: [{groupdate: '전체', groupNm: '전체', data01: 10, data02: 20, ..., rflag: null, ...}], ...]
+ * @example axisSettings = [{ label: '물질', selectedOptions: [{value: 'data04', text: '4)Propylene'}] }]
+ * @returns {React.ReactNode} 파이 차트 컴포넌트
+ */
+
+
+const PieChart = ({ datas, axisSettings }) => {
+  const [processedData, setProcessedData] = useState([]);  // 처리된 데이터([{name: '4)Propylene', value: 10}])
+  const [totalSum, setTotalSum] = useState(0);  // 선택한 데이터 값 총합
+
+  // 데이터 처리
   useEffect(() => {
     setTotalSum(0); // totalSum 초기화
     setProcessedData([]); // processedData 초기화
 
     if (!datas || !datas.rstList) return;
 
-    const selectedOptions = yAxisSettings[0].selectedOptions;
+    const selectedOptions = axisSettings[0].selectedOptions;
     const clonedData = { ...datas.rstList[0] };
-
+    
     const chartData = selectedOptions.map(option => {
       const rawVal = clonedData[option.value];
       const parsed = parseFloat(rawVal);
@@ -27,7 +40,7 @@ const PieChart = ({ datas, yAxisSettings }) => {
         rawVal !== undefined && rawVal !== '' && !isNaN(parsed) ? parsed : null;
 
       const sum = !isNaN(parsed) ? parsed : 0;
-      setTotalSum(prevSum => prevSum + sum);
+      setTotalSum(prevSum => prevSum + sum); 
 
       return {
         name: option.text,
@@ -36,7 +49,7 @@ const PieChart = ({ datas, yAxisSettings }) => {
     });
 
     setProcessedData(chartData);
-  }, [datas, yAxisSettings]);
+  }, [datas, axisSettings]);
 
   if (
     !datas ||
@@ -51,6 +64,7 @@ const PieChart = ({ datas, yAxisSettings }) => {
     );
   }
 
+  // 라벨 커스텀(비율 표시)
   const RADIAN = Math.PI / 180;
   const customizedLabel = ({
     cx,
@@ -79,6 +93,7 @@ const PieChart = ({ datas, yAxisSettings }) => {
     );
   };
 
+  // 툴팁 커스텀(값 표시)
   const customizedTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const { value } = payload[0];
@@ -103,7 +118,7 @@ const PieChart = ({ datas, yAxisSettings }) => {
           label={customizedLabel}
           labelLine={false}
         >
-          {processedData.map((entry, index) => (
+          {processedData.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>

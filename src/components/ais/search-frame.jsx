@@ -5,16 +5,30 @@ import {
   Button,
 } from '@/components/ui/common';
 
+/**
+ * 검색 프레임 컴포넌트
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Function} handleClickSearchBtn - 검색 버튼 클릭 핸들러
+ */
 const SearchFrame = ({ children, handleClickSearchBtn }) => {
   return (
-    <FlexColWrapper className="w-full h-full items-stretch border-2 border-gray-300">
-      <GridWrapper className="grid-cols-2 gap-6 p-6">{children}</GridWrapper>
-      <FlexRowWrapper className="pb-6">
+    <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
+      <FlexRowWrapper className="w-full mb-4 items-center justify-between">
+        <div className="text-lg font-semibold text-gray-900">
+          검색 조건
+        </div>
+      </FlexRowWrapper>
+      
+      <GridWrapper className="w-full grid-cols-2 gap-4 mb-6">
+        {children}
+      </GridWrapper>
+
+      <FlexRowWrapper className="justify-end">
         <Button
           onClick={handleClickSearchBtn}
-          className="w-60 bg-blue-600 text-white text-lg"
+          className="px-10 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
         >
-          검색
+          검색하기
         </Button>
       </FlexRowWrapper>
     </FlexColWrapper>

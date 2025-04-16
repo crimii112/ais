@@ -1,10 +1,4 @@
-/*
- * 광화학 컴포넌트
- * [광화학 데이터 그래프 | 광화학 성분 파이그래프 | 광화학 성분 막대그래프 | 광화학 일중간값 그래프]
- * type => 'line' || 'pie' || 'bar' || 'medianLine'
- */
-
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -14,6 +8,16 @@ import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
 import { ContentChartFrame } from '../content-chart-frame';
+
+
+/**
+ * 광화학 컴포넌트
+ * - 기간, 측정소, 검색조건, 자료획득률 선택 후 검색 버튼 클릭 시 데이터 조회
+ * - [광화학 데이터 그래프 | 광화학 성분 파이그래프 | 광화학 성분 막대그래프 | 광화학 일중간값 그래프]
+ * @param {string} type 페이지 타입 ['line' | 'pie' | 'bar' | 'medianLine']
+ * @returns {React.ReactNode} 광화학 컴포넌트
+ */
+
 
 const PhotoCh = ({ type }) => {
   const postMutation = usePostRequest();
@@ -32,23 +36,24 @@ const PhotoCh = ({ type }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
-  const handleClickSearchBtn = async () => {
+  // API 데이터 메모이제이션
+  const apiData = useMemo(() => ({
+    page: config.page,
+    date: dateList,
+    site: stationList,
+    cond: searchCond,
+    polllist: pollutant,
+    type: config.type,
+  }), [config.page, config.type, dateList, stationList, searchCond, pollutant]);
+
+  // 검색 버튼 핸들러 메모이제이션
+  const handleClickSearchBtn = useCallback(async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
 
     setIsLoading(true);
     setContentData(undefined);
-
-    const apiData = {
-      page: config.page,
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-      type: config.type,
-      // ...(config.type && { type: config.type }),
-    };
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -73,7 +78,7 @@ const PhotoCh = ({ type }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiData, postMutation]);
 
   return (
     <>

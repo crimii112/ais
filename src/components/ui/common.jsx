@@ -1,6 +1,14 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
+
+/**
+ * 플렉스 레이아웃 래퍼 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 플렉스 레이아웃 래퍼 컴포넌트
+ */
 const FlexRowWrapper = ({ className, children, ...props }) => {
   return (
     <div
@@ -31,6 +39,14 @@ const FlexColWrapper = ({ className, children, ...props }) => {
 };
 FlexColWrapper.displayName = 'FlexColWrapper';
 
+
+/**
+ * 그리드 레이아웃 래퍼 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 그리드 레이아웃 래퍼 컴포넌트
+ */
 const GridWrapper = ({ className, children, ...props }) => {
   return (
     <div className={`${cn('grid grid-cols-2', className)}`} {...props}>
@@ -40,10 +56,18 @@ const GridWrapper = ({ className, children, ...props }) => {
 };
 GridWrapper.displayName = 'GridWrapper';
 
+
+/**
+ * 버튼 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 버튼 컴포넌트
+ */
 const Button = forwardRef(({ className, children, ...props }, ref) => (
   <button
     className={cn(
-      'w-full p-1.5 border-0 rounded-sm bg-gray-200 cursor-pointer whitespace-nowrap text-base',
+      'w-full p-1.5 border-0 rounded-sm bg-gray-200 text-gray-800 font-medium cursor-pointer whitespace-nowrap',
       className
     )}
     ref={ref}
@@ -54,6 +78,13 @@ const Button = forwardRef(({ className, children, ...props }, ref) => (
 ));
 Button.displayName = 'ButtonComponent';
 
+
+/**
+ * 인풋 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 인풋 컴포넌트
+ */
 const Input = forwardRef(({ className, ...props }, ref) => (
   <input
     className={`${cn(
@@ -66,6 +97,14 @@ const Input = forwardRef(({ className, ...props }, ref) => (
 ));
 Input.displayName = 'InputComponent';
 
+
+/**
+ * 선택 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 선택 컴포넌트
+ */
 const Select = forwardRef(({ className, children, ...props }, ref) => (
   <select
     className={`${cn(
@@ -80,6 +119,14 @@ const Select = forwardRef(({ className, children, ...props }, ref) => (
 ));
 Select.displayName = 'SelectComponent';
 
+
+/**
+ * 옵션 컴포넌트
+ * @param {string} className - tailwind css 클래스 이름
+ * @param {React.ReactNode} children - 자식 컴포넌트
+ * @param {Object} props - 추가 속성
+ * @returns {React.ReactNode} 옵션 컴포넌트
+ */
 const Option = ({ className, children, ...props }) => {
   return (
     <option

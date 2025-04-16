@@ -1,11 +1,13 @@
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+
+/** 모달 프레임 컴포넌트 */
 const ModalFrame = ({ className, children, ...props }) => {
   return (
     <div
       className={cn(
-        'fixed min-h-screen max-h-screen inset-0 z-50 flex items-center justify-center bg-black/50',
+        'fixed min-h-screen max-h-screen inset-0 z-1000 flex items-center justify-center bg-black/50',
         className
       )}
       {...props}
@@ -24,6 +26,7 @@ const ModalFrame = ({ className, children, ...props }) => {
 };
 ModalFrame.displayName = 'ModalFrame';
 
+/** 모달 헤더 컴포넌트 */
 const ModalHeader = ({ title, handleCloseModal, className, ...props }) => {
   return (
     <div
@@ -39,6 +42,7 @@ const ModalHeader = ({ title, handleCloseModal, className, ...props }) => {
 };
 ModalHeader.displayName = 'ModalHeader';
 
+/** 모달 컨텐츠 컴포넌트 */
 const ModalContent = ({ className, children, ...props }) => {
   return (
     <div
@@ -51,6 +55,7 @@ const ModalContent = ({ className, children, ...props }) => {
 };
 ModalContent.displayName = 'ModalContent';
 
+/** 모달 푸터 컴포넌트 */
 const ModalFooter = ({ className, children, ...props }) => {
   return (
     <div

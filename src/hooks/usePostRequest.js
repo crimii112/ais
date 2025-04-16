@@ -5,6 +5,16 @@ const customedAxios = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+/**
+ * 포스트 요청 훅
+ * @returns {Object} 포스트 요청 훅
+ * @example [사용 예시]
+ *          const postMutation = usePostRequest();
+ *          let apiRes = await postMutation.mutateAsync({
+ *            url: 'ais/srch/datas.do',
+ *            data: apiData,
+ *          });
+ */
 const usePostRequest = () => {
   return useMutation({
     mutationFn: async ({ url, data }) => {

@@ -10,11 +10,30 @@ import {
   YAxis,
 } from 'recharts';
 
-const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
+
+/**
+ * 시계열 그래프 컴포넌트
+ * - 정해진 datas, axisSettings, pollutantList 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
+ * - X축은 측정일자(groupdate) 고정, Y축은 선택한 물질 데이터
+ * @param {Object} datas - 데이터(rstList 형태 고정)
+ * @param {Object} axisSettings - 축 설정 
+ * @param {Object} pollutantList - 물질 리스트 
+ * @example datas = [rstList: [{groupdate: '2024-01-01', groupNm: '인천.강화군.석모리', data01: 10, data02: 20, ..., rflag: null, ...}, ...], ...]
+ * @example axisSettings = [{label: 'Y-Left1', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: [{ value:'data06', text:'6)n-Butane' }]}, 
+ *           {label: 'Y-Left2', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: []},
+ *           {label: 'Y-Right1', orientation: 'right', isAuto: true, min: 0, max: 100, selectedOptions: []},
+ *           {label: 'Y-Right2', orientation: 'right', isAuto: true, min: 0, max: 100, selectedOptions: []}]
+ * @example pollutantList = [{value: 'data01', text: '1)Ethane'}, {value: 'data02', text: '2)Ethylene'}]
+ * @returns {React.ReactNode} 시계열 그래프 컴포넌트
+ */
+
+
+const LineChart = ({ datas, axisSettings, pollutantList }) => {
   const [processedData, setProcessedData] = useState([]);
   const colorMapRef = useRef({}); // 여기에 색상 저장
   const colorIndexRef = useRef(0);
 
+  // 데이터 처리
   useEffect(() => {
     if (!datas || !datas.rstList) return;
 
@@ -90,7 +109,7 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
           }}
           tick={{ fontSize: 12 }}
         />
-        {yAxisSettings.map(
+        {axisSettings.map(
           axis =>
             axis.selectedOptions.length !== 0 && (
               <YAxis
@@ -117,7 +136,7 @@ const LineChart = ({ datas, yAxisSettings, pollutantList }) => {
             )
         )}
         {datas.rstList2.map(el =>
-          yAxisSettings.map(axis =>
+          axisSettings.map(axis =>
             axis.selectedOptions.map(option => {
               const key = `${el.groupNm}-${option.text}`;
               return (
