@@ -26,11 +26,6 @@ const IntensiveAuto = ({ type }) => {
         { id: 'dumy', checked: false },
     ]);
 
-    useEffect(() => {
-        console.log(dateList);
-    }, [dateList]);
-
-
     const [isLoading, setIsLoading] = useState(false);
     const [contentData, setContentData] = useState();
 
