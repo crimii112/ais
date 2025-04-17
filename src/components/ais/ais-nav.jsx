@@ -16,6 +16,7 @@ import { PhotoCh } from './contents/photoch';
 import { Toxic } from './contents/toxic';
 import { Test } from './contents/test';
 import { IntensivePsize } from './contents/intensive-psize';
+import { IntensiveAuto } from './contents/intensive-auto';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -92,7 +93,7 @@ const data = {
     },
     {
       id: 2,
-      title: 'Nav3',
+      title: '대기환경연구소 데이터 분석',
       subItems: [
         {
           pathName: 'testLog',
@@ -100,14 +101,14 @@ const data = {
           content: <Test />,
         },
         {
-          pathName: 'intensivePsize',
+          pathName: 'intensive/psize',
           title: '(단일)입경크기분포',
           content: <IntensivePsize />,
         },
         {
-          pathName: 'nav3-sub3',
-          title: 'nav3-sub3',
-          content: 'nav3-sub3',
+          pathName: 'intensive/autotimecorrelation',
+          title: '자동-(단일)성분상관성검토',
+          content: <IntensiveAuto type='timeCorrelation' />,
         },
       ],
     },

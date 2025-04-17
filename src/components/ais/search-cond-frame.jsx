@@ -12,7 +12,7 @@ const SearchCondFrame = ({ children, title }) => (
     <FlexRowWrapper className="p-1 bg-gray-100 text-gray-600 text-lg font-bold">
       {title}
     </FlexRowWrapper>
-    <FlexColWrapper className="grow items-stretch justify-baseline gap-1 p-2 bg-white">
+    <FlexColWrapper className="grow items-stretch justify-baseline gap-2 p-2 bg-white">
       {children}
     </FlexColWrapper>
   </FlexColWrapper>

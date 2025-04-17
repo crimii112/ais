@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { SearchCondFrame } from './search-cond-frame';
-import { FlexRowWrapper, GridWrapper } from '@/components/ui/common';
+import { FlexRowWrapper, GridWrapper, Input } from '@/components/ui/common';
 
 
 /**
  * 물질 및 소수점 자릿수 || 자료획득률 선택 컴포넌트  
  * @param {string} title - 컴포넌트 타이틀 ['물질 및 소수점 자릿수' | '자료획득률']
- * @param {Object} pollutantList - 물질 리스트
+ * @param {Object} pollutantList - 물질 소수점 자릿수 리스트
+ * @param {Object} digitList - 물질 소수점 자릿수 리스트(PM, lon, carbon, metal, gas, other)
  * @param {Object} signList - 자료 획득률 리스트
  * @param {Object} initialPollutant - 초기 리스트
  * @param {function} setPollutant - 물질 또는 자료획득률 리스트 설정 함수
@@ -18,6 +19,7 @@ import { FlexRowWrapper, GridWrapper } from '@/components/ui/common';
 const SearchPollutant = ({
   title = '물질 및 소수점 자릿수',
   pollutantList,
+  digitList,
   signList,
   initialPollutant,
   setPollutant,
@@ -62,6 +64,20 @@ const SearchPollutant = ({
     setPollutantJson(pollutantJson);
   };
 
+  const handleChangeDigitValue = e => {
+    const digitId = e.target.id;
+    const digitValue = Number(e.target.value);
+
+    // pollutantJson에서 digitId와 일치하는 항목 찾기
+    const findIdx = pollutantJson.findIndex(poll => poll[digitId] !== undefined);
+    
+    // 해당 항목의 값을 업데이트
+    if (findIdx !== -1) {
+      pollutantJson[findIdx][digitId] = digitValue;
+      setPollutantJson(pollutantJson);
+    }
+  };
+
   return (
     <SearchCondFrame title={title}>
       {pollutantList && (     // 물질 리스트 존재 시
@@ -100,13 +116,35 @@ const SearchPollutant = ({
           ))}
         </GridWrapper>
       )}
+
+      {digitList && (   // 물질 소수점 자릿수 리스트(PM, lon, carbon, metal, gas, other) 존재 시
+        <GridWrapper className="grid-cols-5 gap-3">
+          {digitList.map(digit => (
+            <FlexRowWrapper className='justify-between gap-1' key={digit.id}>
+              <div className='px-1'>
+                <label className='whitespace-nowrap'>{digit.text} : </label>
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  id={digit.id}
+                  defaultValue={digit.value}
+                  className="w-13 p-1.5 border-1 border-gray-300 rounded-sm bg-white"
+                  onChange={handleChangeDigitValue}
+                />
+              </div>
+            </FlexRowWrapper>
+          ))}
+        </GridWrapper>
+      )}
+
       {signList && (     // 자료획득률 리스트 존재 시
         <GridWrapper className="items-stretch gap-1">
           {signList.map(sign => (
             <FlexRowWrapper className="justify-between gap-0.5" key={sign.id}>
               <div>
                 <label>
-                  <input
+                  <Input
                     type="checkbox"
                     id={sign.id}
                     defaultChecked={sign.checked}
@@ -117,7 +155,7 @@ const SearchPollutant = ({
                 </label>
               </div>
               <div>
-                <input
+                <Input
                   type="text"
                   id={'sign1' + sign.id}
                   defaultValue={sign.signvalue}

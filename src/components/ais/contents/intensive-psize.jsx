@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import html2canvas from 'html2canvas';
+import { useCallback, useMemo, useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -10,13 +9,12 @@ import { SearchCond } from '../search-cond';
 import { ContentTableFrame } from '../content-table-frame';
 import {
   FlexRowWrapper,
-  FlexColWrapper,
   Button,
   Select,
   Option,
 } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
-import { ScatterChart } from '@/components/ui/chart-scatter';
+import { ContentScatterChartFrame } from '../content-scatter-chart-frame';
 
 const IntensivePsize = () => {
   const postMutation = usePostRequest();
@@ -25,6 +23,7 @@ const IntensivePsize = () => {
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
   const [pollutant, setPollutant] = useState([
+    {"pm":1, "lon":3, "carbon":1, "metal":1, "gas":1, "other":6  },
     { id: 'High', checked: true, signvalue: '#' },
     { id: 'Low', checked: true, signvalue: '##' },
     { id: 'dumy', checked: false },
@@ -49,28 +48,29 @@ const IntensivePsize = () => {
   const [options, setOptions] = useState({}); // select box에 들어갈 옵션들
   const [chartSettings, setChartSettings] = useState();
 
-  const handleClickSearchBtn = async () => {
-    setChartSettings(undefined);
 
+  const apiData = useMemo(() => ({
+    page: 'intensive/psize',
+    date: dateList,
+    site: stationList,
+    cond: searchCond,
+    polllist: pollutant,
+    mark: [
+      { id: 'unit1', checked: false },
+      { id: 'unit2', checked: false },
+    ],
+    digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+  }), [dateList, stationList, searchCond, pollutant]);
+
+
+  const handleClickSearchBtn = useCallback(async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
-
+    
+    setChartSettings(undefined);
     setIsLoading(true);
     setContentData(undefined);
-
-    const apiData = {
-      page: 'intensive/psize',
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-      mark: [
-        { id: 'unit1', checked: false },
-        { id: 'unit2', checked: false },
-      ],
-      digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
-    };
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -86,6 +86,9 @@ const IntensivePsize = () => {
         };
       }
 
+      setContentData(apiRes);
+
+      // 그래프 설정 옵션 설정
       const groupdate = [
         ...new Set(apiRes.rstList.map(item => item.groupdate)),
       ];
@@ -102,18 +105,18 @@ const IntensivePsize = () => {
       });
 
       setOptionSettings({ groupdate, type, groupNm });
-      setContentData(apiRes);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiData, postMutation]);
 
   const setSelectedGroupNms = selectedOptions => {
     setOptions(prev => ({ ...prev, groupNm: selectedOptions }));
   };
 
+  // 툴팁 커스텀
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload?.length) {
       const { groupNm, x, type, y } = payload[0].payload;
@@ -177,19 +180,6 @@ const IntensivePsize = () => {
     });
   };
 
-  // 그래프 이미지로 저장
-  const handleSaveImage = async () => {
-    await document.fonts.ready;
-    const canvas = await html2canvas(
-      document.getElementById(`입경크기분포-scatter-chart-wrapper`),
-      { backgroundColor: '#fff', useCORS: true, scale: 1.5 }
-    );
-    const link = document.createElement('a');
-    link.download = `입경크기분포-scatterChart.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   return (
     <>
       {/* 데이터 검색 조건 설정 */}
@@ -221,66 +211,51 @@ const IntensivePsize = () => {
         fileName="(단일)입경크기분포"
       />
 
-      {/* 그래프 검색 조건 설정 */}
-      <FlexColWrapper className="w-full p-6 gap-2 border-2 border-gray-300 items-baseline">
-        <FlexRowWrapper className="w-full justify-start items-stretch gap-2">
-          <Select
-            className="w-fit min-w-40"
-            onChange={e =>
-              setOptions(prev => ({ ...prev, groupdate: e.target.value }))
-            }
-          >
-            {optionSettings.groupdate.map(date => (
-              <Option key={date} value={date}>
-                {date}
-              </Option>
-            ))}
-          </Select>
-          <CustomMultiSelect
-            className="w-100"
-            options={optionSettings.groupNm}
-            setOutsideSelectedOptions={setSelectedGroupNms}
-          />
-          <Select
-            className="w-fit min-w-40"
-            onChange={e =>
-              setOptions(prev => ({ ...prev, type: e.target.value }))
-            }
-          >
-            {optionSettings.type.map(type => (
-              <Option key={type} value={type}>
-                {type}
-              </Option>
-            ))}
-          </Select>
+      {/* 그래프 그리기 */}
+      <ContentScatterChartFrame isLoading={isLoading} title="입경크기분포" chartSettings={chartSettings}>
+        <FlexRowWrapper className="w-full gap-10 mb-4 items-center justify-between">
+          <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
+            그래프 설정
+          </div>
+          <FlexRowWrapper className='w-full items-stretch justify-start gap-3'>
+            <Select
+              className="w-fit min-w-40"
+              onChange={e =>
+                setOptions(prev => ({ ...prev, groupdate: e.target.value }))
+              }
+            >
+              {optionSettings.groupdate.map(date => (
+                <Option key={date} value={date}>
+                  {date}
+                </Option>
+              ))}
+            </Select>
+            <CustomMultiSelect
+              className="w-100"
+              options={optionSettings.groupNm}
+              setOutsideSelectedOptions={setSelectedGroupNms}
+            />
+            <Select
+              className="w-fit min-w-40"
+              onChange={e =>
+                setOptions(prev => ({ ...prev, type: e.target.value }))
+              }
+            >
+              {optionSettings.type.map(type => (
+                <Option key={type} value={type}>
+                  {type}
+                </Option>
+              ))}
+            </Select>
+          </FlexRowWrapper>
           <Button
-            className="w-fit px-5 bg-blue-900 text-white"
+            className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
             onClick={handleClickDrawChart}
           >
             그래프 그리기
           </Button>
         </FlexRowWrapper>
-
-        {/* 그래프 그리기 */}
-        {chartSettings && (
-          <>
-            <div
-              id={`입경크기분포-scatter-chart-wrapper`}
-              className="w-full h-full p-2"
-            >
-              <ScatterChart chartSettings={chartSettings} />
-            </div>
-            <FlexRowWrapper className="w-full justify-end">
-              <Button
-                onClick={handleSaveImage}
-                className="w-fit px-4 bg-blue-900 text-white"
-              >
-                이미지 저장
-              </Button>
-            </FlexRowWrapper>
-          </>
-        )}
-      </FlexColWrapper>
+      </ContentScatterChartFrame>
     </>
   );
 };

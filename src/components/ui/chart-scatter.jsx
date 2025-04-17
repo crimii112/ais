@@ -10,20 +10,16 @@ import {
 } from 'recharts';
 
 /**
- * ScatterChart Component
- *
- * @param {Object} props.chartSettings - Settings for the chart
- * @param {Object} props.chartSettings.xAxis - X-axis configuration
- * @param {string} props.chartSettings.xAxis.dataKey - DataKey for X-axis
- * @param {string} props.chartSettings.xAxis.scale - Scale type for X-axis
- * @param {number[]} props.chartSettings.xAxis.domain - Domain range for X-axis
- * @param {number[]} props.chartSettings.xAxis.ticks - Ticks for X-axis
- * @param {Object} props.chartSettings.yAxis - Y-axis configuration
- * @param {string} props.chartSettings.yAxis.dataKey - DataKey for Y-axis
- * @param {string} props.chartSettings.yAxis.label - Label for Y-axis
- * @param {Object} props.chartSettings.data - Data for the chart, grouped by key
- * @param {any} props.chartSettings.tooltip - Custom Tooltip configuration
+ * 산점도 그래프 컴포넌트
+ * - 정해진 chartSettings 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
+ * @param {Object} chartSettings 그래프 설정
+ * @example chartSettings = {xAxis: {dataKey: 'x', scale: 'log', domain: [10.6, 10000], ticks: [10, 100, 1000, 10000]}, 
+ *                           yAxis: {dataKey: 'y', label: 'dN/dlogdP (#/cm3)'}, 
+ *                           data: {수도권: [{groupNm: '수도권', groupdate: '2015/01/01 01', type: "dN/dlogdP", x: 10.6, y: 100}, ...]}, 
+ *                           tooltip: <CustomTooltip />}
+ * @returns {React.ReactNode} 산점도 그래프 컴포넌트
  */
+
 
 const ScatterChart = ({ chartSettings }) => {
   const { xAxis, yAxis, data, tooltip } = chartSettings;
