@@ -84,7 +84,7 @@ const ContentTableFrame = ({ datas, isLoading, fileName }) => {
           조회 결과 
           {datas && datas.rstList && datas.headList[0] !== 'NO DATA' && (
             <span className="ml-2 text-sm font-normal text-gray-600">
-              (총 {datas.rstList.length}건)
+              (총 {datas.rstList.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}건)
             </span>
           )}
         </div>

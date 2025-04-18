@@ -98,56 +98,10 @@ const Input = forwardRef(({ className, ...props }, ref) => (
 Input.displayName = 'InputComponent';
 
 
-/**
- * 선택 컴포넌트
- * @param {string} className - tailwind css 클래스 이름
- * @param {React.ReactNode} children - 자식 컴포넌트
- * @param {Object} props - 추가 속성
- * @returns {React.ReactNode} 선택 컴포넌트
- */
-const Select = forwardRef(({ className, children, ...props }, ref) => (
-  <select
-    className={`${cn(
-      'w-full p-1 box-border border border-gray-300 rounded-sm bg-white text-base',
-      className
-    )}`}
-    ref={ref}
-    {...props}
-  >
-    {children}
-  </select>
-));
-Select.displayName = 'SelectComponent';
-
-
-/**
- * 옵션 컴포넌트
- * @param {string} className - tailwind css 클래스 이름
- * @param {React.ReactNode} children - 자식 컴포넌트
- * @param {Object} props - 추가 속성
- * @returns {React.ReactNode} 옵션 컴포넌트
- */
-const Option = ({ className, children, ...props }) => {
-  return (
-    <option
-      className={`${cn(
-        'bg-white hover:bg-blue-50 transition duration-100',
-        className
-      )}`}
-      {...props}
-    >
-      {children}
-    </option>
-  );
-};
-Option.displayName = 'OptionComponent';
-
 export {
   FlexRowWrapper,
   FlexColWrapper,
   GridWrapper,
   Button,
   Input,
-  Select,
-  Option,
 };

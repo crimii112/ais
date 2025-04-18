@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -13,7 +14,7 @@ import {
  * 산점도 그래프 컴포넌트
  * - 정해진 chartSettings 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
  * @param {Object} chartSettings 그래프 설정
- * @example chartSettings = {xAxis: {dataKey: 'x', scale: 'log', domain: [10.6, 10000], ticks: [10, 100, 1000, 10000]}, 
+ * @example chartSettings = {xAxis: {dataKey: 'x', scale: 'log', domain: [10.6, 10000], ticks: [10, 100, 1000, 10000], label(optional): 'x축 라벨명'}, 
  *                           yAxis: {dataKey: 'y', label: 'dN/dlogdP (#/cm3)'}, 
  *                           data: {수도권: [{groupNm: '수도권', groupdate: '2015/01/01 01', type: "dN/dlogdP", x: 10.6, y: 100}, ...]}, 
  *                           tooltip: <CustomTooltip />}
@@ -24,20 +25,39 @@ import {
 const ScatterChart = ({ chartSettings }) => {
   const { xAxis, yAxis, data, tooltip } = chartSettings;
 
+  /**
+   * 데이터가 모두 NaN인지 체크하는 함수
+   * - 데이터가 모두 NaN인 경우 축 생성이 아예 안되는 버그 해결
+   * - domain 0~100으로 고정하면 축 생성됨
+   * @param {string} axis 축 종류
+   * @example axis = 'x' || 'y'
+   * @returns {boolean} 데이터가 모두 NaN인 경우 true, 아니면 false
+   */
+  const isAllNaN = (axis) => {
+    if (!Array.isArray(data)) return true;
+    return data.every(d => typeof isNaN(d[axis]));
+  };
+
   return (
     <ResponsiveContainer width="100%" height={700}>
       <SChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }}>
-        <CartesianGrid strokeDasharray="3" vertical={false} />
+        <CartesianGrid strokeDasharray="3" />
         <XAxis
           type="number"
+          name={xAxis.label}
           dataKey={xAxis.dataKey}
           scale={xAxis.scale}
-          domain={xAxis.domain}
+          domain={isAllNaN('x') ? [0, 100] : xAxis.domain}
           ticks={xAxis.ticks}
           tick={{ fontSize: 12 }}
+          label={{
+            value: xAxis.label,
+            position: 'bottom',
+          }}
         />
         <YAxis
           type="number"
+          name={yAxis.label}
           dataKey={yAxis.dataKey}
           label={{
             value: yAxis.label,
@@ -45,6 +65,7 @@ const ScatterChart = ({ chartSettings }) => {
             position: 'insideLeft',
           }}
           tick={{ fontSize: 12 }}
+          domain={isAllNaN('y') ? [0, 100] : [0, 'dataMax']}
         />
         {Object.entries(data).map(([group, groupData], idx) => (
           <Scatter
@@ -56,7 +77,13 @@ const ScatterChart = ({ chartSettings }) => {
           />
         ))}
         <Tooltip content={tooltip} />
-        <Legend />
+        <Legend verticalAlign="bottom"
+          wrapperStyle={{
+            paddingTop: 30,
+            border: 'none',
+            outline: 'none',
+            backgroundColor: 'transparent',
+        }} />
       </SChart>
     </ResponsiveContainer>
   );

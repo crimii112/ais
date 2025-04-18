@@ -1,20 +1,20 @@
 import { useCallback, useMemo, useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
-import { SearchFrame } from '../search-frame';
-import { SearchDate } from '../search-date';
-import { SearchStation } from '../search-station';
-import { SearchPollutant } from '../search-pollutant';
-import { SearchCond } from '../search-cond';
-import { ContentTableFrame } from '../content-table-frame';
+import { SearchFrame } from '../../search-frame';
+import { SearchDate } from '../../search-date';
+import { SearchStation } from '../../search-station';
+import { SearchPollutant } from '../../search-pollutant';
+import { SearchCond } from '../../search-cond';
+import { ContentTableFrame } from '../../content-table-frame';
 import {
   FlexRowWrapper,
   Button,
-  Select,
-  Option,
 } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
-import { ContentScatterChartFrame } from '../content-scatter-chart-frame';
+import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
+import { Select, Option } from '@/components/ui/select-box';
+import { SelectWithArrows } from '@/components/ui/select-box';
 
 const IntensivePsize = () => {
   const postMutation = usePostRequest();
@@ -92,7 +92,19 @@ const IntensivePsize = () => {
       const groupdate = [
         ...new Set(apiRes.rstList.map(item => item.groupdate)),
       ];
+      const groupdateOptions = groupdate.map(item => {
+        return {
+          value: item,
+          text: item,
+        }
+      })
       const type = [...new Set(apiRes.rstList.map(item => item.type))];
+      const typeOptions = type.map(item => {
+        return {
+          value: item,
+          text: item,
+        }
+      })
       const groupNm = apiRes.rstList2.map(item => ({
         value: item.groupNm,
         text: item.groupNm,
@@ -104,7 +116,7 @@ const IntensivePsize = () => {
         groupNm: groupNm[0],
       });
 
-      setOptionSettings({ groupdate, type, groupNm });
+      setOptionSettings({ groupdate: groupdateOptions, type: typeOptions, groupNm });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -180,6 +192,23 @@ const IntensivePsize = () => {
     });
   };
 
+    // Select Box 옵션 이동(up/down) 핸들러
+  //   const handleOptionNavigation = (axis, direction) => {
+  //     const currentOptions = chartOptionSettings.pollutant;
+  //     const currentValue = chartSelectedOption[axis]?.value;
+  //     const currentIndex = currentOptions.findIndex(option => option.value === currentValue);
+      
+  //     let newIndex;
+  //     if (direction === 'up') {
+  //         newIndex = currentIndex > 0 ? currentIndex - 1 : currentOptions.length - 1;
+  //     } else {
+  //         newIndex = currentIndex < currentOptions.length - 1 ? currentIndex + 1 : 0;
+  //     }
+      
+  //     const newOption = currentOptions[newIndex];
+  //     setChartSelectedOption(prev => ({ ...prev, [axis]: newOption }));
+  // };
+
   return (
     <>
       {/* 데이터 검색 조건 설정 */}
@@ -218,21 +247,30 @@ const IntensivePsize = () => {
             그래프 설정
           </div>
           <FlexRowWrapper className='w-full items-stretch justify-start gap-3'>
-            <Select
+            <SelectWithArrows
+              id="groupdate"
+              value={options.groupdate}
+              options={optionSettings.groupdate}
+              onChange={e =>
+                setOptions(prev => ({ ...prev, groupdate: e.target.value }))
+              }
+              onNavigate={(direction) => handleOptionNavigation('groupdate', direction)}
+            />
+            {/* <Select
               className="w-fit min-w-40"
               onChange={e =>
                 setOptions(prev => ({ ...prev, groupdate: e.target.value }))
               }
             >
-              {optionSettings.groupdate.map(date => (
-                <Option key={date} value={date}>
-                  {date}
+              {optionSettings?.groupdate.map(date => (
+                <Option key={date?.value} value={date?.value}>
+                  {date?.text}
                 </Option>
               ))}
-            </Select>
+            </Select> */}
             <CustomMultiSelect
               className="w-100"
-              options={optionSettings.groupNm}
+              options={optionSettings?.groupNm}
               setOutsideSelectedOptions={setSelectedGroupNms}
             />
             <Select
@@ -241,9 +279,9 @@ const IntensivePsize = () => {
                 setOptions(prev => ({ ...prev, type: e.target.value }))
               }
             >
-              {optionSettings.type.map(type => (
-                <Option key={type} value={type}>
-                  {type}
+              {optionSettings?.type.map(type => (
+                <Option key={type.value} value={type.value}>
+                  {type.text}
                 </Option>
               ))}
             </Select>

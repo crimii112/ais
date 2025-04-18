@@ -5,9 +5,8 @@ import {
   FlexRowWrapper,
   GridWrapper,
   Input,
-  Select,
 } from '@/components/ui/common';
-
+import { Select } from '@/components/ui/select-box';
 
 /**
  * 검색 조건 선택 컴포넌트
@@ -26,7 +25,6 @@ const SearchCond = ({ condList, markList, initialSearchCond, setSearchCond }) =>
   const [condJson, setCondJson] = useState(initialSearchCond);
 
   useEffect(() => {
-    console.log(condJson);
     setSearchCond(condJson);
   }, [condJson]);
 

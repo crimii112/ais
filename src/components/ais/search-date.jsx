@@ -7,9 +7,8 @@ import {
   FlexColWrapper,
   Button,
   Input,
-  Select,
-  Option,
 } from '@/components/ui/common';
+import { Select, Option } from '@/components/ui/select-box';
 import usePostRequest from '@/hooks/usePostRequest';
 
 

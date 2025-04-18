@@ -4,9 +4,8 @@ import {
   FlexRowWrapper,
   FlexColWrapper,
   Button,
-  Select,
-  Option,
 } from '@/components/ui/common';
+import { Select, Option } from '@/components/ui/select-box';
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
 
