@@ -125,9 +125,8 @@ const IntensiveAuto = ({ type }) => {
 
   // Select Box 옵션 이동(up/down) 핸들러
   const handleOptionNavigation = (axis, direction) => {
-
     if (chartOptionSettings.pollutant.length === 0) return;
-    
+
     const currentOptions = chartOptionSettings.pollutant;
     const currentValue = chartSelectedOption[axis]?.value;
     const currentIndex = currentOptions.findIndex(

@@ -86,7 +86,7 @@ const IntensivePsize = () => {
 
       console.log(apiData);
       console.log(apiRes);
-      
+
       setContentData(apiRes);
 
       // 그래프 설정 옵션 설정
@@ -199,8 +199,7 @@ const IntensivePsize = () => {
 
   // Select Box 옵션 이동(up/down) 핸들러
   const handleOptionNavigation = (optionName, direction) => {
-
-    if(optionSettings[optionName].length === 0) return;
+    if (optionSettings[optionName].length === 0) return;
 
     const currentOptions = optionSettings[optionName];
     const currentValue = options[optionName];

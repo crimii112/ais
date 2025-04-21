@@ -1,16 +1,16 @@
-import { useCallback, useMemo, useState } from "react";
-import usePostRequest from "@/hooks/usePostRequest";
+import { useCallback, useMemo, useState } from 'react';
+import usePostRequest from '@/hooks/usePostRequest';
 
-import { SearchFrame } from "@/components/ais/search-frame";
-import { SearchDate } from "@/components/ais/search-date";
-import { SearchStation } from "@/components/ais/search-station";
-import { SearchPollutant } from "@/components/ais/search-pollutant";
-import { SearchCond } from "@/components/ais/search-cond";
-import { ContentTableFrame } from "@/components/ais/content-table-frame";
+import { SearchFrame } from '@/components/ais/search-frame';
+import { SearchDate } from '@/components/ais/search-date';
+import { SearchStation } from '@/components/ais/search-station';
+import { SearchPollutant } from '@/components/ais/search-pollutant';
+import { SearchCond } from '@/components/ais/search-cond';
+import { ContentTableFrame } from '@/components/ais/content-table-frame';
 
-const IntensiveDataFrame = ({children, type}) => {
-    const config = INTENSIVE_SETTINGS[type];
-    const postMutation = usePostRequest();
+const IntensiveDataFrame = ({ children, type }) => {
+  const config = INTENSIVE_SETTINGS[type];
+  const postMutation = usePostRequest();
 
   // 검색 조건 설정
   const [dateList, setDateList] = useState([]);
@@ -26,13 +26,23 @@ const IntensiveDataFrame = ({children, type}) => {
       page: config.page,
       date: dateList,
       site: stationList,
-      ...(config.markList ? { cond: searchCond[0] } : {cond: searchCond}),
-      ...(config.markList ? { mark: searchCond.slice(1) } : {mark: [
-        { id: 'unit1', checked: false },
-        { id: 'unit2', checked: false },
-      ]}),
-      ...(config.digitList ? { digitlist: pollutant[0] } : {digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 }}),
-      ...(config.digitList ? { polllist: pollutant.slice(1) } : {pollist: pollutant}),
+      ...(config.markList ? { cond: searchCond[0] } : { cond: searchCond }),
+      ...(config.markList
+        ? { mark: searchCond.slice(1) }
+        : {
+            mark: [
+              { id: 'unit1', checked: false },
+              { id: 'unit2', checked: false },
+            ],
+          }),
+      ...(config.digitList
+        ? { digitlist: pollutant[0] }
+        : {
+            digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+          }),
+      ...(config.digitList
+        ? { polllist: pollutant.slice(1) }
+        : { pollist: pollutant }),
     }),
     [dateList, stationList, searchCond, pollutant]
   );
@@ -64,24 +74,24 @@ const IntensiveDataFrame = ({children, type}) => {
 
       setContentData(apiRes);
 
-    //   // headList 중 물질만 추출하여 옵션 설정
-    //   // 물질 옵션은 3번째 인덱스부터 시작
-    //   const options = apiRes.headList.map((value, idx) => ({
-    //     value,
-    //     text: apiRes.headNameList[idx],
-    //   }));
-    //   const processedOptions = options.slice(3);
+      //   // headList 중 물질만 추출하여 옵션 설정
+      //   // 물질 옵션은 3번째 인덱스부터 시작
+      //   const options = apiRes.headList.map((value, idx) => ({
+      //     value,
+      //     text: apiRes.headNameList[idx],
+      //   }));
+      //   const processedOptions = options.slice(3);
 
-    //   const groupNm = apiRes.rstList2.map(item => ({
-    //     value: item.groupNm,
-    //     text: item.groupNm,
-    //   }));
+      //   const groupNm = apiRes.rstList2.map(item => ({
+      //     value: item.groupNm,
+      //     text: item.groupNm,
+      //   }));
 
-    //   setChartOptionSettings({ pollutant: processedOptions, groupNm });
-    //   setChartSelectedOption({
-    //     x: processedOptions[0],
-    //     y: processedOptions[0],
-    //   });
+      //   setChartOptionSettings({ pollutant: processedOptions, groupNm });
+      //   setChartSelectedOption({
+      //     x: processedOptions[0],
+      //     y: processedOptions[0],
+      //   });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -89,79 +99,80 @@ const IntensiveDataFrame = ({children, type}) => {
     }
   }, [apiData, postMutation]);
 
-    return (
-        <>
-            {/* 데이터 검색 조건 설정 */}
-            <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-                <SearchDate setDateList={setDateList} type="intensive" />
-                <SearchStation
-                    title="대기환경연구소"
-                    siteType="intensive"
-                    onTms={false}
-                    setStationList={setStationList}
-                />
-                <SearchPollutant
-                    title={config.digitList ? "물질 및 소수점 자릿수" : "자료획득률"}
-                    digitList={config.digitList}
-                    signList={config.signList}
-                    initialPollutant={pollutant}
-                    setPollutant={setPollutant}
-                />
-                <SearchCond
-                    condList={config.condList}
-                    markList={config.markList}
-                    initialSearchCond={searchCond}
-                    setSearchCond={setSearchCond}
-                />
-            </SearchFrame>
+  return (
+    <>
+      {/* 데이터 검색 조건 설정 */}
+      <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
+        <SearchDate setDateList={setDateList} type="intensive" />
+        <SearchStation
+          title="대기환경연구소"
+          siteType="intensive"
+          onTms={false}
+          setStationList={setStationList}
+        />
+        <SearchPollutant
+          title={config.digitList ? '물질 및 소수점 자릿수' : '자료획득률'}
+          digitList={config.digitList}
+          signList={config.signList}
+          initialPollutant={pollutant}
+          setPollutant={setPollutant}
+        />
+        <SearchCond
+          condList={config.condList}
+          markList={config.markList}
+          initialSearchCond={searchCond}
+          setSearchCond={setSearchCond}
+        />
+      </SearchFrame>
 
-            {/* 결과 테이블 */}
-            <ContentTableFrame
-                datas={contentData}
-                isLoading={isLoading}
-                fileName={config.title}
-            />
+      {/* 결과 테이블 */}
+      <ContentTableFrame
+        datas={contentData}
+        isLoading={isLoading}
+        fileName={config.title}
+      />
 
-            {children}
-        </>
-    );
+      {children}
+    </>
+  );
 };
 
 export { IntensiveDataFrame };
 
 // 초기 검색 조건 설정값
 const initCond = {
+  sect: 'time',
+  poll: 'calc',
+  dust: 'include',
+  stats: '',
+  eqType: 'SMPS_APS_O',
+};
+const initCond_2 = [
+  {
     sect: 'time',
     poll: 'calc',
     dust: 'include',
     stats: '',
     eqType: 'SMPS_APS_O',
-}
-const initCond_2 = [
-    {
-        sect: 'time',
-        poll: 'calc',
-        dust: 'include',
-        stats: '',
-        eqType: 'SMPS_APS_O',
-    },
-    { id: 'unit1', checked: false }, // markList
-    { id: 'unit2', checked: false }]
+  },
+  { id: 'unit1', checked: false }, // markList
+  { id: 'unit2', checked: false },
+];
 
 // 초기 물질 및 소수점 자릿수 설정값
 const initPollutant_1 = [
-    { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
-    { id: 'High', checked: true, signvalue: '#' },
-    { id: 'Low', checked: true, signvalue: '##' },
-    { id: 'dumy', checked: false },
-  ]
+  { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+  { id: 'High', checked: true, signvalue: '#' },
+  { id: 'Low', checked: true, signvalue: '##' },
+  { id: 'dumy', checked: false },
+];
 const initPollutant_2 = [
-    { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
-    { id: 'High', checked: true, signvalue: '#' },
-    { id: 'Low', checked: true, signvalue: '##' },
-    { id: 'dumy', checked: false },
-  ]
-  
+  { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+  { id: 'High', checked: true, signvalue: '#' },
+  { id: 'Low', checked: true, signvalue: '##' },
+  { id: 'dumy', checked: false },
+];
+
 // 자료획득률 조건 데이터 => searchPollutant 컴포넌트에서 사용
 const signList = [
   { id: 'High', text: '~75% 미만', checked: true, signvalue: '#' },
@@ -315,33 +326,32 @@ const markList = [
 
 // 대기환경연구소 페이지별 세팅
 const INTENSIVE_SETTINGS = {
-    psize: {   
-        page: 'intensive/psize',
-        initCond: initCond,
-        initPollutant: initPollutant_1,
-        condList: condList_1,
-        signList: signList,
-        title: '(단일)입경크기분포'
-    },
-    autoTimeCorrelation: {
-        page: 'intensive/autotimecorrelation',
-        initCond: initCond_2,
-        initPollutant: initPollutant_2,
-        condList: condList_2,
-        markList: markList,
-        digitList: digitList,
-        signList: signList,
-        title: '자동-(단일)성분상관성검토'
-
-    },
-    autoGraph: {
-        page: 'intensive/autograph',
-        initCond: initCond_2,
-        initPollutant: initPollutant_2,
-        condList: condList_1,
-        markList: markList,
-        digitList: digitList,
-        signList: signList,
-        title: '자동-(단일)성분누적그래프'
-    }
-}
+  psize: {
+    page: 'intensive/psize',
+    initCond: initCond,
+    initPollutant: initPollutant_1,
+    condList: condList_1,
+    signList: signList,
+    title: '(단일)입경크기분포',
+  },
+  autoTimeCorrelation: {
+    page: 'intensive/autotimecorrelation',
+    initCond: initCond_2,
+    initPollutant: initPollutant_2,
+    condList: condList_2,
+    markList: markList,
+    digitList: digitList,
+    signList: signList,
+    title: '자동-(단일)성분상관성검토',
+  },
+  autoGraph: {
+    page: 'intensive/autograph',
+    initCond: initCond_2,
+    initPollutant: initPollutant_2,
+    condList: condList_1,
+    markList: markList,
+    digitList: digitList,
+    signList: signList,
+    title: '자동-(단일)성분누적그래프',
+  },
+};
