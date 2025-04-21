@@ -34,8 +34,13 @@ const ScatterChart = ({ chartSettings }) => {
    * @returns {boolean} 데이터가 모두 NaN인 경우 true, 아니면 false
    */
   const isAllNaN = (axis) => {
-    if (!Array.isArray(data)) return true;
-    return data.every(d => typeof isNaN(d[axis]));
+    if (!data || typeof data !== 'object') return true;
+    
+    // 모든 그룹의 데이터를 하나의 배열로 합침
+    const allData = Object.values(data).flat();
+    if (allData.length === 0) return true;
+    
+    return allData.every(d => isNaN(d[axis]));
   };
 
   return (
@@ -65,7 +70,7 @@ const ScatterChart = ({ chartSettings }) => {
             position: 'insideLeft',
           }}
           tick={{ fontSize: 12 }}
-          domain={isAllNaN('y') ? [0, 100] : [0, 'dataMax']}
+          domain={isAllNaN('y') ? [0, 100] : [0, 'auto']}
         />
         {Object.entries(data).map(([group, groupData], idx) => (
           <Scatter

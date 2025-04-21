@@ -50,14 +50,16 @@ const Select = forwardRef(({ className, children, ...props }, ref) => (
 
 /**
  * 화살표 버튼이 있는 Select 컴포넌트
- * @param {Object} props
- * @param {string} props.id - Select 컴포넌트의 id
- * @param {string} props.value - 현재 선택된 값
- * @param {Array} props.options - 선택 가능한 옵션 목록
- * @param {Function} props.onChange - 값 변경 시 호출되는 함수
- * @param {Function} props.onNavigate - 화살표 버튼 클릭 시 호출되는 함수
- * @param {string} props.className - 추가 클래스명
- */
+ * @param {string} id - Select 컴포넌트의 id
+ * @param {string} value - 현재 선택된 값
+ * @param {Array} options - 선택 가능한 옵션 목록
+ * @example options = [{value: '1', text: '1'}, {value: '2', text: '2'}]
+ * @param {Function} onChange - 값 변경 시 호출되는 함수
+ * @param {Function} onNavigate - 화살표 버튼 클릭 시 호출되는 함수
+ * @param {string} className - 추가 클래스명
+ * @returns {React.ReactNode} 화살표(up/down) 버튼이 있는 Select 컴포넌트
+*/
+
 const SelectWithArrows = ({ id, value, options, onChange, onNavigate, className = "" }) => {
     return (
         <FlexRowWrapper className={`items-stretch gap-1 ${className}`}>

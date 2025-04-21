@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../../search-frame';
@@ -7,13 +7,9 @@ import { SearchStation } from '../../search-station';
 import { SearchPollutant } from '../../search-pollutant';
 import { SearchCond } from '../../search-cond';
 import { ContentTableFrame } from '../../content-table-frame';
-import {
-  FlexRowWrapper,
-  Button,
-} from '@/components/ui/common';
+import { FlexRowWrapper, Button } from '@/components/ui/common';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
-import { Select, Option } from '@/components/ui/select-box';
 import { SelectWithArrows } from '@/components/ui/select-box';
 
 const IntensivePsize = () => {
@@ -23,7 +19,6 @@ const IntensivePsize = () => {
   const [dateList, setDateList] = useState([]);
   const [stationList, setStationList] = useState([]);
   const [pollutant, setPollutant] = useState([
-    {"pm":1, "lon":3, "carbon":1, "metal":1, "gas":1, "other":6  },
     { id: 'High', checked: true, signvalue: '#' },
     { id: 'Low', checked: true, signvalue: '##' },
     { id: 'dumy', checked: false },
@@ -48,26 +43,29 @@ const IntensivePsize = () => {
   const [options, setOptions] = useState({}); // select box에 들어갈 옵션들
   const [chartSettings, setChartSettings] = useState();
 
+  const [shouldRedrawChart, setShouldRedrawChart] = useState(false);
 
-  const apiData = useMemo(() => ({
-    page: 'intensive/psize',
-    date: dateList,
-    site: stationList,
-    cond: searchCond,
-    polllist: pollutant,
-    mark: [
-      { id: 'unit1', checked: false },
-      { id: 'unit2', checked: false },
-    ],
-    digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
-  }), [dateList, stationList, searchCond, pollutant]);
-
+  const apiData = useMemo(
+    () => ({
+      page: 'intensive/psize',
+      date: dateList,
+      site: stationList,
+      cond: searchCond,
+      polllist: pollutant,
+      mark: [
+        { id: 'unit1', checked: false },
+        { id: 'unit2', checked: false },
+      ],
+      digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+    }),
+    [dateList, stationList, searchCond, pollutant]
+  );
 
   const handleClickSearchBtn = useCallback(async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
-    
+
     setChartSettings(undefined);
     setIsLoading(true);
     setContentData(undefined);
@@ -86,6 +84,9 @@ const IntensivePsize = () => {
         };
       }
 
+      console.log(apiData);
+      console.log(apiRes);
+      
       setContentData(apiRes);
 
       // 그래프 설정 옵션 설정
@@ -96,15 +97,15 @@ const IntensivePsize = () => {
         return {
           value: item,
           text: item,
-        }
-      })
+        };
+      });
       const type = [...new Set(apiRes.rstList.map(item => item.type))];
       const typeOptions = type.map(item => {
         return {
           value: item,
           text: item,
-        }
-      })
+        };
+      });
       const groupNm = apiRes.rstList2.map(item => ({
         value: item.groupNm,
         text: item.groupNm,
@@ -116,7 +117,11 @@ const IntensivePsize = () => {
         groupNm: groupNm[0],
       });
 
-      setOptionSettings({ groupdate: groupdateOptions, type: typeOptions, groupNm });
+      setOptionSettings({
+        groupdate: groupdateOptions,
+        type: typeOptions,
+        groupNm,
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -192,22 +197,38 @@ const IntensivePsize = () => {
     });
   };
 
-    // Select Box 옵션 이동(up/down) 핸들러
-  //   const handleOptionNavigation = (axis, direction) => {
-  //     const currentOptions = chartOptionSettings.pollutant;
-  //     const currentValue = chartSelectedOption[axis]?.value;
-  //     const currentIndex = currentOptions.findIndex(option => option.value === currentValue);
-      
-  //     let newIndex;
-  //     if (direction === 'up') {
-  //         newIndex = currentIndex > 0 ? currentIndex - 1 : currentOptions.length - 1;
-  //     } else {
-  //         newIndex = currentIndex < currentOptions.length - 1 ? currentIndex + 1 : 0;
-  //     }
-      
-  //     const newOption = currentOptions[newIndex];
-  //     setChartSelectedOption(prev => ({ ...prev, [axis]: newOption }));
-  // };
+  // Select Box 옵션 이동(up/down) 핸들러
+  const handleOptionNavigation = (optionName, direction) => {
+
+    if(optionSettings[optionName].length === 0) return;
+
+    const currentOptions = optionSettings[optionName];
+    const currentValue = options[optionName];
+    const currentIndex = currentOptions.findIndex(
+      option => option.value === currentValue
+    );
+
+    let newIndex;
+    if (direction === 'up') {
+      newIndex =
+        currentIndex > 0 ? currentIndex - 1 : currentOptions.length - 1;
+    } else {
+      newIndex =
+        currentIndex < currentOptions.length - 1 ? currentIndex + 1 : 0;
+    }
+
+    const newOption = currentOptions[newIndex];
+    setOptions(prev => ({ ...prev, [optionName]: newOption.value }));
+    setShouldRedrawChart(true);
+  };
+
+  // options 상태가 변경되고 shouldRedrawChart가 true일 때만 차트를 다시 그립니다
+  useEffect(() => {
+    if (shouldRedrawChart && Object.keys(options).length > 0) {
+      handleClickDrawChart();
+      setShouldRedrawChart(false);
+    }
+  }, [options, shouldRedrawChart]);
 
   return (
     <>
@@ -241,12 +262,19 @@ const IntensivePsize = () => {
       />
 
       {/* 그래프 그리기 */}
-      <ContentScatterChartFrame isLoading={isLoading} title="입경크기분포" chartSettings={chartSettings}>
+      <ContentScatterChartFrame
+        isLoading={isLoading}
+        title="입경크기분포"
+        chartSettings={chartSettings}
+      >
         <FlexRowWrapper className="w-full gap-10 mb-4 items-center justify-between">
           <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
             그래프 설정
           </div>
-          <FlexRowWrapper className='w-full items-stretch justify-start gap-3'>
+          <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
+            <span className="flex flex-col items-center justify-center">
+              측정일자 :{' '}
+            </span>
             <SelectWithArrows
               id="groupdate"
               value={options.groupdate}
@@ -254,37 +282,32 @@ const IntensivePsize = () => {
               onChange={e =>
                 setOptions(prev => ({ ...prev, groupdate: e.target.value }))
               }
-              onNavigate={(direction) => handleOptionNavigation('groupdate', direction)}
-            />
-            {/* <Select
-              className="w-fit min-w-40"
-              onChange={e =>
-                setOptions(prev => ({ ...prev, groupdate: e.target.value }))
+              onNavigate={direction =>
+                handleOptionNavigation('groupdate', direction)
               }
-            >
-              {optionSettings?.groupdate.map(date => (
-                <Option key={date?.value} value={date?.value}>
-                  {date?.text}
-                </Option>
-              ))}
-            </Select> */}
+            />
+            <span className="flex flex-col items-center justify-center">
+              TYPE :{' '}
+            </span>
+            <SelectWithArrows
+              id="type"
+              value={options.type}
+              options={optionSettings.type}
+              onChange={e =>
+                setOptions(prev => ({ ...prev, type: e.target.value }))
+              }
+              onNavigate={direction =>
+                handleOptionNavigation('type', direction)
+              }
+            />
+            <span className="flex flex-col items-center justify-center">
+              측정소 :{' '}
+            </span>
             <CustomMultiSelect
               className="w-100"
               options={optionSettings?.groupNm}
               setOutsideSelectedOptions={setSelectedGroupNms}
             />
-            <Select
-              className="w-fit min-w-40"
-              onChange={e =>
-                setOptions(prev => ({ ...prev, type: e.target.value }))
-              }
-            >
-              {optionSettings?.type.map(type => (
-                <Option key={type.value} value={type.value}>
-                  {type.text}
-                </Option>
-              ))}
-            </Select>
           </FlexRowWrapper>
           <Button
             className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"

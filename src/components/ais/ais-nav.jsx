@@ -16,6 +16,7 @@ import { PhotoCh } from './contents/photoch';
 import { Toxic } from './contents/toxic';
 import { IntensivePsize } from './contents/intensive/intensive-psize';
 import { IntensiveAuto } from './contents/intensive/intensive-auto';
+import { IntensiveDataFrame } from './contents/intensive/intensive-data-frame';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -105,9 +106,14 @@ const data = {
           content: <IntensiveAuto type='timeCorrelation' />,
         },
         {
-          pathName: 'intensive/...',
-          title: 'nav3-sub3',
-          content: 'nav3-sub3',
+          pathName: 'intensive/autograph',
+          title: '자동-(단일)성분누적그래프',
+          content: <IntensiveAuto type='graph' />,
+        },
+        {
+          pathName: 'intensive/test',
+          title: 'intensive-data-frame 테스트',
+          content: <IntensiveDataFrame type='psize' />,
         },
       ],
     },
