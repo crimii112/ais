@@ -15,8 +15,8 @@ import { CmmnAir } from './contents/cmmnair';
 import { PhotoCh } from './contents/photoch';
 import { Toxic } from './contents/toxic';
 import { IntensivePsize } from './contents/intensive/intensive-psize';
-import { IntensiveAuto } from './contents/intensive/intensive-auto';
-import { IntensiveDataFrame } from './contents/intensive/intensive-data-frame';
+import { IntensiveAutoTimeCorrelation } from './contents/intensive/intensive-auto-timecorrelation';
+import { IntensiveAutoGraph } from './contents/intensive/intensive-auto-graph';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -103,17 +103,12 @@ const data = {
         {
           pathName: 'intensive/autotimecorrelation',
           title: '자동-(단일)성분상관성검토',
-          content: <IntensiveAuto type='timeCorrelation' />,
+          content: <IntensiveAutoTimeCorrelation />,
         },
         {
           pathName: 'intensive/autograph',
           title: '자동-(단일)성분누적그래프',
-          content: <IntensiveAuto type='graph' />,
-        },
-        {
-          pathName: 'intensive/test',
-          title: 'intensive-data-frame 테스트',
-          content: <IntensiveDataFrame type='psize' />,
+          content: <IntensiveAutoGraph />,
         },
       ],
     },

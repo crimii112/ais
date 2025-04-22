@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '@/components/ais/search-frame';
@@ -8,7 +8,7 @@ import { SearchPollutant } from '@/components/ais/search-pollutant';
 import { SearchCond } from '@/components/ais/search-cond';
 import { ContentTableFrame } from '@/components/ais/content-table-frame';
 
-const IntensiveDataFrame = ({ children, type }) => {
+const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings }) => {
   const config = INTENSIVE_SETTINGS[type];
   const postMutation = usePostRequest();
 
@@ -20,6 +20,13 @@ const IntensiveDataFrame = ({ children, type }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
+
+  // isLoading 상태가 변경될 때마다 부모 컴포넌트에 알림
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(isLoading);
+    }
+  }, [isLoading, onLoadingChange]);
 
   const apiData = useMemo(
     () => ({
@@ -42,7 +49,7 @@ const IntensiveDataFrame = ({ children, type }) => {
           }),
       ...(config.digitList
         ? { polllist: pollutant.slice(1) }
-        : { pollist: pollutant }),
+        : { polllist: pollutant }),
     }),
     [dateList, stationList, searchCond, pollutant]
   );
@@ -52,6 +59,7 @@ const IntensiveDataFrame = ({ children, type }) => {
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
 
+    initSettings && initSettings();
     setIsLoading(true);
     setContentData(undefined);
 
@@ -69,35 +77,17 @@ const IntensiveDataFrame = ({ children, type }) => {
         };
       }
 
-      console.log(apiData);
-      console.log(apiRes);
-
       setContentData(apiRes);
 
-      //   // headList 중 물질만 추출하여 옵션 설정
-      //   // 물질 옵션은 3번째 인덱스부터 시작
-      //   const options = apiRes.headList.map((value, idx) => ({
-      //     value,
-      //     text: apiRes.headNameList[idx],
-      //   }));
-      //   const processedOptions = options.slice(3);
-
-      //   const groupNm = apiRes.rstList2.map(item => ({
-      //     value: item.groupNm,
-      //     text: item.groupNm,
-      //   }));
-
-      //   setChartOptionSettings({ pollutant: processedOptions, groupNm });
-      //   setChartSelectedOption({
-      //     x: processedOptions[0],
-      //     y: processedOptions[0],
-      //   });
+      if (onDataLoaded) {
+        onDataLoaded(apiRes);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, postMutation]);
+  }, [apiData, postMutation, onDataLoaded]);
 
   return (
     <>
@@ -161,7 +151,6 @@ const initCond_2 = [
 
 // 초기 물질 및 소수점 자릿수 설정값
 const initPollutant_1 = [
-  { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
   { id: 'High', checked: true, signvalue: '#' },
   { id: 'Low', checked: true, signvalue: '##' },
   { id: 'dumy', checked: false },
