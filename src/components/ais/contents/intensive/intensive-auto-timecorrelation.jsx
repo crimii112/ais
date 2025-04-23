@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
 import { IntensiveDataFrame } from './intensive-data-frame';
@@ -26,6 +26,11 @@ const CustomTooltip = React.memo(({ active, payload }) => {
 });
 CustomTooltip.displayName = 'CustomTooltip';
 
+/**
+ * 자동-(단일)성분상관성검토 페이지
+ * - X축/Y축/측정소 선택 후 그래프 그리기
+ * - 그래프는 산점도 사용
+ */
 const IntensiveAutoTimeCorrelation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
@@ -40,7 +45,7 @@ const IntensiveAutoTimeCorrelation = () => {
 
   const initSettings = () => setChartSettings(undefined);
 
-  const handleDataLoaded = data => {
+  const handleDataLoaded = useCallback(data => {
     if (!data?.headList || !data?.headNameList || !data?.rstList2) return;
 
     setContentData(data);
@@ -59,12 +64,12 @@ const IntensiveAutoTimeCorrelation = () => {
       text: item.groupNm,
     }));
 
-      setChartOptionSettings({ pollutant: pollutantOptions, groupNm: groupNmOptions });
-      setChartSelectedOption({
-        x: pollutantOptions[0],
-        y: pollutantOptions[0],
-      });
-  };
+    setChartOptionSettings({ pollutant: pollutantOptions, groupNm: groupNmOptions });
+    setChartSelectedOption({
+      x: pollutantOptions[0],
+      y: pollutantOptions[0],
+    });
+  }, []);
 
   // 그래프(산점도) 선택 옵션(측정소명) 변경 핸들러
   const setSelectedGroupNms = selectedOptions => {
@@ -115,10 +120,13 @@ const IntensiveAutoTimeCorrelation = () => {
   // 그래프(산점도) 그리기 버튼 클릭 핸들러
   const handleClickDrawChart = () => {
     const rawData = contentData.rstList.filter(data =>
-      chartSelectedOption.groupNm.some(item => item.value === data.groupNm)
+      chartSelectedOption.groupNm?.some(item => item.value === data.groupNm)
     );
 
-    if (!rawData.length) return null;
+    if (!rawData.length) {
+      alert('그래프를 그릴 데이터가 없습니다. 조건을 확인해주세요.');
+      return;
+    }
 
     const processedData = rawData.map(item => ({
       groupdate: item.groupdate,

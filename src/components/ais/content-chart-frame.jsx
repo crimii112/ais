@@ -36,6 +36,8 @@ const CHART_SETTINGS = {
 
 /**
  * 그래프 프레임 컴포넌트
+ * - 기본 line, pie, bar 그래프 타입에 사용
+ * - 광화학/유해자동
  * @param {Object} datas - 데이터
  * @param {boolean} isLoading - 로딩 여부
  * @param {string} type - 그래프 타입
