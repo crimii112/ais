@@ -17,6 +17,7 @@ import { ScatterChart } from '@/components/ui/chart-scatter';
  * @param {boolean} isLoading 로딩 상태
  * @param {string} title 그래프 제목
  * @param {Object} chartSettings 그래프 설정
+ * @param {function} setHighlightedRow 하이라이트 표시할 행의 rowKey 저장 함수
  * @example chartSettings = {data: {수도권: [{groupNm: '수도권', groupdate: '2015/01/01 01', type: "dN/dlogdP", x: 10.6, y: 100}, ...]}, 
  *                           tooltip: <CustomTooltip />, 
  *                           xAxis: { dataKey: 'x', scale: 'log', domain: [10.6, 10000], ticks: [10, 100, 1000, 10000] }, 
@@ -25,7 +26,7 @@ import { ScatterChart } from '@/components/ui/chart-scatter';
 */
 
 
-const ContentScatterChartFrame = ({ children, isLoading, title, chartSettings }) => {
+const ContentScatterChartFrame = ({ children, isLoading, title, chartSettings, setHighlightedRow }) => {
 
   // 이미지 저장 버튼 핸들러
   const handleSaveImage = async () => {
@@ -59,7 +60,7 @@ const ContentScatterChartFrame = ({ children, isLoading, title, chartSettings })
                 id={`${title}-scatter-chart-wrapper`}
                 className="w-full h-full py-6"
               >
-                <ScatterChart chartSettings={chartSettings} />
+                <ScatterChart chartSettings={chartSettings} setHighlightedRow={setHighlightedRow} />
               </div>
               <FlexRowWrapper className="w-full justify-end gap-2">
                 <Button

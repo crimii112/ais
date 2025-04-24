@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -14,6 +13,7 @@ import {
  * 산점도 그래프 컴포넌트
  * - 정해진 chartSettings 형식에 맞춰서 데이터만 보내면 그래프 그릴 수 있습니다. 아래 예시 참고.
  * @param {Object} chartSettings 그래프 설정
+ * @param {function} setHighlightedRow 하이라이트 표시할 행의 rowKey 저장 함수
  * @example chartSettings = {xAxis: {dataKey: 'x', scale: 'log', domain: [10.6, 10000], ticks: [10, 100, 1000, 10000], label(optional): 'x축 라벨명'}, 
  *                           yAxis: {dataKey: 'y', label: 'dN/dlogdP (#/cm3)'}, 
  *                           data: {수도권: [{groupNm: '수도권', groupdate: '2015/01/01 01', type: "dN/dlogdP", x: 10.6, y: 100}, ...]}, 
@@ -22,7 +22,7 @@ import {
  */
 
 
-const ScatterChart = ({ chartSettings }) => {
+const ScatterChart = ({ chartSettings, setHighlightedRow }) => {
   const { xAxis, yAxis, data, tooltip } = chartSettings;
 
   /**
@@ -43,9 +43,19 @@ const ScatterChart = ({ chartSettings }) => {
     return allData.every(d => isNaN(d[axis]));
   };
 
+  // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
+  const handleChartClick = (e) => {
+    const clicked = e?.activePayload?.[0]?.payload;
+    if (clicked) {
+      const rowKey = clicked.groupdate + '_' + clicked.groupNm;
+      console.log(rowKey);
+      setHighlightedRow(rowKey);
+    }
+  };
+
   return (
     <ResponsiveContainer width="100%" height={700}>
-      <SChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }}>
+      <SChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }} onClick={handleChartClick}>
         <CartesianGrid strokeDasharray="3" />
         <XAxis
           type="number"

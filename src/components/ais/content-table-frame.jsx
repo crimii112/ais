@@ -10,9 +10,10 @@ import { Loading } from '@/components/ui/loading';
  * @param {Object} datas - 테이블 데이터
  * @param {boolean} isLoading - 로딩 여부
  * @param {string} fileName - 파일 이름
+ * @param {number} highlightedRow - 강조된 행의 인덱스
  * @returns {React.ReactElement} 테이블 프레임 컴포넌트
  */
-const ContentTableFrame = ({ datas, isLoading, fileName }) => {
+const ContentTableFrame = ({ datas, isLoading, fileName, highlightedRow }) => {
 
   /**
    * 클립보드 복사 함수(react-copy-to-clipboard 라이브러리 사용)
@@ -108,7 +109,7 @@ const ContentTableFrame = ({ datas, isLoading, fileName }) => {
           <Loading />
         </div>
       ) : (
-        datas && <Table datas={datas} />
+        datas && <Table datas={datas} highlightedRow={highlightedRow} />
       )}
     </FlexColWrapper>
   );

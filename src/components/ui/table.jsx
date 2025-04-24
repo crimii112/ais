@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   createColumnHelper,
   flexRender,
@@ -6,6 +6,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { debounce } from 'lodash';
 
 /**
  * 텍스트 길이 측정 함수
@@ -59,12 +60,13 @@ const calculateColumnWidths = (
  * @param {Array} datas.rstList - 테이블 데이터 목록
  * @param {Array} datas.headList - 테이블 헤더 목록
  * @param {Array} datas.headNameList - 테이블 헤더 이름 목록
+ * @param {string} highlightedRow - 강조된 행의 키
  * @example datas.rstList = [{groupdate: '2024-01-01', groupNm: '인천.강화군.석모리', data01: 10, data02: 20, ..., rflag: null, ...}, ...]
  * @example datas.headList = ['groupdate', 'groupNm', 'data01', 'data02', ...]
  * @example datas.headNameList = ['측정일자', '측정소', '1)Ethane', '2)Ethylene', ...]
  * @returns {React.ReactElement} 테이블 컴포넌트
  */
-const Table = ({ datas }) => {
+const Table = ({ datas, highlightedRow }) => {
   const parentRef = useRef();
   const [columns, setColumns] = useState([]);
 
@@ -111,7 +113,46 @@ const Table = ({ datas }) => {
 
   const virtualRows = rowVirtualizer.getVirtualItems();
   const totalSize = rowVirtualizer.getTotalSize();
+  
+  // 스크롤 위치 계산 함수
+  const calculateScrollPosition = useCallback((index) => {
+    const rowHeight = 40; // 각 행의 높이
+    const containerHeight = parentRef.current?.clientHeight || 0;
+    return Math.max(0, index * rowHeight - containerHeight / 2);
+  }, []);
 
+  // 스크롤 실행 함수
+  const executeScroll = useCallback((scrollTop) => {
+    if (parentRef.current) {
+      parentRef.current.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // 디바운스된 스크롤 함수
+  const debouncedScroll = useCallback(
+    debounce((index) => {
+      const scrollTop = calculateScrollPosition(index);
+      executeScroll(scrollTop);
+    }, 100),
+    [calculateScrollPosition, executeScroll]
+  );
+
+  // 그래프에서 클릭한 데이터 -> 테이블에서 해당 행에 하이라이트 표시
+  useEffect(() => {
+    if (!highlightedRow || !datas?.rstList) return;
+
+    const index = datas.rstList.findIndex(
+      row => `${row.groupdate}_${row.groupNm}` === highlightedRow
+    );
+
+    if (index !== -1) {
+      debouncedScroll(index);
+    }
+  }, [highlightedRow, datas, debouncedScroll]);
+  
   return (
     <div
       className="w-full max-h-[820px] overflow-auto border border-gray-200 rounded-md"
@@ -183,6 +224,9 @@ const Table = ({ datas }) => {
           ) : (
             virtualRows.map(virtualRow => {
               const row = table.getRowModel().rows[virtualRow.index];
+              const rowKey = `${row.original.groupdate}_${row.original.groupNm}`;
+              const isHighlighted = rowKey === highlightedRow;
+
               return (
                 <div
                   key={row.id}
@@ -192,13 +236,13 @@ const Table = ({ datas }) => {
                     transform: `translateY(${virtualRow.start}px)`,
                     width: '100%',
                   }}
-                  className="flex border-b border-gray-100 hover:bg-blue-50 transition-colors duration-150"
+                  className={`flex border-b border-gray-100 hover:bg-blue-100 transition-colors duration-150 ${isHighlighted ? 'bg-blue-500 hover:bg-blue-500' : ''}`}
                   role="row"
                 >
                   {row.getVisibleCells().map((cell, index) => (
                     <div
                       key={cell.id}
-                      className="p-2 whitespace-nowrap text-gray-700 flex-1 text-center"
+                      className={`p-2 whitespace-nowrap text-gray-700 flex-1 text-center ${isHighlighted ? 'text-white' : ''}`}
                       style={{
                         minWidth: `${cell.column.getSize()}px`,
                         borderRight: index < row.getVisibleCells().length - 1 ? '1px solid #f1f5f9' : 'none'
@@ -220,4 +264,6 @@ const Table = ({ datas }) => {
     </div>
   );
 };
+
+
 export { Table };

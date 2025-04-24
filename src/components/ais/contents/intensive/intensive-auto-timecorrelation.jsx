@@ -1,10 +1,10 @@
 import React, { useCallback, useState, useEffect } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
-import { IntensiveDataFrame } from './intensive-data-frame';
-import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 import { SelectWithArrows } from '@/components/ui/select-box';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
+import { IntensiveDataFrame } from './intensive-data-frame';
+import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
 // 툴팁 컴포넌트 메모이제이션
 const CustomTooltip = React.memo(({ active, payload }) => {
@@ -30,6 +30,7 @@ CustomTooltip.displayName = 'CustomTooltip';
  * 자동-(단일)성분상관성검토 페이지
  * - X축/Y축/측정소 선택 후 그래프 그리기
  * - 그래프는 산점도 사용
+ * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
  */
 const IntensiveAutoTimeCorrelation = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +43,8 @@ const IntensiveAutoTimeCorrelation = () => {
   const [chartSelectedOption, setChartSelectedOption] = useState({});
   const [chartSettings, setChartSettings] = useState();
   const [shouldRedrawChart, setShouldRedrawChart] = useState(false);
+
+  const [highlightedRow, setHighlightedRow] = useState(null);
 
   const initSettings = () => setChartSettings(undefined);
 
@@ -164,11 +167,13 @@ const IntensiveAutoTimeCorrelation = () => {
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}
+      highlightedRow={highlightedRow}
     >
       <ContentScatterChartFrame
         isLoading={isLoading}
         title='자동-(단일)성분상관성검토'
         chartSettings={chartSettings}
+        setHighlightedRow={setHighlightedRow}
       >
         <FlexRowWrapper className="w-full gap-10 mb-4 items-stretch justify-between">
           <div className="mt-1.5 text-lg font-semibold text-gray-900 whitespace-nowrap p-1">

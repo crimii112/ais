@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
-import { IntensiveDataFrame } from './intensive-data-frame';
-import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { SelectWithArrows } from '@/components/ui/select-box';
+import CustomMultiSelect from '@/components/ui/custom-multiple-select';
+import { IntensiveDataFrame } from './intensive-data-frame';
 import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
 /**

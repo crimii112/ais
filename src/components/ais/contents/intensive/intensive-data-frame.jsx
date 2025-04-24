@@ -8,7 +8,22 @@ import { SearchPollutant } from '@/components/ais/search-pollutant';
 import { SearchCond } from '@/components/ais/search-cond';
 import { ContentTableFrame } from '@/components/ais/content-table-frame';
 
-const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings }) => {
+/**
+ * 대기환경연구소 페이지 데이터 프레임 컴포넌트
+ * - 대기환경연구소는 검색 부분이 거의 비슷하기 때문에 공통 컴포넌트로 분리
+ * - 검색 조건 설정 컴포넌트 및 결과 테이블 컴포넌트 사용
+ * - 그래프 그리는 부분은 각 페이지에서 구현
+ * - 맨 아래 INTENSIVE_SETTINGS 변수에 페이지 타입별 설정 정보 저장
+ * @param {React.ReactNode} children 자식 컴포넌트
+ * @param {string} type 페이지 타입
+ * @param {function} onDataLoaded 데이터 로드 시 실행할 함수
+ * @param {function} onLoadingChange 로딩 상태 변경 시 실행할 함수
+ * @param {function} initSettings 설정 초기화 함수
+ * @param {string} highlightedRow 하이라이트 표시할 행의 rowKey
+ * @example type = 'psize' | 'autoTimeCorrelation' | 'autoGraph'
+ * @returns {React.ReactNode} 대기환경연구소 페이지 데이터 프레임 컴포넌트
+ */
+const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings, highlightedRow }) => {
   const config = INTENSIVE_SETTINGS[type];
   const postMutation = usePostRequest();
 
@@ -120,6 +135,7 @@ const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, ini
         datas={contentData}
         isLoading={isLoading}
         fileName={config.title}
+        highlightedRow={highlightedRow}
       />
 
       {children}
