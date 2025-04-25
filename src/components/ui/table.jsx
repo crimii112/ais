@@ -61,12 +61,14 @@ const calculateColumnWidths = (
  * @param {Array} datas.headList - 테이블 헤더 목록
  * @param {Array} datas.headNameList - 테이블 헤더 이름 목록
  * @param {string} highlightedRow - 강조된 행의 키
+ * @param {number} numberStartIndex - 숫자 시작 인덱스
+ * @param {number} numberEndIndex - 숫자 끝 인덱스
  * @example datas.rstList = [{groupdate: '2024-01-01', groupNm: '인천.강화군.석모리', data01: 10, data02: 20, ..., rflag: null, ...}, ...]
  * @example datas.headList = ['groupdate', 'groupNm', 'data01', 'data02', ...]
  * @example datas.headNameList = ['측정일자', '측정소', '1)Ethane', '2)Ethylene', ...]
  * @returns {React.ReactElement} 테이블 컴포넌트
  */
-const Table = ({ datas, highlightedRow }) => {
+const Table = ({ datas, highlightedRow, numberStartIndex, numberEndIndex }) => {
   const parentRef = useRef();
   const [columns, setColumns] = useState([]);
 
@@ -86,10 +88,15 @@ const Table = ({ datas, highlightedRow }) => {
         id: key,
         size: columnWidths[key],
         header: () => datas.headNameList[idx]?.replaceAll('&lt;/br&gt;', ''),
-        cell: info =>
-          info.getValue() === '' || info.getValue() === undefined
-            ? '-'
-            : info.getValue(),
+        cell: info => {
+          const value = info.getValue();
+          const isNumberColumn = idx >= numberStartIndex && idx <= numberEndIndex;
+          return (
+            <div className={`${isNumberColumn ? 'text-right' : 'text-center'}`}>
+              {value === '' || value === undefined ? '-' : value}
+            </div>
+          );
+        },
       })
     );
 

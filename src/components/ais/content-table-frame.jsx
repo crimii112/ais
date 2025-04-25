@@ -109,7 +109,7 @@ const ContentTableFrame = ({ datas, isLoading, fileName, highlightedRow }) => {
           <Loading />
         </div>
       ) : (
-        datas && <Table datas={datas} highlightedRow={highlightedRow} />
+        datas && <Table datas={datas} highlightedRow={highlightedRow} numberStartIndex={3} numberEndIndex={20} />
       )}
     </FlexColWrapper>
   );

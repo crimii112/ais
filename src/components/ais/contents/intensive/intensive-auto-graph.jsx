@@ -232,7 +232,7 @@ const IntensiveAutoGraph = () => {
                       margin={{ top: 20, right: 60, bottom: 30, left: 20 }} 
                       data={chartDatas.type1} 
                       barGap={0} 
-                      onClick={handleChartClick}
+                      // onClick={handleChartClick}
                     >
                       <CartesianGrid strokeDasharray="3" vertical={false} />
                       <XAxis 
