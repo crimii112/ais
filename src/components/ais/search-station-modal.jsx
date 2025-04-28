@@ -83,8 +83,8 @@ const SearchStationModal = ({
     if (postMutation.isLoading) return;
 
     const apiData = {
-      airqltKndNm: onTms ? tms.airqltKndNm : '',
-      ...(onTms && { progressYn: tms.progressYn }),
+      airqltKndNm: onTms ? tms.airqltKndNm : '도시대기',
+      progressYn: onTms ? tms.progressYn : '0',
       searchtype: 'tabpage' + activeTabIndex,
       sidoNm: sidoNm,
       siteType: siteType,

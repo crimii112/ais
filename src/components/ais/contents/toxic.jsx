@@ -109,6 +109,8 @@ const Toxic = ({ type }) => {
         datas={contentData}
         isLoading={isLoading}
         fileName="유해대기 분석"
+        numberStartIndex={2}
+        numberEndIndex={23}
       />
 
       <ContentChartFrame

@@ -11,9 +11,11 @@ import { Loading } from '@/components/ui/loading';
  * @param {boolean} isLoading - 로딩 여부
  * @param {string} fileName - 파일 이름
  * @param {number} highlightedRow - 강조된 행의 인덱스
+ * @param {number} numberStartIndex - 숫자 시작 인덱스(숫자 우측 정렬 위함)
+ * @param {number} numberEndIndex - 숫자 끝 인덱스(숫자 우측 정렬 위함)
  * @returns {React.ReactElement} 테이블 프레임 컴포넌트
  */
-const ContentTableFrame = ({ datas, isLoading, fileName, highlightedRow }) => {
+const ContentTableFrame = ({ datas, isLoading, fileName, highlightedRow, numberStartIndex, numberEndIndex }) => {
 
   /**
    * 클립보드 복사 함수(react-copy-to-clipboard 라이브러리 사용)
@@ -109,7 +111,7 @@ const ContentTableFrame = ({ datas, isLoading, fileName, highlightedRow }) => {
           <Loading />
         </div>
       ) : (
-        datas && <Table datas={datas} highlightedRow={highlightedRow} numberStartIndex={3} numberEndIndex={20} />
+        datas && <Table datas={datas} highlightedRow={highlightedRow} numberStartIndex={numberStartIndex} numberEndIndex={numberEndIndex} />
       )}
     </FlexColWrapper>
   );

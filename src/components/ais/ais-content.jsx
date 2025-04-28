@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAisNav } from '@/context/AisNavContext';
@@ -17,6 +17,7 @@ const AisContent = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [prevTabListLength, setPrevTabListLength] = useState(0);
   const [clickedCloseBtnIdx, setClickedCloseBtnIdx] = useState();
+  const tabsContainerRef = useRef(null);
 
   // 탭 컨텐츠 캐싱용 ref
   const tabContentCacheRef = useRef({});
@@ -69,6 +70,17 @@ const AisContent = () => {
     }
   }, [tabList]);
 
+  // tabList 변경 시 우측 끝으로 스크롤
+  useEffect(() => {
+    if (tabsContainerRef.current && tabList.length > prevTabListLength) {
+      tabsContainerRef.current.scrollTo({
+        left: tabsContainerRef.current.scrollWidth,
+        behavior: 'smooth'
+      });
+    }
+    setPrevTabListLength(tabList.length);
+  }, [tabList, prevTabListLength]);
+
   // 탭 닫기 핸들러
   const handleRemoveTab = idx => {
     setClickedCloseBtnIdx(idx);
@@ -76,46 +88,85 @@ const AisContent = () => {
     setTabList(newTabList);
   };
 
+  // 스크롤 핸들러
+  const handleScroll = (direction) => {
+    if (!tabsContainerRef.current) return;
+    
+    const scrollAmount = 200;
+    const currentScroll = tabsContainerRef.current.scrollLeft;
+    
+    if (direction === 'left') {
+      tabsContainerRef.current.scrollTo({
+        left: currentScroll - scrollAmount,
+        behavior: 'smooth'
+      });
+    } else {
+      tabsContainerRef.current.scrollTo({
+        left: currentScroll + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
-      <FlexRowWrapper className="w-full h-12 justify-start overflow-x-auto scrollbar-hide whitespace-nowrap bg-gradient-to-r from-blue-900 to-blue-800 shadow-md">
-        {tabList.map((tab, idx) => (
-          <FlexRowWrapper
-            key={idx}
-            className={cn(
-              'h-full transition-all duration-200 border-r border-blue-700',
-              idx === activeTabIndex
-                ? 'bg-white border-t-2 border-t-blue-700'
-                : 'bg-blue-800/50 hover:bg-blue-700/50'
-            )}
-          >
-            <Button
-              id={idx}
-              onClick={() => setActiveTabIndex(idx)}
-              className={cn(
-                'px-4 py-2 rounded-none bg-transparent text-base font-medium flex items-center gap-2 transition-all duration-200',
-                idx === activeTabIndex 
-                  ? 'text-blue-900' 
-                  : 'text-white hover:text-blue-100'
-              )}
-            >
-              {tab.title}
-              <X
+      <div className="relative flex w-full h-12 bg-slate-800 shadow-md">
+        <Button 
+          className="absolute left-0 z-10 w-8 h-full bg-slate-800 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center rounded-none border-r border-slate-600" 
+          onClick={() => handleScroll('left')}
+        >
+          <ChevronLeft className="w-5 h-5 text-slate-300 hover:text-white" />
+        </Button>
+        <div 
+          ref={tabsContainerRef}
+          className="flex-1 h-full overflow-x-auto scrollbar-hide mx-8"
+        >
+          <div className="inline-flex h-full">
+            {tabList.map((tab, idx) => (
+              <FlexRowWrapper
+                key={idx}
                 className={cn(
-                  'w-4 h-4 rounded transition-all duration-200',
-                  idx === activeTabIndex 
-                    ? 'text-blue-800 hover:bg-blue-100' 
-                    : 'text-blue-200 hover:bg-blue-700'
+                  'h-full transition-all duration-200 border-r border-slate-600 shrink-0',
+                  idx === activeTabIndex
+                    ? 'bg-white border-t-2 border-t-slate-700'
+                    : 'bg-slate-800/50 hover:bg-slate-700/50'
                 )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveTab(idx);
-                }}
-              />
-            </Button>
-          </FlexRowWrapper>
-        ))}
-      </FlexRowWrapper>
+              >
+                <Button
+                  id={idx}
+                  onClick={() => setActiveTabIndex(idx)}
+                  className={cn(
+                    'px-4 py-2 rounded-none bg-transparent text-base font-medium flex items-center gap-2 transition-all duration-200 shrink-0',
+                    idx === activeTabIndex 
+                      ? 'text-slate-900' 
+                      : 'text-slate-200 hover:text-white'
+                  )}
+                >
+                  {tab.title}
+                  <X
+                    className={cn(
+                      'w-4 h-4 rounded transition-all duration-200',
+                      idx === activeTabIndex 
+                        ? 'text-slate-700 hover:bg-slate-100' 
+                        : 'text-slate-400 hover:bg-slate-700'
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveTab(idx);
+                    }}
+                  />
+                </Button>
+              </FlexRowWrapper>
+            ))}
+          </div>
+        </div>
+        <Button 
+          className="absolute right-0 z-10 w-8 h-full bg-slate-800 hover:bg-slate-700 transition-all duration-200 flex items-center justify-center rounded-none border-l border-slate-600"
+          onClick={() => handleScroll('right')}
+        >
+          <ChevronRight className="w-5 h-5 text-slate-300 hover:text-white" />
+        </Button>
+      </div>
       {tabList.map((tab, idx) => (
         <TabContentWrapper
           key={tab.id}

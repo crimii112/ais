@@ -114,6 +114,8 @@ const CmmnAir = () => {
         datas={contentData}
         isLoading={isLoading}
         fileName="일반대기 검색"
+        numberStartIndex={4}
+        numberEndIndex={9}
       />
     </>
   );

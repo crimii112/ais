@@ -39,12 +39,13 @@ const PieChart = ({ datas, axisSettings }) => {
       clonedData[option.value] =
         rawVal !== undefined && rawVal !== '' && !isNaN(parsed) ? parsed : null;
 
-      const sum = !isNaN(parsed) ? parsed : 0;
+      const sum = !isNaN(parsed) ? Math.abs(parsed) : 0;
       setTotalSum(prevSum => prevSum + sum); 
 
       return {
         name: option.text,
-        value: clonedData[option.value],
+        value: Math.abs(clonedData[option.value]), // 절대값 사용
+        isNegative: parsed < 0 // 음수 여부 저장
       };
     });
 
@@ -54,7 +55,6 @@ const PieChart = ({ datas, axisSettings }) => {
   if (
     !datas ||
     !datas.rstList ||
-    !datas.rstList2 ||
     processedData.length === 0
   ) {
     return (
@@ -77,7 +77,7 @@ const PieChart = ({ datas, axisSettings }) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    const percent = ((payload.value / totalSum) * 100).toFixed(1);
+    const calculatedPercent = ((Math.abs(payload.value)/ totalSum) * 100).toFixed(1);
 
     return (
       <text
@@ -86,9 +86,9 @@ const PieChart = ({ datas, axisSettings }) => {
         fill="black"
         className="font-semibold"
         textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="center"
+        dominantBaseline="middle"
       >
-        {`${payload.name}: ${percent}%`}
+        {`${payload.name}: ${calculatedPercent}%`}
       </text>
     );
   };
@@ -96,10 +96,11 @@ const PieChart = ({ datas, axisSettings }) => {
   // 툴팁 커스텀(값 표시)
   const customizedTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const { value } = payload[0];
+      const { value, isNegative } = payload[0].payload;
+      const displayValue = isNegative ? -value : value;
       return (
         <div className="bg-white border border-gray-300 rounded p-2 shadow-lg">
-          <p className="text-base font-semibold">Value: {value}</p>
+          <p className="text-base font-semibold">Value: {displayValue}</p>
         </div>
       );
     }
@@ -117,6 +118,7 @@ const PieChart = ({ datas, axisSettings }) => {
           outerRadius={250}
           label={customizedLabel}
           labelLine={false}
+          isAnimationActive={false}
         >
           {processedData.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

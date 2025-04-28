@@ -111,6 +111,8 @@ const PhotoCh = ({ type }) => {
         datas={contentData}
         isLoading={isLoading}
         fileName="광화학 분석"
+        numberStartIndex={2}
+        numberEndIndex={64}
       />
       <ContentChartFrame
         datas={contentData}

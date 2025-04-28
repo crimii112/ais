@@ -32,7 +32,9 @@ CustomTooltip.displayName = 'CustomTooltip';
  * - 그래프는 산점도 사용
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
  */
-const IntensiveAutoTimeCorrelation = () => {
+const IntensiveCorrelation = ({type}) => {
+  const config = CORRELATION_CONFIG[type];
+
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
@@ -163,7 +165,7 @@ const IntensiveAutoTimeCorrelation = () => {
 
   return (
     <IntensiveDataFrame 
-      type='autoTimeCorrelation'
+      type={config.type}
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}
@@ -171,7 +173,7 @@ const IntensiveAutoTimeCorrelation = () => {
     >
       <ContentScatterChartFrame
         isLoading={isLoading}
-        title='자동-(단일)성분상관성검토'
+        title={config.title}
         chartSettings={chartSettings}
         setHighlightedRow={setHighlightedRow}
       >
@@ -215,4 +217,17 @@ const IntensiveAutoTimeCorrelation = () => {
   );
 };
 
-export { IntensiveAutoTimeCorrelation };
+export { IntensiveCorrelation };
+
+
+const CORRELATION_CONFIG = {
+  'auto': {
+    type: 'autoTimeCorrelation',
+    title: '자동-(단일)성분상관성검토',
+  },
+  'manual': {
+    type: 'manualCorrelation',
+    title: '수동-(단일)성분상관성검토',
+  },
+  
+}

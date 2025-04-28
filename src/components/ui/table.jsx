@@ -61,8 +61,8 @@ const calculateColumnWidths = (
  * @param {Array} datas.headList - 테이블 헤더 목록
  * @param {Array} datas.headNameList - 테이블 헤더 이름 목록
  * @param {string} highlightedRow - 강조된 행의 키
- * @param {number} numberStartIndex - 숫자 시작 인덱스
- * @param {number} numberEndIndex - 숫자 끝 인덱스
+ * @param {number} numberStartIndex - 숫자 시작 인덱스(숫자 우측 정렬 위함)
+ * @param {number} numberEndIndex - 숫자 끝 인덱스(숫자 우측 정렬 위함)
  * @example datas.rstList = [{groupdate: '2024-01-01', groupNm: '인천.강화군.석모리', data01: 10, data02: 20, ..., rflag: null, ...}, ...]
  * @example datas.headList = ['groupdate', 'groupNm', 'data01', 'data02', ...]
  * @example datas.headNameList = ['측정일자', '측정소', '1)Ethane', '2)Ethylene', ...]

@@ -108,7 +108,7 @@ const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, ini
     <>
       {/* 데이터 검색 조건 설정 */}
       <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-        <SearchDate setDateList={setDateList} type="intensive" />
+        <SearchDate setDateList={setDateList} type="intensive" dateType={config.dateType} />
         <SearchStation
           title="대기환경연구소"
           siteType="intensive"
@@ -136,6 +136,8 @@ const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, ini
         isLoading={isLoading}
         fileName={config.title}
         highlightedRow={highlightedRow}
+        numberStartIndex={config.numberStartIndex}
+        numberEndIndex={config.numberEndIndex}
       />
 
       {children}
@@ -164,6 +166,17 @@ const initCond_2 = [
   { id: 'unit1', checked: false }, // markList
   { id: 'unit2', checked: false },
 ];
+const initCond_3 = [
+  {
+    sect: 'day',
+    poll: 'calc',
+    dust: 'include',
+    stats: '',
+    eqType: 'SMPS_APS_O',
+  },
+  { id: 'unit1', checked: false }, // markList
+  { id: 'unit2', checked: false },
+]
 
 // 초기 물질 및 소수점 자릿수 설정값
 const initPollutant_1 = [
@@ -271,6 +284,90 @@ const condList_2 = [
     type: 'selectBox',
     title: '검색항목',
     id: 'poll',
+    content: [{ value: 'calc', text: '성분계산' }],
+    disabled: true,
+  },
+  {
+    type: 'selectBox',
+    title: '황사구분',
+    id: 'dust',
+    content: [
+      { value: 'include', text: '황사기간포함' },
+      { value: 'except', text: '황사기간제외' },
+      { value: 'only', text: '황사기간만' },
+    ],
+  },
+];
+const condList_3 = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [
+      { value: 'time', text: '시간별' },
+      { value: 'day', text: '일별' },
+      { value: 'month', text: '월별' },
+      { value: 'year', text: '연별' },
+      { value: 'all', text: '전체기간별' },
+      { value: 'timezone', text: '시간대별' },
+      { value: 'week', text: '요일별' },
+      { value: 'season', text: '계절별' },
+      { value: 'ys', text: '년도-계절별' },
+      { value: 'lys', text: '전년도-계절별' },
+      { value: 'a4', text: '년도-시간대별' },
+      { value: 'a5', text: '전체-월별' },
+      { value: 'a7', text: '전체-일별' },
+      { value: 'accmonth', text: '년도-월별누적' },
+      { value: 'accseason', text: '계절관리제누적' },
+      { value: 'a1', text: '계절관리제연차누적' },
+      { value: 'a2', text: '년도-일별누적' },
+      { value: 'a3', text: '전체-일별누적' },
+      { value: 'a6', text: '계절관리제일별누적' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '검색항목',
+    id: 'poll',
+    content: [
+      { value: 'calc', text: '성분계산' },
+      { value: 'raw', text: 'RawData' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '황사구분',
+    id: 'dust',
+    content: [
+      { value: 'include', text: '황사기간포함' },
+      { value: 'except', text: '황사기간제외' },
+      { value: 'only', text: '황사기간만' },
+    ],
+  },
+];
+const condList_4 = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [
+      { value: 'day', text: '일별' },
+      { value: 'month', text: '월별' },
+      { value: 'year', text: '연별' },
+      { value: 'all', text: '전체기간별' },
+      { value: 'week', text: '요일별' },
+      { value: 'season', text: '계절별' },
+      { value: 'ys', text: '년도-계절별' },
+      { value: 'lys', text: '전년도-계절별' },
+      { value: '', text: '월별누적' },
+      { value: 'accseason', text: '계절관리제누적' },
+      { value: 'allbymonth', text: '전체기간월별' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '검색항목',
+    id: 'poll',
     content: [
       { value: 'calc', text: '성분계산' },
       { value: 'raw', text: 'RawData' },
@@ -338,25 +435,73 @@ const INTENSIVE_SETTINGS = {
     condList: condList_1,
     signList: signList,
     title: '(단일)입경크기분포',
+    numberStartIndex: 4,
+    numberEndIndex: 108,
+    dateType: 'all'
   },
   autoTimeCorrelation: {
     page: 'intensive/autotimecorrelation',
+    initCond: initCond_2,
+    initPollutant: initPollutant_2,
+    condList: condList_3,
+    markList: markList,
+    digitList: digitList,
+    signList: signList,
+    title: '자동-(단일)성분상관성검토',
+    numberStartIndex: 3,
+    numberEndIndex: 20,
+    dateType: 'all'
+  },
+  autoGraph: {
+    page: 'intensive/autograph',
     initCond: initCond_2,
     initPollutant: initPollutant_2,
     condList: condList_2,
     markList: markList,
     digitList: digitList,
     signList: signList,
-    title: '자동-(단일)성분상관성검토',
+    title: '자동-(단일)성분누적그래프',
+    numberStartIndex: 3,
+    numberEndIndex: 20,
+    dateType: 'all'
   },
-  autoGraph: {
-    page: 'intensive/autograph',
+  autoPieGraph: {
+    page: 'intensive/autopiegraph',
     initCond: initCond_2,
     initPollutant: initPollutant_2,
-    condList: condList_1,
+    condList: condList_2,
     markList: markList,
     digitList: digitList,
     signList: signList,
-    title: '자동-(단일)성분누적그래프',
+    title: '자동-(단일)성분파이그래프',
+    numberStartIndex: 3,
+    numberEndIndex: 20,
+    dateType: 'all'
   },
+  manualCorrelation: {
+    page: 'intensive/manualcorrelation',
+    initCond: initCond_3,
+    initPollutant: initPollutant_2,
+    condList: condList_4,
+    markList: markList,
+    digitList: digitList,
+    signList: signList,
+    title: '수동-(단일)성분상관성검토',
+    numberStartIndex: 3,
+    numberEndIndex: 34,
+    dateType: 'day'
+  },
+  manualGraph: {
+    page: 'intensive/manualgraph',
+    initCond: initCond_3,
+    initPollutant: initPollutant_2,
+    condList: condList_4,
+    markList: markList,
+    digitList: digitList,
+    signList: signList,
+    title: '수동-(단일)성분누적그래프',
+    numberStartIndex: 3,
+    numberEndIndex: 16,
+    dateType: 'day'
+  }
 };

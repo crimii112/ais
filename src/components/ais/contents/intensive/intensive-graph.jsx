@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import html2canvas from 'html2canvas';
-import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { FlexColWrapper, FlexRowWrapper, Button } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
@@ -16,12 +16,14 @@ const BAR_SIZE_CONFIG = {
 };
 
 /**
- * 자동-(단일)성분누적그래프 페이지
+ * (단일)성분누적그래프 페이지
  * - 그래프 그릴 때 측정소 선택
  * - 1. 성분별(기간별-STACKED), 2. PM2.5/PM10비율(기간별), 3. AM-SUL, AM-NIT(기간별)로 총 3가지 그래프 구현
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
  */
-const IntensiveAutoGraph = () => {
+const IntensiveGraph = ({ type }) => {
+  const config = GRAPH_CONFIG[type];
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingImage, setIsSavingImage] = useState(false);
 
@@ -184,7 +186,7 @@ const IntensiveAutoGraph = () => {
 
   return (
     <IntensiveDataFrame 
-      type='autoGraph'
+      type={config.type}
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}
@@ -283,6 +285,14 @@ const IntensiveAutoGraph = () => {
                         />
                       ))}
                       <Tooltip content={<CustomTooltip />} />
+                      <Legend verticalAlign="bottom"
+                        wrapperStyle={{
+                          paddingTop: 40,
+                          border: 'none',
+                          outline: 'none',
+                          backgroundColor: 'transparent',
+                        }} 
+                      />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -296,86 +306,96 @@ const IntensiveAutoGraph = () => {
                 </FlexRowWrapper>
               </div>
 
-
+                    
               {/* PM2.5/PM10비율(기간별) 그래프 */}
-              <div className='w-full h-full'>
-                <div className="text-lg font-bold">PM2.5/PM10비율(기간별)</div>
-                <div className="w-full border-t border-gray-200" />
-                <div
-                  id={`PM2.5/PM10비율(기간별)-chart-wrapper`}
-                  className="w-full h-full py-6"
-                >
-                  <ResponsiveContainer width="100%" height={700}>
-                    <ComposedChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }} data={chartDatas.type2} barGap={type2BarSize.barGap}
-                      onClick={handleChartClick}
-                    >
-                      <CartesianGrid strokeDasharray="3" vertical={false} />
-                      <XAxis 
-                        dataKey='groupdate' 
-                        allowDuplicatedCategory={false}
-                        tick={{ fontSize: 12 }} 
-                        label={{
-                          value: '측정일자',
-                          position: 'bottom',
-                          fontWeight: 'bold',
+              {type === 'auto' &&
+                <div className='w-full h-full'>
+                  <div className="text-lg font-bold">PM2.5/PM10비율(기간별)</div>
+                  <div className="w-full border-t border-gray-200" />
+                  <div
+                    id={`PM2.5/PM10비율(기간별)-chart-wrapper`}
+                    className="w-full h-full py-6"
+                  >
+                    <ResponsiveContainer width="100%" height={700}>
+                      <ComposedChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }} data={chartDatas.type2} barGap={type2BarSize.barGap}
+                        onClick={handleChartClick}
+                      >
+                        <CartesianGrid strokeDasharray="3" vertical={false} />
+                        <XAxis 
+                          dataKey='groupdate' 
+                          allowDuplicatedCategory={false}
+                          tick={{ fontSize: 12 }} 
+                          label={{
+                            value: '측정일자',
+                            position: 'bottom',
+                            fontWeight: 'bold',
+                          }} 
+                        />
+                        <YAxis 
+                          yAxisId='poll'
+                          type='number' 
+                          allowDuplicatedCategory={false}
+                          tick={{ fontSize: 12 }}
+                          tickCount={11}
+                          label={{
+                            value: 'Conc.(ug/m3)',
+                            position: 'insideLeft',
+                            fontWeight: 'bold',
+                            angle: -90
+                          }}
+                        />
+                        <YAxis
+                          yAxisId='pmrate'
+                          type='number' 
+                          tick={{ fontSize: 12 }}
+                          tickCount={11}
+                          orientation='right'
+                          label={{
+                            value: 'PM2.5/PM10',
+                            position: 'insideRight',
+                            fontWeight: 'bold',
+                            angle: -90
+                          }}
+                          domain={[0, 1]}
+                        />
+                        <Line yAxisId='pmrate' dataKey='pmrate' stroke='red' strokeWidth={2} />
+                        <Tooltip content={({ active, payload }) => {
+                          if (active && payload && payload.length && payload[0].payload) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-white p-3 border border-gray-200 rounded shadow">
+                                <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
+                                <p style={{ color: 'red' }}>PM2.5/PM10: {data.pmrate}</p>
+                                <p style={{ color: COLORS[0] }}>PM10: {data.pm10}</p>
+                                <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }} />
+                        <Bar yAxisId='poll' dataKey='pm10' fill={COLORS[0]} barSize={type2BarSize.barSize} />
+                        <Bar yAxisId='poll' dataKey='pm25' fill={COLORS[1]} barSize={type2BarSize.barSize} />
+                        <Legend verticalAlign="bottom"
+                        wrapperStyle={{
+                          paddingTop: 40,
+                          border: 'none',
+                          outline: 'none',
+                          backgroundColor: 'transparent',
                         }} 
                       />
-                      <YAxis 
-                        yAxisId='poll'
-                        type='number' 
-                        allowDuplicatedCategory={false}
-                        tick={{ fontSize: 12 }}
-                        tickCount={11}
-                        label={{
-                          value: 'Conc.(ug/m3)',
-                          position: 'insideLeft',
-                          fontWeight: 'bold',
-                          angle: -90
-                        }}
-                      />
-                      <YAxis
-                        yAxisId='pmrate'
-                        type='number' 
-                        tick={{ fontSize: 12 }}
-                        tickCount={11}
-                        orientation='right'
-                        label={{
-                          value: 'PM2.5/PM10',
-                          position: 'insideRight',
-                          fontWeight: 'bold',
-                          angle: -90
-                        }}
-                        domain={[0, 1]}
-                      />
-                      <Line yAxisId='pmrate' dataKey='pmrate' stroke='red' strokeWidth={2} />
-                      <Bar yAxisId='poll' dataKey='pm10' fill={COLORS[0]} barSize={type2BarSize.barSize} />
-                      <Bar yAxisId='poll' dataKey='pm25' fill={COLORS[1]} barSize={type2BarSize.barSize} />
-                      <Tooltip content={({ active, payload }) => {
-                        if (active && payload && payload.length && payload[0].payload) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="bg-white p-3 border border-gray-200 rounded shadow">
-                              <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
-                              <p style={{ color: 'red' }}>PM2.5/PM10: {data.pmrate}</p>
-                              <p style={{ color: COLORS[0] }}>PM10: {data.pm10}</p>
-                              <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <FlexRowWrapper className="w-full justify-end gap-2">
+                    <Button
+                      onClick={() => handleSaveImage('PM2.5/PM10비율(기간별)')}
+                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
+                    >
+                      {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
+                    </Button>
+                  </FlexRowWrapper>
                 </div>
-                <FlexRowWrapper className="w-full justify-end gap-2">
-                  <Button
-                    onClick={() => handleSaveImage('PM2.5/PM10비율(기간별)')}
-                    className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                  >
-                    {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                  </Button>
-                </FlexRowWrapper>
-              </div>
+              }
 
 
               {/* AM-SUL, AM-NIT(기간별) 그래프 */}
@@ -411,9 +431,17 @@ const IntensiveAutoGraph = () => {
                           fontWeight: 'bold',
                         }}
                       />
+                      <Tooltip content={<Type3Tooltip />} />
                       <Bar data={chartDatas.type3} key='amNit' dataKey='amNit' fill={COLORS[0]} stackId='stackgroup' />
                       <Bar data={chartDatas.type3} key='amSul' dataKey='amSul' fill={COLORS[1]} stackId='stackgroup' />
-                      <Tooltip content={<Type3Tooltip />} />
+                      <Legend verticalAlign="bottom"
+                        wrapperStyle={{
+                          paddingTop: 40,
+                          border: 'none',
+                          outline: 'none',
+                          backgroundColor: 'transparent',
+                        }} 
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -436,7 +464,7 @@ const IntensiveAutoGraph = () => {
   );
 };
 
-export { IntensiveAutoGraph };
+export { IntensiveGraph };
 
 // 성분별(기간별-STACKED): 막대 그래프 물질 고정
 const selectedPollutant = {
@@ -466,6 +494,17 @@ const pollutants = [
   {value: 'tm', text: 'TM'}, 
   {value: 'etc', text: 'ETC'}
 ]
+
+const GRAPH_CONFIG = {
+  'auto':{
+    type: 'autoGraph',
+    title: '자동-(단일)성분누적그래프',
+  },
+  'manual':{
+    type: 'manualGraph',
+    title: '수동-(단일)성분누적그래프',
+  }
+}
 
 const COLORS = [
   '#0088FE',

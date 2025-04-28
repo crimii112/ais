@@ -48,7 +48,6 @@ const ScatterChart = ({ chartSettings, setHighlightedRow }) => {
     const clicked = e?.activePayload?.[0]?.payload;
     if (clicked) {
       const rowKey = clicked.groupdate + '_' + clicked.groupNm;
-      console.log(rowKey);
       setHighlightedRow(rowKey);
     }
   };
