@@ -118,7 +118,7 @@ const LineChart = ({ datas, axisSettings, pollutantList }) => {
                 orientation={`${axis.orientation}`}
                 type="number"
                 domain={
-                  axis.isAuto ? ['dataMin', 'dataMax'] : [axis.min, axis.max]
+                  axis.isAuto ? ['0', 'auto'] : [axis.min, axis.max]
                 }
                 fontSize={12}
                 label={{

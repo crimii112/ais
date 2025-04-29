@@ -8,9 +8,14 @@ import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
 /**
  * (단일)입경크기분포 페이지
+ * 
  * - 측정일자/TYPE/측정소 선택 후 그래프 그리기
  * - 그래프는 산점도 사용, X축 log 스케일 적용
+ * 
+ * @returns {React.ReactNode}
  */
+
+
 const IntensivePsize = () => {
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);

@@ -33,7 +33,7 @@ const Toxic = ({ type }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
-  // API 데이터 메모이제이션
+  // API 데이터
   const apiData = useMemo(() => ({
     page: config.page,
     date: dateList,
@@ -43,7 +43,7 @@ const Toxic = ({ type }) => {
     type: config.type,
   }), [config.page, config.type, dateList, stationList, searchCond, pollutant]);
 
-  // 검색 버튼 핸들러 메모이제이션
+  // 검색 버튼 핸들러
   const handleClickSearchBtn = useCallback(async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');

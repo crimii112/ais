@@ -54,6 +54,8 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
   useEffect(() => {
     if (!datas) return;
 
+    setChartConfig(null);
+
     // option value, text 설정
     const options = datas.headList.map((value, idx) => ({
       value,
@@ -61,9 +63,14 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
     }));
 
     // 'FLAG' 위치
-    const flagIndex = options.findIndex(option => option.value === 'rflag');
+    let flagIndex;
+    if(title.includes('중금속')) {  //중금속의 경우 'FLAG'가 존재하지 않음
+      flagIndex = 14;
+    } else {
+      flagIndex = options.findIndex(option => option.value === 'rflag');
+    }
     setPollutantList(options.slice(2, flagIndex));
-  }, [datas]);
+  }, [datas, title]);
 
   const updateAxisSettings = (idx, updates) => {
     setAxisSettings(prev =>

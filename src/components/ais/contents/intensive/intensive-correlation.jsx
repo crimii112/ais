@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, memo } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
 import { SelectWithArrows } from '@/components/ui/select-box';
@@ -6,34 +6,20 @@ import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { IntensiveDataFrame } from './intensive-data-frame';
 import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
-// 툴팁 컴포넌트 메모이제이션
-const CustomTooltip = React.memo(({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-
-  const { groupdate, groupNm, x, y } = payload[0].payload;
-  const xLabel = payload[0].name;
-  const yLabel = payload[1].name;
-
-  return (
-    <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
-      <p className="font-semibold pb-1">
-        {groupdate} - {groupNm}
-      </p>
-      <p>{`${xLabel} : ${x}`}</p>
-      <p>{`${yLabel} : ${y}`}</p>
-    </div>
-  );
-});
-CustomTooltip.displayName = 'CustomTooltip';
-
 /**
- * 자동-(단일)성분상관성검토 페이지
+ * (단일)성분상관성검토 페이지
+ * 
  * - X축/Y축/측정소 선택 후 그래프 그리기
  * - 그래프는 산점도 사용
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
+ * 
+ * @param {string} type - 타입(auto, manual)
+ * @returns {React.ReactNode}
  */
-const IntensiveCorrelation = ({type}) => {
-  const config = CORRELATION_CONFIG[type];
+
+
+const IntensiveCorrelation = ({ type }) => {
+  const config = useMemo(() => CORRELATION_CONFIG[type], [type]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
@@ -57,17 +43,23 @@ const IntensiveCorrelation = ({type}) => {
 
     // headList 중 물질만 추출하여 옵션 설정
     // 물질 옵션은 3번째 인덱스부터 시작
-    const pollutantOptions = data.headList
-      .map((value, idx) => ({
-        value,
-        text: data.headNameList[idx],
-      }))
-      .slice(3);
+    const pollutantOptions = useMemo(() => 
+      data.headList
+        .map((value, idx) => ({
+          value,
+          text: data.headNameList[idx],
+        }))
+        .slice(3),
+      [data.headList, data.headNameList]
+    );
 
-    const groupNmOptions = data.rstList2.map(item => ({
-      value: item.groupNm,
-      text: item.groupNm,
-    }));
+    const groupNmOptions = useMemo(() => 
+      data.rstList2.map(item => ({
+        value: item.groupNm,
+        text: item.groupNm,
+      })),
+      [data.rstList2]
+    );
 
     setChartOptionSettings({ pollutant: pollutantOptions, groupNm: groupNmOptions });
     setChartSelectedOption({
@@ -124,6 +116,8 @@ const IntensiveCorrelation = ({type}) => {
 
   // 그래프(산점도) 그리기 버튼 클릭 핸들러
   const handleClickDrawChart = () => {
+    if (!contentData?.rstList) return;
+
     const rawData = contentData.rstList.filter(data =>
       chartSelectedOption.groupNm?.some(item => item.value === data.groupNm)
     );
@@ -133,18 +127,24 @@ const IntensiveCorrelation = ({type}) => {
       return;
     }
 
-    const processedData = rawData.map(item => ({
-      groupdate: item.groupdate,
-      groupNm: item.groupNm,
-      x: parseFloat(item[chartSelectedOption.x.value]),
-      y: parseFloat(item[chartSelectedOption.y.value]),
-    }));
+    const processedData = useMemo(() => 
+      rawData.map(item => ({
+        groupdate: item.groupdate,
+        groupNm: item.groupNm,
+        x: parseFloat(item[chartSelectedOption.x.value]),
+        y: parseFloat(item[chartSelectedOption.y.value]),
+      })),
+      [rawData, chartSelectedOption]
+    );
 
-    const groupedData = processedData.reduce((acc, curr) => {
-      acc[curr.groupNm] = acc[curr.groupNm] || [];
-      acc[curr.groupNm].push(curr);
-      return acc;
-    }, {});
+    const groupedData = useMemo(() => 
+      processedData.reduce((acc, curr) => {
+        acc[curr.groupNm] = acc[curr.groupNm] || [];
+        acc[curr.groupNm].push(curr);
+        return acc;
+      }, {}),
+      [processedData]
+    );
 
     setChartSettings({
       xAxis: {
@@ -162,6 +162,25 @@ const IntensiveCorrelation = ({type}) => {
       tooltip: CustomTooltip,
     });
   };
+
+  // 커스텀 툴팁
+  const CustomTooltip = memo(({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+
+    const { groupdate, groupNm, x, y } = payload[0].payload;
+    const xLabel = payload[0].name;
+    const yLabel = payload[1].name;
+
+    return (
+      <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+        <p className="font-semibold pb-1">
+          {groupdate} - {groupNm}
+        </p>
+        <p>{`${xLabel} : ${x}`}</p>
+        <p>{`${yLabel} : ${y}`}</p>
+      </div>
+    );
+  });
 
   return (
     <IntensiveDataFrame 
@@ -219,7 +238,6 @@ const IntensiveCorrelation = ({type}) => {
 
 export { IntensiveCorrelation };
 
-
 const CORRELATION_CONFIG = {
   'auto': {
     type: 'autoTimeCorrelation',
@@ -229,5 +247,4 @@ const CORRELATION_CONFIG = {
     type: 'manualCorrelation',
     title: '수동-(단일)성분상관성검토',
   },
-  
 }

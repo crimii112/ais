@@ -142,18 +142,26 @@ const SearchPollutant = ({
         <GridWrapper className="items-stretch gap-1">
           {signList.map(sign => (
             <FlexRowWrapper className="justify-between gap-0.5" key={sign.id}>
-              <div>
-                <label>
-                  <Input
-                    type="checkbox"
-                    id={sign.id}
-                    defaultChecked={sign.checked}
-                    onChange={handleChangeChecked}
-                    className="mx-2 border-1 border-gray-300 rounded-sm"
-                  />
-                  {sign.text}
-                </label>
-              </div>
+              {sign.onCheckbox !== false ?
+                <div>
+                  <label>
+                      <Input
+                        type="checkbox"
+                        id={sign.id}
+                        defaultChecked={sign.checked}
+                        onChange={handleChangeChecked}
+                        className="mx-2 border-1 border-gray-300 rounded-sm"
+                      />
+                    {sign.text}
+                  </label>
+                </div>
+                :
+                <div className='flex-1'>
+                  <label className='flex justify-center'>
+                    {sign.text}
+                  </label>
+                </div>
+              }
               <div>
                 <Input
                   type="text"

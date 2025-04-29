@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/navbar';
 import { CmmnAir } from './contents/cmmnair';
 import { PhotoCh } from './contents/photoch';
+import { Metal } from './contents/metal';
 import { Toxic } from './contents/toxic';
 import { IntensivePsize } from './contents/intensive/intensive-psize';
 import { IntensiveCorrelation } from './contents/intensive/intensive-correlation';
@@ -86,6 +87,17 @@ const data = {
               content: <PhotoCh type="medianLine" />,
             },
           ],
+        },
+        {
+          id: 'metal',
+          title: '중금속 데이터',
+          subItems: [
+            {
+              pathName: 'metal',
+              title: '중금속 기간별 검색',
+              content: <Metal type='line' />
+            }
+          ]
         },
         {
           id: 'toxic',

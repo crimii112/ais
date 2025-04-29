@@ -20,9 +20,11 @@ import { ContentTableFrame } from '@/components/ais/content-table-frame';
  * @param {function} onLoadingChange 로딩 상태 변경 시 실행할 함수
  * @param {function} initSettings 설정 초기화 함수
  * @param {string} highlightedRow 하이라이트 표시할 행의 rowKey
- * @example type = 'psize' | 'autoTimeCorrelation' | 'autoGraph'
+ * @example type = 'psize' | 'autoTimeCorrelation' | 'autoGraph' | 'autoPieGraph' | 'manualCorrelation' | 'manualGraph'
  * @returns {React.ReactNode} 대기환경연구소 페이지 데이터 프레임 컴포넌트
  */
+
+
 const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings, highlightedRow }) => {
   const config = INTENSIVE_SETTINGS[type];
   const postMutation = usePostRequest();

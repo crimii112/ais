@@ -33,12 +33,31 @@ const SearchCond = ({ condList, markList, initialSearchCond, setSearchCond }) =>
     const condId = e.target.id;
     const condValue = e.target.value;
 
-    const findIdx = condJson.findIndex(cond => cond[condId] !== undefined);
-
-    if(findIdx !== -1) {
-      condJson[findIdx][condId] = condValue;
-      setCondJson(condJson);
+    // 1. markList가 없으면 condJson이 json 형식이므로 그냥 넣어줌
+    if(!markList) {
+      condJson[condId] = condValue;
+      
+      // 중금속
+      // poll이 condId이고 toxicmonth 키가 존재하면 toxicmonth 값도 변경
+      if (condId === 'poll' && condJson['toxicmonth'] !== undefined) {
+        condJson['toxicmonth'] = condValue;
+      }
+    } else {
+      // 2. markList가 있으면 condJson이 배열 형식이므로 배열 형식에 맞게 넣어줌
+      const findIdx = condJson.findIndex(cond => cond[condId] !== undefined);
+      
+      if(findIdx !== -1) {
+        condJson[findIdx][condId] = condValue;
+        
+        // 중금속
+        // poll이 condId이고 toxicmonth 키가 존재하면 toxicmonth 값도 변경
+        if (condId === 'poll' && condJson[findIdx]['toxicmonth'] !== undefined) {
+          condJson[findIdx]['toxicmonth'] = condValue;
+        }
+      }
     }
+
+    setCondJson(condJson);
   };
 
   const handleChangeMark = e => {

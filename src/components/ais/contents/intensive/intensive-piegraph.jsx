@@ -6,6 +6,16 @@ import { Loading } from "@/components/ui/loading";
 import { IntensiveDataFrame } from "./intensive-data-frame";
 import { PieChart } from "@/components/ui/chart-pie";
 
+/**
+ * 자동-(단일)성분파이그래프 페이지
+ * 
+ * - 측정일자;측정소 선택 후 그래프 그리기
+ * - <PieChart /> 컴포넌트 사용
+ * 
+ * @returns {React.ReactNode}
+ */
+
+
 const IntensivePieGraph = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [contentData, setContentData] = useState(null);

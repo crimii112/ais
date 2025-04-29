@@ -28,6 +28,11 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const postMutation = usePostRequest();
   const [multipleDateList, setMultipleDateList] = useState([]);
 
+  // dateType === 'month' 일 때 사용
+  const [startMonth, setStartMonth] = useState('2015-01');
+  const [endMonth, setEndMonth] = useState('2015-01');
+  const [selectedMonth, setSelectedMonth] = useState('');
+
   // select, input 요소
   const dataCategoryRef = useRef();
   const startDateRef = useRef();
@@ -43,19 +48,35 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
 
   // 기간 선택 버튼 클릭 이벤트
   const handleClickSelectDate = async () => {
-    const dataCategory = dataCategoryRef.current.value;
-    let startDateTime = '',
-      endDateTime = '';
+
+    let startDateTime = '', endDateTime = '';
     if (dateType === 'all') {
       startDateTime = `${startDateRef.current.value} ${startTimeRef.current.value}`;
       endDateTime = `${endDateRef.current.value} ${endTimeRef.current.value}`;
     } else if (dateType === 'day') {
       startDateTime = `${startDateRef.current.value} 01`;
       endDateTime = `${endDateRef.current.value} 24`;
+    } else if (dateType === 'month') {
+      startDateTime = startMonth;
+      endDateTime = endMonth;
     }
 
     if (moment(startDateTime) > moment(endDateTime)) {
       alert('입력하신 끝 날짜가 시작 날짜보다 빠릅니다.');
+
+      if(dateType === 'month') {
+        setMultipleDateList([]);
+        setSelectedMonth('');
+      }
+
+      return;
+    }
+
+    if (dateType === 'month') {
+      const date = startDateTime.replaceAll('-', '') + ';' + endDateTime.replaceAll('-', '');
+      setSelectedMonth(date);
+      setMultipleDateList([date]);
+      alert(`[${date}]\n기간이 선택되었습니다.`);
       return;
     }
 
@@ -81,8 +102,9 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     }
 
     let item = [];
+    const dataCategory = dataCategoryRef.current.value;
     //auto => api 호출(select box 값 전송)
-    if (dataCategoryRef.current.value === 'auto') {
+    if (dataCategory === 'auto') {
       if (postMutation.isLoading) return;
 
       const apiData = {
@@ -194,12 +216,23 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     </>
   );
 
+  // 기간 선택 컴포넌트 - 년-월 선택
+  const monthSelect = (
+    <>
+      <Input type="month" value={startMonth} onChange={(e) => setStartMonth(e.target.value)} className="px-4" />
+      &nbsp;~&nbsp;
+      <Input type="month" value={endMonth} onChange={(e) => setEndMonth(e.target.value)} className="px-4" />
+      <Input type='text' value={selectedMonth} className='w-[210px] px-4 bg-gray-200 text-gray-600' readOnly />
+    </>
+  )
+
   return (
     <SearchCondFrame title="기간">
       <FlexRowWrapper className="items-stretch gap-1 w-full">
         <FlexRowWrapper className="items-stretch grow gap-1 justify-baseline">
           {dateType === 'all' && allDateSelect}
           {dateType === 'day' && daySelect}
+          {dateType === 'month' && monthSelect}
         </FlexRowWrapper>
         <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
           <Button
@@ -210,21 +243,23 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
           </Button>
         </FlexColWrapper>
       </FlexRowWrapper>
-      <FlexRowWrapper className="items-stretch gap-1 w-full">
-        <FlexRowWrapper className="items-stretch grow">
-          <Select multiple ref={multipleSelectRef}>
-            {multipleDateList &&
-              multipleDateList.map(item => <Option key={item}>{item}</Option>)}
-          </Select>
+      {dateType !== 'month' &&  // 년-월 선택 시 multiple select box 숨김
+        <FlexRowWrapper className="items-stretch gap-1 w-full">
+          <FlexRowWrapper className="items-stretch grow">
+            <Select multiple ref={multipleSelectRef}>
+              {multipleDateList &&
+                multipleDateList.map(item => <Option key={item}>{item}</Option>)}
+            </Select>
+          </FlexRowWrapper>
+          <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
+            <Button className="px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+              관리기간선택
+            </Button>
+            <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
+            <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
+          </FlexColWrapper>
         </FlexRowWrapper>
-        <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
-          <Button className="px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
-            관리기간선택
-          </Button>
-          <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
-          <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
-        </FlexColWrapper>
-      </FlexRowWrapper>
+      }
     </SearchCondFrame>
   );
 };

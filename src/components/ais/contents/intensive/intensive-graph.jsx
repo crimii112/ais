@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, memo } from 'react';
 import html2canvas from 'html2canvas';
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -17,12 +17,18 @@ const BAR_SIZE_CONFIG = {
 
 /**
  * (단일)성분누적그래프 페이지
+ * 
  * - 그래프 그릴 때 측정소 선택
  * - 1. 성분별(기간별-STACKED), 2. PM2.5/PM10비율(기간별), 3. AM-SUL, AM-NIT(기간별)로 총 3가지 그래프 구현
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
+ * 
+ * @param {string} type - 타입(auto, manual)
+ * @returns {React.ReactNode}
  */
+
+
 const IntensiveGraph = ({ type }) => {
-  const config = GRAPH_CONFIG[type];
+  const config = useMemo(() => GRAPH_CONFIG[type], [type]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingImage, setIsSavingImage] = useState(false);
@@ -88,42 +94,55 @@ const IntensiveGraph = ({ type }) => {
   }, [chartDatas?.type2, getBarSize]);
 
   // 성분별(기간별-STACKED) 그래프 커스텀 툴팁
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const groupDate = payload[0].payload.groupdate;
-      const groupNm = payload[0].payload.groupNm;
-      return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow">
-          <p className="font-medium">{groupDate} - {groupNm}</p>
-          {payload.map((entry, index) => {
-            const poll = pollutants.find(item => item.value === entry.name);
-            if(!poll) return null;
-            return (
-              <p key={index} style={{ color: entry.color }}>
-                {poll.text}: {entry.value === null ? '-' : entry.value}
-              </p>
-            );
-          })}
-        </div>
-      );
-    }
-    return null;
-  };
+  const Type1Tooltip = memo(({ active, payload }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+    
+    const groupDate = payload[0].payload.groupdate;
+    const groupNm = payload[0].payload.groupNm;
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded shadow">
+        <p className="font-medium">{groupDate} - {groupNm}</p>
+        {payload.map((entry, index) => {
+          const poll = pollutants.find(item => item.value === entry.name);
+          if(!poll) return null;
+          return (
+            <p key={index} style={{ color: entry.color }}>
+              {poll.text}: {entry.value === null ? '-' : entry.value}
+            </p>
+          );
+        })}
+      </div>
+    );
+  });
+
+  // PM2.5/PM10비율(기간별) 그래프 커스텀 툴팁
+  const Type2Tooltip = memo(({ active, payload }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded shadow">
+        <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
+        <p style={{ color: 'red' }}>PM2.5/PM10: {data.pmrate}</p>
+        <p style={{ color: COLORS[0] }}>PM10: {data.pm10}</p>
+        <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
+      </div>
+    );
+  })
 
   // AM-SUL, AM-NIT(기간별) 그래프 커스텀 툴팁
-  const Type3Tooltip = ({ active, payload }) => {
-    if (active && payload && payload.length && payload[0].payload) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 border border-gray-200 rounded shadow" style={{ visibility: 'visible', pointerEvents: 'auto' }}>
-          <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
-          <p style={{ color: COLORS[0] }}>amNit(ug/m3): {data.amNit}</p>
-          <p style={{ color: COLORS[1] }}>amSul(ug/m3): {data.amSul}</p>
-        </div>
-      );
-    }
-    return null;
-  };
+  const Type3Tooltip = memo(({ active, payload }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+    
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded shadow" >
+        <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
+        <p style={{ color: COLORS[0] }}>amSul(ug/m3): {data.amSul}</p>
+        <p style={{ color: COLORS[1] }}>amNit(ug/m3): {data.amNit}</p>
+      </div>
+    );
+  });
 
   // 이미지 저장 버튼 핸들러
   const handleSaveImage = useCallback(async (title) => {
@@ -284,7 +303,7 @@ const IntensiveGraph = ({ type }) => {
                           )}}
                         />
                       ))}
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={<Type1Tooltip />} />
                       <Legend verticalAlign="bottom"
                         wrapperStyle={{
                           paddingTop: 40,
@@ -359,29 +378,16 @@ const IntensiveGraph = ({ type }) => {
                           domain={[0, 1]}
                         />
                         <Line yAxisId='pmrate' dataKey='pmrate' stroke='red' strokeWidth={2} />
-                        <Tooltip content={({ active, payload }) => {
-                          if (active && payload && payload.length && payload[0].payload) {
-                            const data = payload[0].payload;
-                            return (
-                              <div className="bg-white p-3 border border-gray-200 rounded shadow">
-                                <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
-                                <p style={{ color: 'red' }}>PM2.5/PM10: {data.pmrate}</p>
-                                <p style={{ color: COLORS[0] }}>PM10: {data.pm10}</p>
-                                <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }} />
+                        <Tooltip content={<Type2Tooltip />} />
                         <Bar yAxisId='poll' dataKey='pm10' fill={COLORS[0]} barSize={type2BarSize.barSize} />
                         <Bar yAxisId='poll' dataKey='pm25' fill={COLORS[1]} barSize={type2BarSize.barSize} />
                         <Legend verticalAlign="bottom"
-                        wrapperStyle={{
-                          paddingTop: 40,
-                          border: 'none',
-                          outline: 'none',
-                          backgroundColor: 'transparent',
-                        }} 
+                          wrapperStyle={{
+                            paddingTop: 40,
+                            border: 'none',
+                            outline: 'none',
+                            backgroundColor: 'transparent',
+                          }} 
                       />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -432,8 +438,8 @@ const IntensiveGraph = ({ type }) => {
                         }}
                       />
                       <Tooltip content={<Type3Tooltip />} />
-                      <Bar data={chartDatas.type3} key='amNit' dataKey='amNit' fill={COLORS[0]} stackId='stackgroup' />
-                      <Bar data={chartDatas.type3} key='amSul' dataKey='amSul' fill={COLORS[1]} stackId='stackgroup' />
+                      <Bar data={chartDatas.type3} key='amSul' dataKey='amSul' fill={COLORS[0]} stackId='stackgroup' />
+                      <Bar data={chartDatas.type3} key='amNit' dataKey='amNit' fill={COLORS[1]} stackId='stackgroup' />
                       <Legend verticalAlign="bottom"
                         wrapperStyle={{
                           paddingTop: 40,
