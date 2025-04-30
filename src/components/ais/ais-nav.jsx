@@ -18,6 +18,7 @@ import { IntensivePsize } from './contents/intensive/intensive-psize';
 import { IntensiveCorrelation } from './contents/intensive/intensive-correlation';
 import { IntensiveGraph } from './contents/intensive/intensive-graph';
 import { IntensivePieGraph } from './contents/intensive/intensive-piegraph';
+import { IntensiveWeather } from './contents/intensive/intensive-weather';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -96,6 +97,11 @@ const data = {
               pathName: 'metal',
               title: '중금속 기간별 검색',
               content: <Metal type='line' />
+            },
+            {
+              pathName: 'metalMtGraph',
+              title: '중금속 데이터 그래프',
+              content: <Metal type='mtgraph' />
             }
           ]
         },
@@ -176,6 +182,17 @@ const data = {
               pathName: 'intensive/psize',
               title: '(단일)입경크기분포',
               content: <IntensivePsize />,
+            }
+          ],
+        },
+        {
+          id: 'intensiveWeather',
+          title: '기상자료 검색',
+          subItems: [
+            {
+              pathName: 'intensive/weatherrvwr',
+              title: '(단일)기상자료검토',
+              content: <IntensiveWeather type="weatherRvwr" />,
             }
           ],
         },

@@ -33,6 +33,8 @@ const Toxic = ({ type }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
+  const [highlightedRow, setHighlightedRow] = useState(null);
+
   // API 데이터
   const apiData = useMemo(() => ({
     page: config.page,
@@ -51,7 +53,7 @@ const Toxic = ({ type }) => {
 
     setIsLoading(true);
     setContentData(undefined);
-
+    setHighlightedRow(null);
     
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -111,6 +113,7 @@ const Toxic = ({ type }) => {
         fileName="유해대기 분석"
         numberStartIndex={2}
         numberEndIndex={23}
+        highlightedRow={highlightedRow}
       />
 
       <ContentChartFrame
@@ -118,6 +121,7 @@ const Toxic = ({ type }) => {
         isLoading={isLoading}
         type={config.chartType}
         title="유해대기"
+        setHighlightedRow={setHighlightedRow}
       />
     </>
   );

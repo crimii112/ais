@@ -46,6 +46,13 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     setDateList(multipleDateList);
   }, [multipleDateList]);
 
+  useEffect(() => {
+    if(dateType === 'onlyMonth') {
+      const date = startMonth.replaceAll('-', '');
+      setMultipleDateList([date]);
+    }
+  }, [dateType, startMonth]);
+
   // 기간 선택 버튼 클릭 이벤트
   const handleClickSelectDate = async () => {
 
@@ -61,6 +68,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
       endDateTime = endMonth;
     }
 
+    // 시작 날짜가 끝 날짜보다 빠르면 경고 메시지 출력
     if (moment(startDateTime) > moment(endDateTime)) {
       alert('입력하신 끝 날짜가 시작 날짜보다 빠릅니다.');
 
@@ -72,6 +80,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
       return;
     }
 
+    // month 일 때는 날짜 표시 및 설정 후 종료
     if (dateType === 'month') {
       const date = startDateTime.replaceAll('-', '') + ';' + endDateTime.replaceAll('-', '');
       setSelectedMonth(date);
@@ -226,6 +235,13 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     </>
   )
 
+  const onlyMonthSelect = (
+    <>
+      <label className='flex items-center px-3'>월 선택: </label>
+      <Input type="month" value={startMonth} onChange={(e) => {setStartMonth(e.target.value)}} className="px-4" />
+    </>
+  )
+
   return (
     <SearchCondFrame title="기간">
       <FlexRowWrapper className="items-stretch gap-1 w-full">
@@ -233,17 +249,22 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
           {dateType === 'all' && allDateSelect}
           {dateType === 'day' && daySelect}
           {dateType === 'month' && monthSelect}
+          {dateType === 'onlyMonth' && onlyMonthSelect}
         </FlexRowWrapper>
-        <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
-          <Button
-            className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
-            onClick={handleClickSelectDate}
-          >
-            기간 선택
-          </Button>
-        </FlexColWrapper>
+        {
+          dateType !== 'onlyMonth' && (
+            <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
+              <Button
+                className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+                onClick={handleClickSelectDate}
+              >
+                기간 선택
+              </Button>
+            </FlexColWrapper>
+          )
+        }
       </FlexRowWrapper>
-      {dateType !== 'month' &&  // 년-월 선택 시 multiple select box 숨김
+      {dateType !== 'month' && dateType !== 'onlyMonth' &&  // 년-월 선택 시 multiple select box 숨김
         <FlexRowWrapper className="items-stretch gap-1 w-full">
           <FlexRowWrapper className="items-stretch grow">
             <Select multiple ref={multipleSelectRef}>

@@ -19,7 +19,7 @@ import {
  */
 
 
-const PieChart = ({ datas, axisSettings }) => {
+const PieChart = ({ datas, axisSettings, setHighlightedRow }) => {
   const [processedData, setProcessedData] = useState([]);  // 처리된 데이터([{name: '4)Propylene', value: 10}])
   const [totalSum, setTotalSum] = useState(0);  // 선택한 데이터 값 총합
 
@@ -93,7 +93,7 @@ const PieChart = ({ datas, axisSettings }) => {
     );
   };
 
-  // 툴팁 커스텀(값 표시)
+  // 툴크 커스텀(값 표시)
   const customizedTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const { value, isNegative } = payload[0].payload;
@@ -105,6 +105,13 @@ const PieChart = ({ datas, axisSettings }) => {
       );
     }
     return null;
+  };
+
+  const handleCellClick = (entry, index) => {
+    if (entry) {
+      const rowKey = datas.rstList[0].groupdate + '_' + datas.rstList[0].groupNm;
+      setHighlightedRow(rowKey);
+    }
   };
 
   return (
@@ -120,8 +127,12 @@ const PieChart = ({ datas, axisSettings }) => {
           labelLine={false}
           isAnimationActive={false}
         >
-          {processedData.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          {processedData.map((entry, index) => (
+            <Cell 
+              key={`cell-${index}`} 
+              fill={COLORS[index % COLORS.length]} 
+              onClick={() => handleCellClick(entry, index)}
+            />
           ))}
         </Pie>
         <Tooltip content={customizedTooltip} />

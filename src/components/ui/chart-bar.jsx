@@ -27,7 +27,7 @@ import { FlexRowWrapper } from './common';
  */
 
 
-const BarChart = ({ datas, axisSettings, pollutantList }) => {
+const BarChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) => {
   const [processedData, setProcessedData] = useState([]); // 처리된 데이터([{groupdate: '2015/01/01 01', '인천.강화군.석모리-data04': 10, '인천.남동구.구월동-data04': 20, ...}])
   const colorMapRef = useRef({}); // 여기에 색상 저장
   const colorIndexRef = useRef(0);
@@ -138,6 +138,21 @@ const BarChart = ({ datas, axisSettings, pollutantList }) => {
     return null;
   };
 
+  // 바 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
+  const handleBarClick = (data) => {
+
+    if (data && data.groupdate && data.tooltipPayload) {
+      // 클릭된 Bar의 name에서 groupNm 추출
+      const name = data.tooltipPayload[0].name;
+
+      if (name) {
+        const groupNm = name.split(' - ')[0];
+        const rowKey = data.groupdate + '_' + groupNm;
+        setHighlightedRow(rowKey);
+      }
+    }
+  };
+
   return (
     <ResponsiveContainer width="100%" height={600}>
       <FlexRowWrapper className="justify-end gap-3 mr-3">
@@ -213,7 +228,7 @@ const BarChart = ({ datas, axisSettings, pollutantList }) => {
                 key={key}
                 data={processedData}
                 dataKey={`${item.groupNm}-${option.value}`}
-                name={key}
+                name={`${item.groupNm} - ${option.text}`}
                 fill={getColorByKey(`${item.groupNm}-${option.value}`)}
                 stackId={
                   graphType === 'default'
@@ -222,6 +237,7 @@ const BarChart = ({ datas, axisSettings, pollutantList }) => {
                     ? item.groupNm
                     : 'stackgroup'
                 }
+                onClick={handleBarClick}
               />
             );
           })

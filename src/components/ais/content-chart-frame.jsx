@@ -44,7 +44,7 @@ const CHART_SETTINGS = {
  * @param {string} title - 그래프 제목
  * @returns {React.ReactNode} 그래프 프레임 컴포넌트
  */
-const ContentChartFrame = ({ datas, isLoading, type, title }) => {
+const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow }) => {
   const config = CHART_SETTINGS[type];
 
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
@@ -62,14 +62,20 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
       text: datas.headNameList[idx],
     }));
 
+    let startIndex = 2; // 날짜/측정소명 이후부터 시작
+    if(title.includes('기상')) startIndex = 3;  // 기상자료검토의 경우 날짜/측정소명/코드 이후부터 시작
+
     // 'FLAG' 위치
     let flagIndex;
     if(title.includes('중금속')) {  //중금속의 경우 'FLAG'가 존재하지 않음
       flagIndex = 14;
+    } else if(title.includes('기상')) {
+      flagIndex = options.findIndex(option => option.value === 'flag');
     } else {
       flagIndex = options.findIndex(option => option.value === 'rflag');
     }
-    setPollutantList(options.slice(2, flagIndex));
+
+    setPollutantList(options.slice(startIndex, flagIndex));
   }, [datas, title]);
 
   const updateAxisSettings = (idx, updates) => {
@@ -177,12 +183,14 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
                     datas={chartConfig.datas}
                     axisSettings={chartConfig.axisSettings}
                     pollutantList={chartConfig.pollutantList}
+                    setHighlightedRow={setHighlightedRow}
                   />
                 )}
                 {type === 'pie' && (
                   <PieChart
                     datas={chartConfig.datas}
                     axisSettings={chartConfig.axisSettings}
+                    setHighlightedRow={setHighlightedRow}
                   />
                 )}
                 {type === 'bar' && (
@@ -190,6 +198,7 @@ const ContentChartFrame = ({ datas, isLoading, type, title }) => {
                     datas={chartConfig.datas}
                     axisSettings={chartConfig.axisSettings}
                     pollutantList={chartConfig.pollutantList}
+                    setHighlightedRow={setHighlightedRow}
                   />
                 )}
               </div>

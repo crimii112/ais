@@ -36,6 +36,8 @@ const PhotoCh = ({ type }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
+  const [highlightedRow, setHighlightedRow] = useState(null);
+
   // API 데이터 메모이제이션
   const apiData = useMemo(() => ({
     page: config.page,
@@ -54,6 +56,7 @@ const PhotoCh = ({ type }) => {
 
     setIsLoading(true);
     setContentData(undefined);
+    setHighlightedRow(null);
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -113,12 +116,15 @@ const PhotoCh = ({ type }) => {
         fileName="광화학 분석"
         numberStartIndex={2}
         numberEndIndex={64}
+        highlightedRow={highlightedRow}
       />
+
       <ContentChartFrame
         datas={contentData}
         isLoading={isLoading}
         type={config.chartType}
         title="광화학"
+        setHighlightedRow={setHighlightedRow}
       />
     </>
   );

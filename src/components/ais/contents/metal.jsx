@@ -9,6 +9,15 @@ import { SearchPollutant } from "../search-pollutant";
 import { ContentTableFrame } from "../content-table-frame";
 import { ContentChartFrame } from "../content-chart-frame";
 
+/**
+ * 중금속 컴포넌트
+ * - 기간, 측정소, 자료획득률, 자료표기, 검색조건 선택 후 검색 버튼 클릭 시 데이터 조회
+ * - [중금속 기간별 검색 | ]
+ * @param {string} type - 페이지 타입 ['line']
+ * @returns {React.ReactNode} - 중금속 컴포넌트
+ */
+
+
 const Metal = ({ type }) => {
     const config = METAL_SETTINGS[type];
     const postMutation = usePostRequest();
@@ -20,6 +29,8 @@ const Metal = ({ type }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [contentData, setContentData] = useState();
+
+    const [highlightedRow, setHighlightedRow] = useState(null);
 
     // API 데이터
     const apiData = useMemo(() => ({
@@ -38,6 +49,7 @@ const Metal = ({ type }) => {
         
         setIsLoading(true);
         setContentData(undefined);
+        setHighlightedRow(null);
 
         try {
             let apiRes = await postMutation.mutateAsync({
@@ -67,7 +79,7 @@ const Metal = ({ type }) => {
     return (
         <>
             <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-                <SearchDate setDateList={setDateList} dateType='month' />    
+                <SearchDate setDateList={setDateList} dateType={config.dateType} />    
                 <SearchStation 
                     title="중금속"
                     onTms={false}
@@ -99,6 +111,7 @@ const Metal = ({ type }) => {
                 fileName="중금속 기간별 검색"
                 numberStartIndex={2}
                 numberEndIndex={13}
+                highlightedRow={highlightedRow}
             />
 
             <ContentChartFrame
@@ -106,6 +119,7 @@ const Metal = ({ type }) => {
                 isLoading={isLoading}
                 type={config.chartType}
                 title="중금속 기간별 검색"
+                setHighlightedRow={setHighlightedRow}
             />
         </>
     )
@@ -201,6 +215,83 @@ const condList = [
       ],
     },
 ];
+const condList2 = [
+    {
+      type: 'selectBox',
+      title: '데이터구분',
+      id: 'sect',
+      content: [
+        { value: 'day', text: '일별' },
+      ],
+      disabled: true,
+    },
+    {
+      type: 'selectBox',
+      title: '데이터권역',
+      id: 'region',
+      content: [
+        { value: 'site', text: '측정소별' },
+      ],
+      disabled: true,
+    },
+    {
+      type: 'selectBox',
+      title: '데이터통계',
+      id: 'stats',
+      content: [
+        { value: 'avg', text: '평균' },
+        { value: 'min', text: '최소' },
+        { value: 'max', text: '최대' },
+        { value: 'count', text: '개수' },
+        { value: 'stdv', text: '표준편차' },
+        { value: 'median', text: '중앙값' },
+        { value: 'percentile', text: '백분위수' },
+      ],
+    },
+    {
+        type: 'textInput',
+        title: '소수점자릿수',
+        id: 'digit',
+        placeholder: '3',
+    },
+    {
+        type: 'selectBox',
+        title: '황사구분',
+        id: 'dust',
+        content: [
+            { value: 'include', text: '황사기간포함' },
+            { value: 'except', text: '황사기간제외' },
+            { value: 'only', text: '황사기간만' },
+        ]
+    },
+    {
+        type: 'selectBox',
+        title: ' 물질',
+        id: 'poll',
+        content: [
+            { value: 'PM10', text: 'PM10' },
+            { value: 'TSP', text: 'TSP' },
+        ]
+    },
+    {
+      type: 'selectBox',
+      title: '정기측정',
+      id: 'periodic',
+      content: [
+        { value: '1', text: 'Y' },
+        { value: '0', text: 'N' },
+      ],
+    },
+    {
+      type: 'selectBox',
+      title: '황사',
+      id: 'dustYN',
+      content: [
+          { value: '0', text: 'N' },
+          { value: '1', text: 'Y' },
+      ],
+    },
+];
 
 const signList1 = [
     { id: 'High', text: '~60% 미만', checked: true, signvalue: '#' },
@@ -233,11 +324,23 @@ const initPollutant = [
 const METAL_SETTINGS = {
     line: {
         page: 'metal/lineGraph',
+        dateType: 'month',
         chartType: 'line', 
         type: 'line',
         initCond: initCond,
         initPollutant: initPollutant,
         condList: condList,
+        signList1: signList1,
+        signList2: signList2
+    },
+    mtgraph:{
+        page: 'metal/mtgraph',
+        dateType: 'onlyMonth',
+        chartType: 'bar',
+        type: 'bar',
+        initCond: initCond,
+        initPollutant: initPollutant,
+        condList: condList2,
         signList1: signList1,
         signList2: signList2
     }

@@ -28,10 +28,11 @@ const IntensivePieGraph = () => {
     const [axisSettings, setAxisSettings] = useState(null);
 
     const [shouldRedrawChart, setShouldRedrawChart] = useState(false);
+    const [highlightedRow, setHighlightedRow] = useState(null);
 
     const initSettings = () => {
-        // setChartDatas(null);
-        // setHighlightedRow(null);
+        setChartDatas(null);
+        setHighlightedRow(null);
       };
 
     // 데이터 로드 시 데이터 가공
@@ -103,6 +104,7 @@ const IntensivePieGraph = () => {
             onDataLoaded={handleDataLoaded}
             onLoadingChange={setIsLoading}
             initSettings={initSettings}
+            highlightedRow={highlightedRow} 
         >
             <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
             {isLoading ? (
@@ -133,7 +135,7 @@ const IntensivePieGraph = () => {
                         </Button>
                     </FlexRowWrapper>
                     {chartDatas && axisSettings && (
-                        <PieChart datas={chartDatas} axisSettings={axisSettings} />
+                        <PieChart datas={chartDatas} axisSettings={axisSettings} setHighlightedRow={setHighlightedRow} />
                     )}
                 </FlexColWrapper>
             )}

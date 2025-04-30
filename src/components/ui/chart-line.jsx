@@ -28,7 +28,7 @@ import {
  */
 
 
-const LineChart = ({ datas, axisSettings, pollutantList }) => {
+const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) => {
   const [processedData, setProcessedData] = useState([]);
   const colorMapRef = useRef({}); // 여기에 색상 저장
   const colorIndexRef = useRef(0);
@@ -67,6 +67,12 @@ const LineChart = ({ datas, axisSettings, pollutantList }) => {
       colorMapRef.current[key] = getNextColor();
     }
     return colorMapRef.current[key];
+  };
+
+  // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
+  const handleActiveDotClick = (e, payload) => {
+    const rowKey = payload.payload.groupdate + '_' + payload.payload.groupNm;
+    setHighlightedRow(rowKey);
   };
 
   if (
@@ -150,6 +156,9 @@ const LineChart = ({ datas, axisSettings, pollutantList }) => {
                   name={`${el.groupNm} - ${option.text}`}
                   stroke={getColorByKey(key)}
                   connectNulls={false}
+                  activeDot={{
+                    onClick: handleActiveDotClick
+                  }}
                 />
               );
             })
