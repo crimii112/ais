@@ -24,7 +24,6 @@ import { ContentTableFrame } from '@/components/ais/content-table-frame';
  * @returns {React.ReactNode} 대기환경연구소 페이지 데이터 프레임 컴포넌트
  */
 
-
 const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings, highlightedRow }) => {
   const config = INTENSIVE_SETTINGS[type];
   const postMutation = usePostRequest();
@@ -580,7 +579,7 @@ const INTENSIVE_SETTINGS = {
     markList: markList_2,
     signList: signList,
     title: '(단일)기상자료검토',
-    numberStartIndex: 4,
+    numberStartIndex: 3,
     numberEndIndex: 24,
     dateType: 'all'
   }

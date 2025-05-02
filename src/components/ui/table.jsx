@@ -151,10 +151,12 @@ const Table = ({ datas, highlightedRow, numberStartIndex, numberEndIndex }) => {
   useEffect(() => {
     if (!highlightedRow || !datas?.rstList) return;
 
-    const index = datas.rstList.findIndex(
-      row => `${row.groupdate}_${row.groupNm}` === highlightedRow
-    );
+    const index = datas.rstList.findIndex( row => { 
+      if(row.groupdate) return `${row.groupdate}_${row.groupNm}` === highlightedRow
+      else return `${row.yyyymmddhh}_${row.areaName}` === highlightedRow
+    });
 
+    console.log(index);
     if (index !== -1) {
       debouncedScroll(index);
     }
@@ -231,7 +233,7 @@ const Table = ({ datas, highlightedRow, numberStartIndex, numberEndIndex }) => {
           ) : (
             virtualRows.map(virtualRow => {
               const row = table.getRowModel().rows[virtualRow.index];
-              const rowKey = `${row.original.groupdate}_${row.original.groupNm}`;
+              const rowKey = row.original.groupdate ? `${row.original.groupdate}_${row.original.groupNm}` : `${row.original.yyyymmddhh}_${row.original.areaName }`;
               const isHighlighted = rowKey === highlightedRow;
 
               return (
