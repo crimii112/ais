@@ -582,5 +582,29 @@ const INTENSIVE_SETTINGS = {
     numberStartIndex: 3,
     numberEndIndex: 24,
     dateType: 'all'
+  },
+  wswdGraph: {
+    page: 'intensive/wswdgraph',
+    initCond: initCond_2,
+    initPollutant: initPollutant_1,
+    condList: condList_5,
+    markList: markList_2,
+    signList: signList,
+    title: '(단일)풍향,풍속그래프',
+    numberStartIndex: 3,
+    numberEndIndex: 25,
+    dateType: 'all'
+  },
+  weatherTimeseries: {
+    page: 'intensive/weathertimeseries',
+    initCond: initCond_2,
+    initPollutant: initPollutant_1,
+    condList: condList_5,
+    markList: markList_2,
+    signList: signList,
+    title: '(선택)기상별 시계열',
+    numberStartIndex: 3,
+    numberEndIndex: 25,
+    dateType: 'all'
   }
 };

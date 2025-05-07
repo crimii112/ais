@@ -193,6 +193,16 @@ const data = {
               pathName: 'intensive/weatherrvwr',
               title: '(단일)기상자료검토',
               content: <IntensiveWeather type="weatherRvwr" />,
+            },
+            {
+              pathName: 'intensive/wswdgraph',
+              title: '(단일)풍향,풍속그래프',
+              content: <IntensiveWeather type="wswdGraph" />,
+            },
+            {
+              pathName: 'intensive/weathertimeseries',
+              title: '(선택)기상별 시계열',
+              content: <IntensiveWeather type="weatherTimeseries" />,
             }
           ],
         },
