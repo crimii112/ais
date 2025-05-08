@@ -1,6 +1,18 @@
 import React, { useCallback, useMemo, useState, memo } from 'react';
 import html2canvas from 'html2canvas';
-import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import { FlexColWrapper, FlexRowWrapper, Button } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
@@ -17,15 +29,14 @@ const BAR_SIZE_CONFIG = {
 
 /**
  * (단일)성분누적그래프 페이지
- * 
+ *
  * - 그래프 그릴 때 측정소 선택
  * - 1. 성분별(기간별-STACKED), 2. PM2.5/PM10비율(기간별), 3. AM-SUL, AM-NIT(기간별)로 총 3가지 그래프 구현
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
- * 
+ *
  * @param {string} type - 타입(auto, manual)
  * @returns {React.ReactNode}
  */
-
 
 const IntensiveGraph = ({ type }) => {
   const config = useMemo(() => GRAPH_CONFIG[type], [type]);
@@ -36,9 +47,9 @@ const IntensiveGraph = ({ type }) => {
   const [contentData, setContentData] = useState(); //테이블 전체 데이터
   const [chartOptionSettings, setChartOptionSettings] = useState(); //그래프 설정 옵션
   const [chartSelectedOption, setChartSelectedOption] = useState(); //선택한 그래프 설정 옵션
-  
+
   const [chartDatas, setChartDatas] = useState(); //그래프 데이터
-  
+
   const [highlightedRow, setHighlightedRow] = useState(null); //그래프에서 클릭한 행의 rowKey 저장
 
   const initSettings = () => {
@@ -48,7 +59,7 @@ const IntensiveGraph = ({ type }) => {
 
   // 데이터 로드 시 데이터 가공
   const handleDataLoaded = useCallback(data => {
-    if(data.rstList[0] === 'NO DATA') return;
+    if (data.rstList[0] === 'NO DATA') return;
 
     setContentData(data);
 
@@ -60,26 +71,28 @@ const IntensiveGraph = ({ type }) => {
 
     setChartOptionSettings({ groupNm: groupNmOptions });
     setChartSelectedOption(groupNmOptions[0].value);
-
   }, []);
 
   // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
-  const handleChartClick = useCallback((e) => {
-    if (!e?.activePayload?.[0]?.payload) return;
-    
-    const clicked = e.activePayload[0].payload;
-    const rowKey = `${clicked.groupdate}_${clicked.groupNm}`;
-    console.log(rowKey);
-    
-    // 이전 값과 동일한 경우 업데이트 방지
-    if (rowKey === highlightedRow) return;
-    
-    setHighlightedRow(rowKey);
-  }, [highlightedRow]);
+  const handleChartClick = useCallback(
+    e => {
+      if (!e?.activePayload?.[0]?.payload) return;
+
+      const clicked = e.activePayload[0].payload;
+      const rowKey = `${clicked.groupdate}_${clicked.groupNm}`;
+      console.log(rowKey);
+
+      // 이전 값과 동일한 경우 업데이트 방지
+      if (rowKey === highlightedRow) return;
+
+      setHighlightedRow(rowKey);
+    },
+    [highlightedRow]
+  );
 
   // PM2.5/PM10비율(기간별) 그래프 데이터 크기에 따른 barSize, barGap 설정
   // recharts 라이브러리에 앞뒤로 겹치게 하는 기능이 없어서 barGap을 음수로 설정하여 겹치게 설정
-  const getBarSize = useCallback((dataLength) => {
+  const getBarSize = useCallback(dataLength => {
     if (dataLength < 20) return BAR_SIZE_CONFIG.small;
     if (dataLength < 50) return BAR_SIZE_CONFIG.medium;
     if (dataLength < 100) return BAR_SIZE_CONFIG.large;
@@ -87,24 +100,26 @@ const IntensiveGraph = ({ type }) => {
     return BAR_SIZE_CONFIG.xxlarge;
   }, []);
 
-  const type2BarSize = useMemo(() => { 
-    return chartDatas?.type2 
-      ? getBarSize(chartDatas.type2.length) 
+  const type2BarSize = useMemo(() => {
+    return chartDatas?.type2
+      ? getBarSize(chartDatas.type2.length)
       : BAR_SIZE_CONFIG.small;
   }, [chartDatas?.type2, getBarSize]);
 
   // 성분별(기간별-STACKED) 그래프 커스텀 툴팁
   const Type1Tooltip = memo(({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
-    
+
     const groupDate = payload[0].payload.groupdate;
     const groupNm = payload[0].payload.groupNm;
     return (
       <div className="bg-white p-3 border border-gray-200 rounded shadow">
-        <p className="font-medium">{groupDate} - {groupNm}</p>
+        <p className="font-medium">
+          {groupDate} - {groupNm}
+        </p>
         {payload.map((entry, index) => {
           const poll = pollutants.find(item => item.value === entry.name);
-          if(!poll) return null;
+          if (!poll) return null;
           return (
             <p key={index} style={{ color: entry.color }}>
               {poll.text}: {entry.value === null ? '-' : entry.value}
@@ -122,22 +137,26 @@ const IntensiveGraph = ({ type }) => {
     const data = payload[0].payload;
     return (
       <div className="bg-white p-3 border border-gray-200 rounded shadow">
-        <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
+        <p className="font-medium">
+          {data.groupdate} - {data.groupNm}
+        </p>
         <p style={{ color: 'red' }}>PM2.5/PM10: {data.pmrate}</p>
         <p style={{ color: COLORS[0] }}>PM10: {data.pm10}</p>
         <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
       </div>
     );
-  })
+  });
 
   // AM-SUL, AM-NIT(기간별) 그래프 커스텀 툴팁
   const Type3Tooltip = memo(({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
-    
+
     const data = payload[0].payload;
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded shadow" >
-        <p className="font-medium">{data.groupdate} - {data.groupNm}</p>
+      <div className="bg-white p-3 border border-gray-200 rounded shadow">
+        <p className="font-medium">
+          {data.groupdate} - {data.groupNm}
+        </p>
         <p style={{ color: COLORS[0] }}>amSul(ug/m3): {data.amSul}</p>
         <p style={{ color: COLORS[1] }}>amNit(ug/m3): {data.amNit}</p>
       </div>
@@ -145,13 +164,13 @@ const IntensiveGraph = ({ type }) => {
   });
 
   // 이미지 저장 버튼 핸들러
-  const handleSaveImage = useCallback(async (title) => {
+  const handleSaveImage = useCallback(async title => {
     try {
       setIsSavingImage(true);
       await document.fonts.ready;
       const canvas = await html2canvas(
         document.getElementById(`${title}-chart-wrapper`),
-        { backgroundColor: '#fff', useCORS: true, scale: 1.5}
+        { backgroundColor: '#fff', useCORS: true, scale: 1.5 }
       );
       const link = document.createElement('a');
       link.download = `${title}.png`;
@@ -167,21 +186,28 @@ const IntensiveGraph = ({ type }) => {
 
   // 그래프 그리기 버튼 클릭 핸들러
   const handleClickDrawChart = useCallback(() => {
-    if(!contentData) return;
+    if (!contentData) return;
 
     // 선택한 측정소 데이터만 필터링
-    const filteredData = contentData.rstList.filter(item => item.groupNm === chartSelectedOption);
+    const filteredData = contentData.rstList.filter(
+      item => item.groupNm === chartSelectedOption
+    );
 
     const processedData = {
       // 성분별(기간별-STACKED) 그래프 데이터
       type1: filteredData.map(item => ({
-        groupdate: item.groupdate, 
-        groupNm: item.groupNm, 
+        groupdate: item.groupdate,
+        groupNm: item.groupNm,
         pm25: item.pm25 ? parseFloat(item.pm25) : null,
-        ...selectedPollutant.bar.reduce((acc, pollutant) => ({
-          ...acc,
-          [pollutant.value]: item[pollutant.value] ? parseFloat(item[pollutant.value]) : null
-        }), {})
+        ...selectedPollutant.bar.reduce(
+          (acc, pollutant) => ({
+            ...acc,
+            [pollutant.value]: item[pollutant.value]
+              ? parseFloat(item[pollutant.value])
+              : null,
+          }),
+          {}
+        ),
       })),
       // PM2.5/PM10비율(기간별) 그래프 데이터
       type2: filteredData.map(item => ({
@@ -197,14 +223,14 @@ const IntensiveGraph = ({ type }) => {
         groupNm: item.groupNm,
         amSul: item.amSul ? parseFloat(item.amSul) : null,
         amNit: item.amNit ? parseFloat(item.amNit) : null,
-      }))
+      })),
     };
 
     setChartDatas(processedData);
   }, [contentData, chartSelectedOption]);
 
   return (
-    <IntensiveDataFrame 
+    <IntensiveDataFrame
       type={config.type}
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
@@ -212,260 +238,331 @@ const IntensiveGraph = ({ type }) => {
       highlightedRow={highlightedRow}
     >
       <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
-      {isLoading ? (
-        <div className="w-full h-[400px] flex items-center justify-center">
-          <Loading />
-        </div>
-      ) : 
-        
-        <FlexColWrapper className='w-full h-full gap-15'>
-          <FlexRowWrapper className="w-full gap-10 mb-4 items-stretch justify-between">
-            <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
-              그래프 설정
-            </div>
-            <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
-              <span className="flex flex-col items-center justify-center">측정소 : </span>
-              <Select className="w-40" value={chartSelectedOption} onChange={e => setChartSelectedOption(e.target.value)}>
-                {chartOptionSettings?.groupNm.map(item => (
-                  <Option key={item.value} value={item.value}>{item.text}</Option>
-                ))}
-              </Select>
-            </FlexRowWrapper>
-            <Button
-              className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
-              onClick={handleClickDrawChart}
-            >
-              그래프 그리기
-            </Button>
-          </FlexRowWrapper>
-          {chartDatas && 
-            <>
-              {/* 성분별(기간별-STACKED) 그래프 */}
-              <div className='w-full h-full'>
-                <div className="text-lg font-bold">성분별(기간별-STACKED)</div>
-                <div className="w-full border-t border-gray-200" />
-                <div
-                  id={`성분별(기간별-STACKED)-chart-wrapper`}
-                  className="w-full h-full py-6"
-                >
-                  <ResponsiveContainer width="100%" height={700}>
-                    <ComposedChart 
-                      margin={{ top: 20, right: 60, bottom: 30, left: 20 }} 
-                      data={chartDatas.type1} 
-                      barGap={0} 
-                      // onClick={handleChartClick}
-                    >
-                      <CartesianGrid strokeDasharray="3" vertical={false} />
-                      <XAxis 
-                        dataKey='groupdate' 
-                        tick={{ fontSize: 12 }} 
-                        label={{
-                          value: '측정일자',
-                          position: 'bottom',
-                          fontWeight: 'bold',
-                        }} 
-                      />
-                      <YAxis 
-                        type='number' 
-                        tick={{ fontSize: 12 }}
-                        label={{
-                          value: 'Conc.(ug/m3)',
-                          position: 'insideLeft',
-                          fontWeight: 'bold',
-                          angle: -90
-                        }}
-                      />
-                      {selectedPollutant.bar.map((pollutant, idx) => (
-                        <Bar key={pollutant.value} dataKey={pollutant.value} fill={COLORS[idx]} stackId='stackgroup'>
-                          {chartDatas.type1.map((entry, index) => (
-                            <Cell 
-                              key={`cell-${index}`}
-                              onClick={() => console.log(`${entry.groupdate}_${entry.groupNm}_${pollutant.value}`)}
-                            />
-                          ))}
-                        </Bar>
-                      ))}
-                      {selectedPollutant.line.map((pollutant) => (
-                        <Line 
-                          key={pollutant.value}
-                          dataKey={pollutant.value} 
-                          stroke='red' 
-                          strokeWidth={2}
-                          dot={({ cx, cy, payload }) => {
-                            const value = payload[pollutant.value];
-                            if(!value) return null;
-
-                            const rowKey = `${payload.groupdate}_${payload.groupNm}_${pollutant.value}`;
-                            return (
-                              <circle key={rowKey} cx={cx} cy={cy} r={3} fill='white' stroke='red' strokeWidth={2} style={{ cursor: 'pointer' }}
-                                onClick={() => {console.log(rowKey)}}
-                              />
-                          )}}
-                        />
-                      ))}
-                      <Tooltip content={<Type1Tooltip />} />
-                      <Legend verticalAlign="bottom"
-                        wrapperStyle={{
-                          paddingTop: 40,
-                          border: 'none',
-                          outline: 'none',
-                          backgroundColor: 'transparent',
-                        }} 
-                      />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-                <FlexRowWrapper className="w-full justify-end gap-2">
-                  <Button
-                    onClick={() => handleSaveImage('성분별(기간별-STACKED)')}
-                    className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                  >
-                    {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                  </Button>
-                </FlexRowWrapper>
+        {isLoading ? (
+          <div className="w-full h-[400px] flex items-center justify-center">
+            <Loading />
+          </div>
+        ) : (
+          <FlexColWrapper className="w-full h-full gap-15">
+            <FlexRowWrapper className="w-full gap-10 mb-4 items-stretch justify-between">
+              <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
+                그래프 설정
               </div>
-
-                    
-              {/* PM2.5/PM10비율(기간별) 그래프 */}
-              {type === 'auto' &&
-                <div className='w-full h-full'>
-                  <div className="text-lg font-bold">PM2.5/PM10비율(기간별)</div>
+              <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
+                <span className="flex flex-col items-center justify-center">
+                  측정소 :{' '}
+                </span>
+                <Select
+                  className="w-40"
+                  value={chartSelectedOption}
+                  onChange={e => setChartSelectedOption(e.target.value)}
+                >
+                  {chartOptionSettings?.groupNm.map(item => (
+                    <Option key={item.value} value={item.value}>
+                      {item.text}
+                    </Option>
+                  ))}
+                </Select>
+              </FlexRowWrapper>
+              <Button
+                className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+                onClick={handleClickDrawChart}
+              >
+                그래프 그리기
+              </Button>
+            </FlexRowWrapper>
+            {chartDatas && (
+              <>
+                {/* 성분별(기간별-STACKED) 그래프 */}
+                <div className="w-full h-full">
+                  <div className="text-lg font-bold">
+                    성분별(기간별-STACKED)
+                  </div>
                   <div className="w-full border-t border-gray-200" />
                   <div
-                    id={`PM2.5/PM10비율(기간별)-chart-wrapper`}
+                    id={`성분별(기간별-STACKED)-chart-wrapper`}
                     className="w-full h-full py-6"
                   >
                     <ResponsiveContainer width="100%" height={700}>
-                      <ComposedChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }} data={chartDatas.type2} barGap={type2BarSize.barGap}
-                        onClick={handleChartClick}
+                      <ComposedChart
+                        margin={{ top: 20, right: 60, bottom: 30, left: 20 }}
+                        data={chartDatas.type1}
+                        barGap={0}
+                        // onClick={handleChartClick}
                       >
                         <CartesianGrid strokeDasharray="3" vertical={false} />
-                        <XAxis 
-                          dataKey='groupdate' 
-                          allowDuplicatedCategory={false}
-                          tick={{ fontSize: 12 }} 
+                        <XAxis
+                          dataKey="groupdate"
+                          tick={{ fontSize: 12 }}
                           label={{
                             value: '측정일자',
                             position: 'bottom',
                             fontWeight: 'bold',
-                          }} 
+                          }}
                         />
-                        <YAxis 
-                          yAxisId='poll'
-                          type='number' 
-                          allowDuplicatedCategory={false}
+                        <YAxis
+                          type="number"
                           tick={{ fontSize: 12 }}
-                          tickCount={11}
                           label={{
                             value: 'Conc.(ug/m3)',
                             position: 'insideLeft',
                             fontWeight: 'bold',
-                            angle: -90
+                            angle: -90,
                           }}
                         />
-                        <YAxis
-                          yAxisId='pmrate'
-                          type='number' 
-                          tick={{ fontSize: 12 }}
-                          tickCount={11}
-                          orientation='right'
-                          label={{
-                            value: 'PM2.5/PM10',
-                            position: 'insideRight',
-                            fontWeight: 'bold',
-                            angle: -90
-                          }}
-                          domain={[0, 1]}
-                        />
-                        <Line yAxisId='pmrate' dataKey='pmrate' stroke='red' strokeWidth={2} />
-                        <Tooltip content={<Type2Tooltip />} />
-                        <Bar yAxisId='poll' dataKey='pm10' fill={COLORS[0]} barSize={type2BarSize.barSize} />
-                        <Bar yAxisId='poll' dataKey='pm25' fill={COLORS[1]} barSize={type2BarSize.barSize} />
-                        <Legend verticalAlign="bottom"
+                        {selectedPollutant.bar.map((pollutant, idx) => (
+                          <Bar
+                            key={pollutant.value}
+                            dataKey={pollutant.value}
+                            fill={COLORS[idx]}
+                            stackId="stackgroup"
+                          >
+                            {chartDatas.type1.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                onClick={() =>
+                                  console.log(
+                                    `${entry.groupdate}_${entry.groupNm}_${pollutant.value}`
+                                  )
+                                }
+                              />
+                            ))}
+                          </Bar>
+                        ))}
+                        {selectedPollutant.line.map(pollutant => (
+                          <Line
+                            key={pollutant.value}
+                            dataKey={pollutant.value}
+                            stroke="red"
+                            strokeWidth={2}
+                            dot={({ cx, cy, payload }) => {
+                              const value = payload[pollutant.value];
+                              if (!value) return null;
+
+                              const rowKey = `${payload.groupdate}_${payload.groupNm}_${pollutant.value}`;
+                              return (
+                                <circle
+                                  key={rowKey}
+                                  cx={cx}
+                                  cy={cy}
+                                  r={3}
+                                  fill="white"
+                                  stroke="red"
+                                  strokeWidth={2}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => {
+                                    console.log(rowKey);
+                                  }}
+                                />
+                              );
+                            }}
+                          />
+                        ))}
+                        <Tooltip content={<Type1Tooltip />} />
+                        <Legend
+                          verticalAlign="bottom"
                           wrapperStyle={{
                             paddingTop: 40,
                             border: 'none',
                             outline: 'none',
                             backgroundColor: 'transparent',
-                          }} 
-                      />
+                          }}
+                        />
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
                   <FlexRowWrapper className="w-full justify-end gap-2">
                     <Button
-                      onClick={() => handleSaveImage('PM2.5/PM10비율(기간별)')}
+                      onClick={() => handleSaveImage('성분별(기간별-STACKED)')}
                       className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
                     >
                       {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
                     </Button>
                   </FlexRowWrapper>
                 </div>
-              }
 
+                {/* PM2.5/PM10비율(기간별) 그래프 */}
+                {type === 'auto' && (
+                  <div className="w-full h-full">
+                    <div className="text-lg font-bold">
+                      PM2.5/PM10비율(기간별)
+                    </div>
+                    <div className="w-full border-t border-gray-200" />
+                    <div
+                      id={`PM2.5/PM10비율(기간별)-chart-wrapper`}
+                      className="w-full h-full py-6"
+                    >
+                      <ResponsiveContainer width="100%" height={700}>
+                        <ComposedChart
+                          margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
+                          data={chartDatas.type2}
+                          barGap={type2BarSize.barGap}
+                          onClick={handleChartClick}
+                        >
+                          <CartesianGrid strokeDasharray="3" vertical={false} />
+                          <XAxis
+                            dataKey="groupdate"
+                            allowDuplicatedCategory={false}
+                            tick={{ fontSize: 12 }}
+                            label={{
+                              value: '측정일자',
+                              position: 'bottom',
+                              fontWeight: 'bold',
+                            }}
+                          />
+                          <YAxis
+                            yAxisId="poll"
+                            type="number"
+                            allowDuplicatedCategory={false}
+                            tick={{ fontSize: 12 }}
+                            tickCount={11}
+                            label={{
+                              value: 'Conc.(ug/m3)',
+                              position: 'insideLeft',
+                              fontWeight: 'bold',
+                              angle: -90,
+                            }}
+                          />
+                          <YAxis
+                            yAxisId="pmrate"
+                            type="number"
+                            tick={{ fontSize: 12 }}
+                            tickCount={11}
+                            orientation="right"
+                            label={{
+                              value: 'PM2.5/PM10',
+                              position: 'insideRight',
+                              fontWeight: 'bold',
+                              angle: -90,
+                            }}
+                            domain={[0, 1]}
+                          />
+                          <Line
+                            yAxisId="pmrate"
+                            dataKey="pmrate"
+                            stroke="red"
+                            strokeWidth={2}
+                          />
+                          <Tooltip content={<Type2Tooltip />} />
+                          <Bar
+                            yAxisId="poll"
+                            dataKey="pm10"
+                            fill={COLORS[0]}
+                            barSize={type2BarSize.barSize}
+                          />
+                          <Bar
+                            yAxisId="poll"
+                            dataKey="pm25"
+                            fill={COLORS[1]}
+                            barSize={type2BarSize.barSize}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{
+                              paddingTop: 40,
+                              border: 'none',
+                              outline: 'none',
+                              backgroundColor: 'transparent',
+                            }}
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <FlexRowWrapper className="w-full justify-end gap-2">
+                      <Button
+                        onClick={() =>
+                          handleSaveImage('PM2.5/PM10비율(기간별)')
+                        }
+                        className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
+                      >
+                        {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
+                      </Button>
+                    </FlexRowWrapper>
+                  </div>
+                )}
 
-              {/* AM-SUL, AM-NIT(기간별) 그래프 */}
-              <div className='w-full h-full'>
-                <div className="text-lg font-bold">AM-SUL, AM-NIT(기간별)</div>
-                <div className="w-full border-t border-gray-200" />
-                <div
-                  id={`AM-SUL,AM-NIT(기간별)-chart-wrapper`}
-                  className="w-full h-full py-6"
-                >
-                  <ResponsiveContainer width="100%" height={700}>
-                    <BarChart data={chartDatas.type3} margin={{ top: 20, right: 60, bottom: 30, left: 20 }} stackOffset='expand' barGap={0} onClick={handleChartClick} >
-                      <CartesianGrid strokeDasharray="3" vertical={false} />
-                      <XAxis 
-                        dataKey='groupdate' 
-                        allowDuplicatedCategory={false}
-                        tick={{ fontSize: 12 }} 
-                        label={{
-                          value: '측정일자',
-                          position: 'bottom',
-                          fontWeight: 'bold',
-                        }} 
-                      />
-                      <YAxis 
-                        type='number'
-                        tick={{ fontSize: 12 }}
-                        tickCount={11}
-                        tickFormatter={(value) => value * 100 }
-                        label={{
-                          value: 'percent(%)',
-                          angle: -90,
-                          position: 'insideLeft',
-                          fontWeight: 'bold',
-                        }}
-                      />
-                      <Tooltip content={<Type3Tooltip />} />
-                      <Bar data={chartDatas.type3} key='amSul' dataKey='amSul' fill={COLORS[0]} stackId='stackgroup' />
-                      <Bar data={chartDatas.type3} key='amNit' dataKey='amNit' fill={COLORS[1]} stackId='stackgroup' />
-                      <Legend verticalAlign="bottom"
-                        wrapperStyle={{
-                          paddingTop: 40,
-                          border: 'none',
-                          outline: 'none',
-                          backgroundColor: 'transparent',
-                        }} 
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <FlexRowWrapper className="w-full justify-end gap-2">
-                  <Button
-                    onClick={() => handleSaveImage('AM-SUL,AM-NIT(기간별)')}
-                    className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
+                {/* AM-SUL, AM-NIT(기간별) 그래프 */}
+                <div className="w-full h-full">
+                  <div className="text-lg font-bold">
+                    AM-SUL, AM-NIT(기간별)
+                  </div>
+                  <div className="w-full border-t border-gray-200" />
+                  <div
+                    id={`AM-SUL,AM-NIT(기간별)-chart-wrapper`}
+                    className="w-full h-full py-6"
                   >
-                    {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                  </Button>
-                </FlexRowWrapper>
-              </div>
-            </>
-          }
-        </FlexColWrapper>
-      }
-    </FlexColWrapper>
-      
+                    <ResponsiveContainer width="100%" height={700}>
+                      <BarChart
+                        data={chartDatas.type3}
+                        margin={{ top: 20, right: 60, bottom: 30, left: 20 }}
+                        stackOffset="expand"
+                        barGap={0}
+                        onClick={handleChartClick}
+                      >
+                        <CartesianGrid strokeDasharray="3" vertical={false} />
+                        <XAxis
+                          dataKey="groupdate"
+                          allowDuplicatedCategory={false}
+                          tick={{ fontSize: 12 }}
+                          label={{
+                            value: '측정일자',
+                            position: 'bottom',
+                            fontWeight: 'bold',
+                          }}
+                        />
+                        <YAxis
+                          type="number"
+                          tick={{ fontSize: 12 }}
+                          tickCount={11}
+                          tickFormatter={value => value * 100}
+                          label={{
+                            value: 'percent(%)',
+                            angle: -90,
+                            position: 'insideLeft',
+                            fontWeight: 'bold',
+                          }}
+                        />
+                        <Tooltip content={<Type3Tooltip />} />
+                        <Bar
+                          data={chartDatas.type3}
+                          key="amSul"
+                          dataKey="amSul"
+                          fill={COLORS[0]}
+                          stackId="stackgroup"
+                        />
+                        <Bar
+                          data={chartDatas.type3}
+                          key="amNit"
+                          dataKey="amNit"
+                          fill={COLORS[1]}
+                          stackId="stackgroup"
+                        />
+                        <Legend
+                          verticalAlign="bottom"
+                          wrapperStyle={{
+                            paddingTop: 40,
+                            border: 'none',
+                            outline: 'none',
+                            backgroundColor: 'transparent',
+                          }}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <FlexRowWrapper className="w-full justify-end gap-2">
+                    <Button
+                      onClick={() => handleSaveImage('AM-SUL,AM-NIT(기간별)')}
+                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
+                    >
+                      {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
+                    </Button>
+                  </FlexRowWrapper>
+                </div>
+              </>
+            )}
+          </FlexColWrapper>
+        )}
+      </FlexColWrapper>
     </IntensiveDataFrame>
   );
 };
@@ -474,43 +571,41 @@ export { IntensiveGraph };
 
 // 성분별(기간별-STACKED): 막대 그래프 물질 고정
 const selectedPollutant = {
-  line: [
-    {value: 'pm25', text: 'PM2.5'},
-  ],
+  line: [{ value: 'pm25', text: 'PM2.5' }],
   bar: [
-    {value: 'amSul', text: 'AM_SUL'}, 
-    {value: 'amNit', text: 'AM_NIT'}, 
-    {value: 'om', text: 'OM'}, 
-    {value: 'ec', text: 'EC'}, 
-    {value: 'cm', text: 'CM'}, 
-    {value: 'tm', text: 'TM'}, 
-    {value: 'etc', text: 'ETC'}
-  ]
+    { value: 'amSul', text: 'AM_SUL' },
+    { value: 'amNit', text: 'AM_NIT' },
+    { value: 'om', text: 'OM' },
+    { value: 'ec', text: 'EC' },
+    { value: 'cm', text: 'CM' },
+    { value: 'tm', text: 'TM' },
+    { value: 'etc', text: 'ETC' },
+  ],
 };
 
 const pollutants = [
-  {value: 'pm25', text: 'PM2.5'},
-  {value: 'pm10', text: 'PM10'},
-  {value: 'pmrate', text: 'PM2.5/PM10'},
-  {value: 'amSul', text: 'AM_SUL'}, 
-  {value: 'amNit', text: 'AM_NIT'}, 
-  {value: 'om', text: 'OM'}, 
-  {value: 'ec', text: 'EC'}, 
-  {value: 'cm', text: 'CM'}, 
-  {value: 'tm', text: 'TM'}, 
-  {value: 'etc', text: 'ETC'}
-]
+  { value: 'pm25', text: 'PM2.5' },
+  { value: 'pm10', text: 'PM10' },
+  { value: 'pmrate', text: 'PM2.5/PM10' },
+  { value: 'amSul', text: 'AM_SUL' },
+  { value: 'amNit', text: 'AM_NIT' },
+  { value: 'om', text: 'OM' },
+  { value: 'ec', text: 'EC' },
+  { value: 'cm', text: 'CM' },
+  { value: 'tm', text: 'TM' },
+  { value: 'etc', text: 'ETC' },
+];
 
 const GRAPH_CONFIG = {
-  'auto':{
+  auto: {
     type: 'autoGraph',
     title: '자동-(단일)성분누적그래프',
   },
-  'manual':{
+  manual: {
     type: 'manualGraph',
     title: '수동-(단일)성분누적그래프',
-  }
-}
+  },
+};
 
 const COLORS = [
   '#0088FE',

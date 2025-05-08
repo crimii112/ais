@@ -8,13 +8,11 @@ import { SearchCond } from '../search-cond';
 import { SearchPollutant } from '../search-pollutant';
 import { ContentTableFrame } from '../content-table-frame';
 
-
 /**
  * 일반대기 검색
  * - 기간, 대기측정소, 검색조건, 물질 선택 후 검색 버튼 클릭 시 데이터 조회
  * @returns {React.ReactNode} 일반대기 검색 페이지
  */
-
 
 const CmmnAir = () => {
   const postMutation = usePostRequest();
@@ -50,13 +48,16 @@ const CmmnAir = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // API 데이터 메모이제이션
-  const apiData = useMemo(() => ({
-    page: 'arpltn/cmmair',
-    date: dateList,
-    site: stationList,
-    cond: searchCond,
-    polllist: pollutant,
-  }), [dateList, stationList, searchCond, pollutant]);
+  const apiData = useMemo(
+    () => ({
+      page: 'arpltn/cmmair',
+      date: dateList,
+      site: stationList,
+      cond: searchCond,
+      polllist: pollutant,
+    }),
+    [dateList, stationList, searchCond, pollutant]
+  );
 
   // 검색 버튼 핸들러 메모이제이션
   const handleClickSearchBtn = useCallback(async () => {

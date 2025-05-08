@@ -8,13 +8,12 @@ import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
 /**
  * (단일)입경크기분포 페이지
- * 
+ *
  * - 측정일자/TYPE/측정소 선택 후 그래프 그리기
  * - 그래프는 산점도 사용, X축 log 스케일 적용
- * 
+ *
  * @returns {React.ReactNode}
  */
-
 
 const IntensivePsize = () => {
   const [contentData, setContentData] = useState();
@@ -36,9 +35,7 @@ const IntensivePsize = () => {
     setContentData(data);
 
     // 그래프 설정 옵션 설정
-    const groupdate = [
-      ...new Set(data.rstList.map(item => item.groupdate)),
-    ];
+    const groupdate = [...new Set(data.rstList.map(item => item.groupdate))];
     const groupdateOptions = groupdate.map(item => {
       return {
         value: item,
@@ -68,7 +65,7 @@ const IntensivePsize = () => {
       type: typeOptions,
       groupNm,
     });
-  }
+  };
 
   const setSelectedGroupNms = selectedOptions => {
     setOptions(prev => ({ ...prev, groupNm: selectedOptions }));
@@ -173,8 +170,8 @@ const IntensivePsize = () => {
   }, [options, shouldRedrawChart]);
 
   return (
-    <IntensiveDataFrame 
-      type="psize" 
+    <IntensiveDataFrame
+      type="psize"
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}

@@ -24,7 +24,14 @@ import { ContentTableFrame } from '@/components/ais/content-table-frame';
  * @returns {React.ReactNode} 대기환경연구소 페이지 데이터 프레임 컴포넌트
  */
 
-const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, initSettings, highlightedRow }) => {
+const IntensiveDataFrame = ({
+  children,
+  type,
+  onDataLoaded,
+  onLoadingChange,
+  initSettings,
+  highlightedRow,
+}) => {
   const config = INTENSIVE_SETTINGS[type];
   const postMutation = usePostRequest();
 
@@ -111,7 +118,11 @@ const IntensiveDataFrame = ({ children, type, onDataLoaded, onLoadingChange, ini
     <>
       {/* 데이터 검색 조건 설정 */}
       <SearchFrame handleClickSearchBtn={handleClickSearchBtn}>
-        <SearchDate setDateList={setDateList} type="intensive" dateType={config.dateType} />
+        <SearchDate
+          setDateList={setDateList}
+          type="intensive"
+          dateType={config.dateType}
+        />
         <SearchStation
           title="대기환경연구소"
           siteType="intensive"
@@ -190,7 +201,7 @@ const initCond_4 = [
   },
   { id: 'unit1', checked: false }, // markList
   { id: 'unit2', checked: false },
-]
+];
 
 // 초기 물질 및 소수점 자릿수 설정값
 const initPollutant_1 = [
@@ -504,7 +515,7 @@ const INTENSIVE_SETTINGS = {
     title: '(단일)입경크기분포',
     numberStartIndex: 4,
     numberEndIndex: 108,
-    dateType: 'all'
+    dateType: 'all',
   },
   autoTimeCorrelation: {
     page: 'intensive/autotimecorrelation',
@@ -517,7 +528,7 @@ const INTENSIVE_SETTINGS = {
     title: '자동-(단일)성분상관성검토',
     numberStartIndex: 3,
     numberEndIndex: 20,
-    dateType: 'all'
+    dateType: 'all',
   },
   autoGraph: {
     page: 'intensive/autograph',
@@ -530,7 +541,7 @@ const INTENSIVE_SETTINGS = {
     title: '자동-(단일)성분누적그래프',
     numberStartIndex: 3,
     numberEndIndex: 20,
-    dateType: 'all'
+    dateType: 'all',
   },
   autoPieGraph: {
     page: 'intensive/autopiegraph',
@@ -543,7 +554,7 @@ const INTENSIVE_SETTINGS = {
     title: '자동-(단일)성분파이그래프',
     numberStartIndex: 3,
     numberEndIndex: 20,
-    dateType: 'all'
+    dateType: 'all',
   },
   manualCorrelation: {
     page: 'intensive/manualcorrelation',
@@ -556,7 +567,7 @@ const INTENSIVE_SETTINGS = {
     title: '수동-(단일)성분상관성검토',
     numberStartIndex: 3,
     numberEndIndex: 34,
-    dateType: 'day'
+    dateType: 'day',
   },
   manualGraph: {
     page: 'intensive/manualgraph',
@@ -569,7 +580,7 @@ const INTENSIVE_SETTINGS = {
     title: '수동-(단일)성분누적그래프',
     numberStartIndex: 3,
     numberEndIndex: 16,
-    dateType: 'day'
+    dateType: 'day',
   },
   weatherRvwr: {
     page: 'intensive/weatherrvwr',
@@ -581,7 +592,7 @@ const INTENSIVE_SETTINGS = {
     title: '(단일)기상자료검토',
     numberStartIndex: 3,
     numberEndIndex: 24,
-    dateType: 'all'
+    dateType: 'all',
   },
   wswdGraph: {
     page: 'intensive/wswdgraph',
@@ -593,7 +604,7 @@ const INTENSIVE_SETTINGS = {
     title: '(단일)풍향,풍속그래프',
     numberStartIndex: 3,
     numberEndIndex: 25,
-    dateType: 'all'
+    dateType: 'all',
   },
   weatherTimeseries: {
     page: 'intensive/weathertimeseries',
@@ -605,6 +616,6 @@ const INTENSIVE_SETTINGS = {
     title: '(선택)기상별 시계열',
     numberStartIndex: 3,
     numberEndIndex: 25,
-    dateType: 'all'
-  }
+    dateType: 'all',
+  },
 };

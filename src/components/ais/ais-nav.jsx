@@ -38,7 +38,7 @@ const data = {
               pathName: 'cmmnAir',
               title: '일반대기 검색',
               content: <CmmnAir />,
-            }
+            },
           ],
         },
         {
@@ -96,14 +96,14 @@ const data = {
             {
               pathName: 'metal',
               title: '중금속 기간별 검색',
-              content: <Metal type='line' />
+              content: <Metal type="line" />,
             },
             {
               pathName: 'metalMtGraph',
               title: '중금속 데이터 그래프',
-              content: <Metal type='mtgraph' />
-            }
-          ]
+              content: <Metal type="mtgraph" />,
+            },
+          ],
         },
         {
           id: 'toxic',
@@ -182,7 +182,7 @@ const data = {
               pathName: 'intensive/psize',
               title: '(단일)입경크기분포',
               content: <IntensivePsize />,
-            }
+            },
           ],
         },
         {
@@ -203,10 +203,9 @@ const data = {
               pathName: 'intensive/weathertimeseries',
               title: '(선택)기상별 시계열',
               content: <IntensiveWeather type="weatherTimeseries" />,
-            }
+            },
           ],
         },
-        
       ],
     },
   ],
@@ -226,19 +225,22 @@ const AisNav = () => {
    * 탭 추가 핸들러
    * @param {Object} subItem - 탭 추가 핸들러
    */
-  const handleAddTab = useCallback((subItem) => {
-    setTabList(prev => [...prev, { ...subItem, id: uuidv4() }]);
-    setActiveMenuId(null);
-    setActiveSubMenuId(null);
-  }, [setTabList]);
+  const handleAddTab = useCallback(
+    subItem => {
+      setTabList(prev => [...prev, { ...subItem, id: uuidv4() }]);
+      setActiveMenuId(null);
+      setActiveSubMenuId(null);
+    },
+    [setTabList]
+  );
 
   const handleMenuClick = useCallback((itemId, e) => {
     e?.stopPropagation();
-    setActiveMenuId(prev => prev === itemId ? null : itemId);
+    setActiveMenuId(prev => (prev === itemId ? null : itemId));
     setActiveSubMenuId(null);
   }, []);
 
-  const handleSubMenuEnter = useCallback((subTitleId) => {
+  const handleSubMenuEnter = useCallback(subTitleId => {
     setActiveSubMenuId(subTitleId);
   }, []);
 
@@ -246,21 +248,24 @@ const AisNav = () => {
     setActiveSubMenuId(null);
   }, []);
 
-  const handleKeyDown = useCallback((e, itemId, type, subTitleId = null, subItem = null) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (type === 'main') {
-        handleMenuClick(itemId);
-      } else if (type === 'subTitle') {
-        handleSubMenuEnter(subTitleId);
-      } else if (type === 'sub' && subItem) {
-        handleAddTab(subItem);
+  const handleKeyDown = useCallback(
+    (e, itemId, type, subTitleId = null, subItem = null) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (type === 'main') {
+          handleMenuClick(itemId);
+        } else if (type === 'subTitle') {
+          handleSubMenuEnter(subTitleId);
+        } else if (type === 'sub' && subItem) {
+          handleAddTab(subItem);
+        }
       }
-    }
-  }, [handleMenuClick, handleSubMenuEnter, handleAddTab]);
+    },
+    [handleMenuClick, handleSubMenuEnter, handleAddTab]
+  );
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = e => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setActiveMenuId(null);
         setActiveSubMenuId(null);
@@ -286,8 +291,8 @@ const AisNav = () => {
             <div key={item.id} className="relative" ref={menuRef}>
               <button
                 className="flex items-center gap-1.5 px-4 py-2 rounded-md text-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                onClick={(e) => handleMenuClick(item.id, e)}
-                onKeyDown={(e) => handleKeyDown(e, item.id, 'main')}
+                onClick={e => handleMenuClick(item.id, e)}
+                onKeyDown={e => handleKeyDown(e, item.id, 'main')}
                 aria-expanded={activeMenuId === item.id}
                 aria-haspopup="true"
                 tabIndex={0}
@@ -296,23 +301,25 @@ const AisNav = () => {
                 <ChevronDown className="w-4 h-4" />
               </button>
               {activeMenuId === item.id && (
-                <div 
+                <div
                   className="absolute mt-1 left-0 z-50 w-64 p-1 bg-white rounded-md shadow-lg border border-gray-200"
                   role="menu"
                   aria-orientation="vertical"
                 >
                   {item.subTitles.map(subTitle => (
-                    <div 
-                      key={subTitle.id} 
+                    <div
+                      key={subTitle.id}
                       className="relative"
                       onMouseEnter={() => handleSubMenuEnter(subTitle.id)}
                       onMouseLeave={handleSubMenuLeave}
                     >
-                      <div 
+                      <div
                         className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-md transition-colors duration-200 cursor-default select-none"
                         role="presentation"
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => handleKeyDown(e, item.id, 'subTitle', subTitle.id)}
+                        onClick={e => e.stopPropagation()}
+                        onKeyDown={e =>
+                          handleKeyDown(e, item.id, 'subTitle', subTitle.id)
+                        }
                         tabIndex={0}
                       >
                         <div className="flex items-center justify-between">
@@ -321,7 +328,7 @@ const AisNav = () => {
                         </div>
                       </div>
                       {activeSubMenuId === subTitle.id && (
-                        <div 
+                        <div
                           className="absolute left-full top-0 z-50 w-64 p-1 bg-white rounded-md shadow-lg border border-gray-200"
                           role="menu"
                           aria-orientation="vertical"
@@ -331,7 +338,15 @@ const AisNav = () => {
                               key={subItem.pathName}
                               className="w-full px-3 py-2 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-200"
                               onClick={() => handleAddTab(subItem)}
-                              onKeyDown={(e) => handleKeyDown(e, item.id, 'sub', subTitle.id, subItem)}
+                              onKeyDown={e =>
+                                handleKeyDown(
+                                  e,
+                                  item.id,
+                                  'sub',
+                                  subTitle.id,
+                                  subItem
+                                )
+                              }
                               role="menuitem"
                               tabIndex={0}
                             >

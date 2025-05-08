@@ -8,15 +8,14 @@ import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
 
 /**
  * (단일)성분상관성검토 페이지
- * 
+ *
  * - X축/Y축/측정소 선택 후 그래프 그리기
  * - 그래프는 산점도 사용
  * - 그래프 클릭 시 해당하는 행 테이블에서 하이라이트 표시 기능
- * 
+ *
  * @param {string} type - 타입(auto, manual)
  * @returns {React.ReactNode}
  */
-
 
 const IntensiveCorrelation = ({ type }) => {
   const config = useMemo(() => CORRELATION_CONFIG[type], [type]);
@@ -43,25 +42,30 @@ const IntensiveCorrelation = ({ type }) => {
 
     // headList 중 물질만 추출하여 옵션 설정
     // 물질 옵션은 3번째 인덱스부터 시작
-    const pollutantOptions = useMemo(() => 
-      data.headList
-        .map((value, idx) => ({
-          value,
-          text: data.headNameList[idx],
-        }))
-        .slice(3),
+    const pollutantOptions = useMemo(
+      () =>
+        data.headList
+          .map((value, idx) => ({
+            value,
+            text: data.headNameList[idx],
+          }))
+          .slice(3),
       [data.headList, data.headNameList]
     );
 
-    const groupNmOptions = useMemo(() => 
-      data.rstList2.map(item => ({
-        value: item.groupNm,
-        text: item.groupNm,
-      })),
+    const groupNmOptions = useMemo(
+      () =>
+        data.rstList2.map(item => ({
+          value: item.groupNm,
+          text: item.groupNm,
+        })),
       [data.rstList2]
     );
 
-    setChartOptionSettings({ pollutant: pollutantOptions, groupNm: groupNmOptions });
+    setChartOptionSettings({
+      pollutant: pollutantOptions,
+      groupNm: groupNmOptions,
+    });
     setChartSelectedOption({
       x: pollutantOptions[0],
       y: pollutantOptions[0],
@@ -94,9 +98,14 @@ const IntensiveCorrelation = ({ type }) => {
       option => option.value === currentValue
     );
 
-    const newIndex = direction === 'up'
-      ? (currentIndex > 0 ? currentIndex - 1 : currentOptions.length - 1)
-      : (currentIndex < currentOptions.length - 1 ? currentIndex + 1 : 0);
+    const newIndex =
+      direction === 'up'
+        ? currentIndex > 0
+          ? currentIndex - 1
+          : currentOptions.length - 1
+        : currentIndex < currentOptions.length - 1
+        ? currentIndex + 1
+        : 0;
 
     setChartSelectedOption(prev => ({
       ...prev,
@@ -113,7 +122,6 @@ const IntensiveCorrelation = ({ type }) => {
     }
   }, [chartSelectedOption, shouldRedrawChart]);
 
-
   // 그래프(산점도) 그리기 버튼 클릭 핸들러
   const handleClickDrawChart = () => {
     if (!contentData?.rstList) return;
@@ -127,22 +135,24 @@ const IntensiveCorrelation = ({ type }) => {
       return;
     }
 
-    const processedData = useMemo(() => 
-      rawData.map(item => ({
-        groupdate: item.groupdate,
-        groupNm: item.groupNm,
-        x: parseFloat(item[chartSelectedOption.x.value]),
-        y: parseFloat(item[chartSelectedOption.y.value]),
-      })),
+    const processedData = useMemo(
+      () =>
+        rawData.map(item => ({
+          groupdate: item.groupdate,
+          groupNm: item.groupNm,
+          x: parseFloat(item[chartSelectedOption.x.value]),
+          y: parseFloat(item[chartSelectedOption.y.value]),
+        })),
       [rawData, chartSelectedOption]
     );
 
-    const groupedData = useMemo(() => 
-      processedData.reduce((acc, curr) => {
-        acc[curr.groupNm] = acc[curr.groupNm] || [];
-        acc[curr.groupNm].push(curr);
-        return acc;
-      }, {}),
+    const groupedData = useMemo(
+      () =>
+        processedData.reduce((acc, curr) => {
+          acc[curr.groupNm] = acc[curr.groupNm] || [];
+          acc[curr.groupNm].push(curr);
+          return acc;
+        }, {}),
       [processedData]
     );
 
@@ -183,7 +193,7 @@ const IntensiveCorrelation = ({ type }) => {
   });
 
   return (
-    <IntensiveDataFrame 
+    <IntensiveDataFrame
       type={config.type}
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
@@ -201,7 +211,9 @@ const IntensiveCorrelation = ({ type }) => {
             그래프 설정
           </div>
           <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
-            <span className="flex flex-col items-center justify-center">X : </span>
+            <span className="flex flex-col items-center justify-center">
+              X :{' '}
+            </span>
             <SelectWithArrows
               id="x"
               value={chartSelectedOption.x?.value}
@@ -209,7 +221,9 @@ const IntensiveCorrelation = ({ type }) => {
               onChange={handleChangeChartSelectedOption}
               onNavigate={direction => handleOptionNavigation('x', direction)}
             />
-            <span className="flex flex-col items-center justify-center">Y : </span>
+            <span className="flex flex-col items-center justify-center">
+              Y :{' '}
+            </span>
             <SelectWithArrows
               id="y"
               value={chartSelectedOption.y?.value}
@@ -217,7 +231,9 @@ const IntensiveCorrelation = ({ type }) => {
               onChange={handleChangeChartSelectedOption}
               onNavigate={direction => handleOptionNavigation('y', direction)}
             />
-            <span className="flex flex-col items-center justify-center">측정소 : </span>
+            <span className="flex flex-col items-center justify-center">
+              측정소 :{' '}
+            </span>
             <CustomMultiSelect
               className="w-100"
               options={chartOptionSettings.groupNm}
@@ -239,12 +255,12 @@ const IntensiveCorrelation = ({ type }) => {
 export { IntensiveCorrelation };
 
 const CORRELATION_CONFIG = {
-  'auto': {
+  auto: {
     type: 'autoTimeCorrelation',
     title: '자동-(단일)성분상관성검토',
   },
-  'manual': {
+  manual: {
     type: 'manualCorrelation',
     title: '수동-(단일)성분상관성검토',
   },
-}
+};
