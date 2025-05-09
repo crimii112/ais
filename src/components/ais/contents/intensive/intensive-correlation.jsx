@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo, memo } from 'react';
+import React, { useCallback, useState, useEffect, memo } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
 import { SelectWithArrows } from '@/components/ui/select-box';
@@ -18,7 +18,7 @@ import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
  */
 
 const IntensiveCorrelation = ({ type }) => {
-  const config = useMemo(() => CORRELATION_CONFIG[type], [type]);
+  const config = CORRELATION_CONFIG[type]
 
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
@@ -42,25 +42,16 @@ const IntensiveCorrelation = ({ type }) => {
 
     // headList 중 물질만 추출하여 옵션 설정
     // 물질 옵션은 3번째 인덱스부터 시작
-    const pollutantOptions = useMemo(
-      () =>
-        data.headList
-          .map((value, idx) => ({
+    const pollutantOptions = data.headList.map((value, idx) => ({
             value,
             text: data.headNameList[idx],
           }))
-          .slice(3),
-      [data.headList, data.headNameList]
-    );
+          .slice(3)
 
-    const groupNmOptions = useMemo(
-      () =>
-        data.rstList2.map(item => ({
+    const groupNmOptions = data.rstList2.map(item => ({
           value: item.groupNm,
           text: item.groupNm,
-        })),
-      [data.rstList2]
-    );
+        }))
 
     setChartOptionSettings({
       pollutant: pollutantOptions,
@@ -135,26 +126,18 @@ const IntensiveCorrelation = ({ type }) => {
       return;
     }
 
-    const processedData = useMemo(
-      () =>
-        rawData.map(item => ({
+    const processedData = rawData.map(item => ({
           groupdate: item.groupdate,
           groupNm: item.groupNm,
           x: parseFloat(item[chartSelectedOption.x.value]),
           y: parseFloat(item[chartSelectedOption.y.value]),
-        })),
-      [rawData, chartSelectedOption]
-    );
+        }));
 
-    const groupedData = useMemo(
-      () =>
-        processedData.reduce((acc, curr) => {
+    const groupedData = processedData.reduce((acc, curr) => {
           acc[curr.groupNm] = acc[curr.groupNm] || [];
           acc[curr.groupNm].push(curr);
           return acc;
-        }, {}),
-      [processedData]
-    );
+        }, {});
 
     setChartSettings({
       xAxis: {

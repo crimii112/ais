@@ -50,9 +50,18 @@ const IntensiveDataFrame = ({
       onLoadingChange(isLoading);
     }
   }, [isLoading, onLoadingChange]);
+  
 
-  const apiData = useMemo(
-    () => ({
+  const handleClickSearchBtn = async () => {
+    if (!dateList.length) return alert('기간을 설정하여 주십시오.');
+    if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
+    if (postMutation.isLoading) return;
+
+    initSettings?.();
+    setIsLoading(true);
+    setContentData(undefined);
+
+    const apiData = {
       page: config.page,
       date: dateList,
       site: stationList,
@@ -73,18 +82,7 @@ const IntensiveDataFrame = ({
       ...(config.digitList
         ? { polllist: pollutant.slice(1) }
         : { polllist: pollutant }),
-    }),
-    [dateList, stationList, searchCond, pollutant]
-  );
-
-  const handleClickSearchBtn = useCallback(async () => {
-    if (!dateList.length) return alert('기간을 설정하여 주십시오.');
-    if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
-    if (postMutation.isLoading) return;
-
-    initSettings?.();
-    setIsLoading(true);
-    setContentData(undefined);
+    };
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -112,7 +110,7 @@ const IntensiveDataFrame = ({
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, postMutation, onDataLoaded]);
+  };
 
   return (
     <>
@@ -160,61 +158,6 @@ const IntensiveDataFrame = ({
 };
 
 export { IntensiveDataFrame };
-
-// 초기 검색 조건 설정값
-const initCond_1 = {
-  sect: 'time',
-  poll: 'calc',
-  dust: 'include',
-  stats: '',
-  eqType: 'SMPS_APS_O',
-};
-const initCond_2 = [
-  {
-    sect: 'time',
-    poll: 'raw',
-    dust: 'include',
-    stats: '',
-    eqType: 'SMPS_APS_O',
-  },
-  { id: 'unit1', checked: false }, // markList
-  { id: 'unit2', checked: false },
-];
-const initCond_3 = [
-  {
-    sect: 'time',
-    poll: 'calc',
-    dust: 'include',
-    stats: '',
-    eqType: 'SMPS_APS_O',
-  },
-  { id: 'unit1', checked: false }, // markList
-  { id: 'unit2', checked: false },
-];
-const initCond_4 = [
-  {
-    sect: 'day',
-    poll: 'calc',
-    dust: 'include',
-    stats: '',
-    eqType: 'SMPS_APS_O',
-  },
-  { id: 'unit1', checked: false }, // markList
-  { id: 'unit2', checked: false },
-];
-
-// 초기 물질 및 소수점 자릿수 설정값
-const initPollutant_1 = [
-  { id: 'High', checked: true, signvalue: '#' },
-  { id: 'Low', checked: true, signvalue: '##' },
-  { id: 'dumy', checked: false },
-];
-const initPollutant_2 = [
-  { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
-  { id: 'High', checked: true, signvalue: '#' },
-  { id: 'Low', checked: true, signvalue: '##' },
-  { id: 'dumy', checked: false },
-];
 
 // 자료획득률 조건 데이터 => searchPollutant 컴포넌트에서 사용
 const signList = [
@@ -508,8 +451,18 @@ const markList_2 = [
 const INTENSIVE_SETTINGS = {
   psize: {
     page: 'intensive/psize',
-    initCond: initCond_1,
-    initPollutant: initPollutant_1,
+    initCond: {
+      sect: 'time',
+      poll: 'calc',
+      dust: 'include',
+      stats: '',
+      eqType: 'SMPS_APS_O',
+    },
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_1,
     signList: signList,
     title: '(단일)입경크기분포',
@@ -519,8 +472,23 @@ const INTENSIVE_SETTINGS = {
   },
   autoTimeCorrelation: {
     page: 'intensive/autotimecorrelation',
-    initCond: initCond_3,
-    initPollutant: initPollutant_2,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_3,
     markList: markList_1,
     digitList: digitList,
@@ -532,8 +500,23 @@ const INTENSIVE_SETTINGS = {
   },
   autoGraph: {
     page: 'intensive/autograph',
-    initCond: initCond_3,
-    initPollutant: initPollutant_2,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_3,
     markList: markList_1,
     digitList: digitList,
@@ -545,8 +528,23 @@ const INTENSIVE_SETTINGS = {
   },
   autoPieGraph: {
     page: 'intensive/autopiegraph',
-    initCond: initCond_3,
-    initPollutant: initPollutant_2,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_2,
     markList: markList_1,
     digitList: digitList,
@@ -558,8 +556,23 @@ const INTENSIVE_SETTINGS = {
   },
   manualCorrelation: {
     page: 'intensive/manualcorrelation',
-    initCond: initCond_4,
-    initPollutant: initPollutant_2,
+    initCond: [
+      {
+        sect: 'day',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_4,
     markList: markList_1,
     digitList: digitList,
@@ -571,8 +584,23 @@ const INTENSIVE_SETTINGS = {
   },
   manualGraph: {
     page: 'intensive/manualgraph',
-    initCond: initCond_4,
-    initPollutant: initPollutant_2,
+    initCond: [
+      {
+        sect: 'day',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_4,
     markList: markList_1,
     digitList: digitList,
@@ -584,8 +612,22 @@ const INTENSIVE_SETTINGS = {
   },
   weatherRvwr: {
     page: 'intensive/weatherrvwr',
-    initCond: initCond_2,
-    initPollutant: initPollutant_1,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'raw',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_5,
     markList: markList_2,
     signList: signList,
@@ -596,8 +638,22 @@ const INTENSIVE_SETTINGS = {
   },
   wswdGraph: {
     page: 'intensive/wswdgraph',
-    initCond: initCond_2,
-    initPollutant: initPollutant_1,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'raw',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_5,
     markList: markList_2,
     signList: signList,
@@ -608,8 +664,22 @@ const INTENSIVE_SETTINGS = {
   },
   weatherTimeseries: {
     page: 'intensive/weathertimeseries',
-    initCond: initCond_2,
-    initPollutant: initPollutant_1,
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'raw',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
     condList: condList_5,
     markList: markList_2,
     signList: signList,
