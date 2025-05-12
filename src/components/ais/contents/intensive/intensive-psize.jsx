@@ -15,7 +15,7 @@ import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
  * @returns {React.ReactNode}
  */
 
-const IntensivePsize = () => {
+const IntensivePsize = ({type}) => {
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,6 +53,9 @@ const IntensivePsize = () => {
       value: item.groupNm,
       text: item.groupNm,
     }));
+
+    const poll = data.headNameList.slice(3);
+    console.log(poll)
 
     setOptions({
       groupdate: groupdate[0],
@@ -171,7 +174,7 @@ const IntensivePsize = () => {
 
   return (
     <IntensiveDataFrame
-      type="psize"
+      type={type}
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}

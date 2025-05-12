@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '@/components/ais/search-frame';
@@ -397,7 +397,126 @@ const condList_5 = [
     ],
   },
 ];
-
+const condList_6 = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [
+      { value: 'time', text: '시간별' },
+      { value: 'day', text: '일별' },
+      { value: 'month', text: '월별' },
+      { value: 'year', text: '연별' },
+      { value: 'all', text: '전체기간별' },
+      { value: 'timezone', text: '시간대별' },
+      { value: 'week', text: '요일별' },
+      { value: 'season', text: '계절별' },
+      { value: 'ys', text: '년도-계절별' },
+      { value: 'lys', text: '전년도-계절별' },
+      { value: 'a4', text: '년도-시간대별' },
+      { value: 'a5', text: '전체-월별' },
+      { value: 'a7', text: '전체-일별' },
+      { value: 'accmonth', text: '년도-월별누적' },
+      { value: 'accseason', text: '계절관리제누적' },
+      { value: 'a1', text: '계절관리제연차누적' },
+      { value: 'a2', text: '년도-일별누적' },
+      { value: 'a3', text: '전체-일별누적' },
+      { value: 'a6', text: '계절관리제일별누적' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '검색항목',
+    id: 'poll',
+    content: [
+      { value: 'WD', text: 'WD' },
+      { value: 'WS', text: 'WS' },
+      { value: 'TMP', text: 'TMP' },
+      { value: 'HUM', text: 'HUM' },
+      { value: 'PRESSURE', text: 'PRESSURE' },
+      { value: 'CLOUD', text: 'CLOUD' },
+      { value: 'VISIBLE', text: 'VISIBLE' },
+      { value: 'RAIN', text: 'RAIN' },
+      { value: 'NEPH450', text: 'NEPH450' },
+      { value: 'NEPH550', text: 'NEPH550' },
+      { value: 'NEPH700', text: 'NEPH700' },
+      { value: 'NEPH_HUM', text: 'NEPH_HUM' },
+      { value: 'AETH370', text: 'AETH370' },
+      { value: 'AETH470', text: 'AETH470' },
+      { value: 'AETH520', text: 'AETH520' },
+      { value: 'AETH590', text: 'AETH590' },
+      { value: 'AETH660', text: 'AETH660' },
+      { value: 'AETH880', text: 'AETH880' },
+      { value: 'AETH950', text: 'AETH950' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '황사구분',
+    id: 'dust',
+    content: [
+      { value: 'include', text: '황사기간포함' },
+      { value: 'except', text: '황사기간제외' },
+      { value: 'only', text: '황사기간만' },
+    ],
+  },
+];
+const condList_7 = [
+  {
+    type: 'selectBox',
+    title: '데이터구분',
+    id: 'sect',
+    content: [
+      { value: 'time', text: '시간별' },
+      { value: 'day', text: '일별' },
+      { value: 'month', text: '월별' },
+      { value: 'year', text: '연별' },
+      { value: 'all', text: '전체기간별' },
+      { value: 'timezone', text: '시간대별' },
+      { value: 'week', text: '요일별' },
+      { value: 'season', text: '계절별' },
+      { value: 'ys', text: '년도-계절별' },
+      { value: 'lys', text: '전년도-계절별' },
+      { value: 'a4', text: '년도-시간대별' },
+      { value: 'a5', text: '전체-월별' },
+      { value: 'a7', text: '전체-일별' },
+      { value: 'accmonth', text: '년도-월별누적' },
+      { value: 'accseason', text: '계절관리제누적' },
+      { value: 'a1', text: '계절관리제연차누적' },
+      { value: 'a2', text: '년도-일별누적' },
+      { value: 'a3', text: '전체-일별누적' },
+      { value: 'a6', text: '계절관리제일별누적' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '검색항목',
+    id: 'poll',
+    content: [{ value: 'raw', text: 'RawData' }],
+    disabled: true,
+  },
+  {
+    type: 'selectBox',
+    title: '황사구분',
+    id: 'dust',
+    content: [
+      { value: 'include', text: '황사기간포함' },
+      { value: 'except', text: '황사기간제외' },
+      { value: 'only', text: '황사기간만' },
+    ],
+  },
+  {
+    type: 'selectBox',
+    title: '입경구분',
+    id: 'eqType',
+    content: [
+      { value: 'SMPS_APS_O', text: 'SMPS_APS_O' },
+      { value: 'SMPS_APS', text: 'SMPS_APS' },
+      { value: 'SMPS', text: 'SMPS' },
+      { value: 'APS', text: 'APS' },
+    ],
+  },
+];
 // 성분 데이터 => searchPollutant 컴포넌트에서 사용
 const digitList = [
   {
@@ -468,6 +587,27 @@ const INTENSIVE_SETTINGS = {
     title: '(단일)입경크기분포',
     numberStartIndex: 4,
     numberEndIndex: 108,
+    dateType: 'all',
+  },
+  psizeCal: {
+    page: 'intensive/psizecal',
+    initCond: {
+      sect: 'time',
+      poll: 'raw',
+      dust: 'include',
+      stats: '',
+      eqType: 'SMPS_APS_O',
+    },
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
+    condList: condList_7,
+    signList: signList,
+    title: '(선택)성분계산',
+    numberStartIndex: 3,
+    numberEndIndex: 138,
     dateType: 'all',
   },
   autoTimeCorrelation: {
@@ -688,4 +828,30 @@ const INTENSIVE_SETTINGS = {
     numberEndIndex: 25,
     dateType: 'all',
   },
+  weatherPivot: {
+    page: 'intensive/weatherpivot',
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'WD',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
+    condList: condList_6,
+    markList: markList_2,
+    signList: signList,
+    title: '(선택)기상자료(PIVOT)',
+    numberStartIndex: 3,
+    numberEndIndex: 16,
+    dateType: 'all',
+  }
 };

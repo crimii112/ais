@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { FlexColWrapper, FlexRowWrapper, Button } from '@/components/ui/common';
 import { SelectWithArrows } from '@/components/ui/select-box';
@@ -35,7 +35,7 @@ const IntensivePieGraph = () => {
   };
 
   // 데이터 로드 시 데이터 가공
-  const handleDataLoaded = useCallback(data => {
+  const handleDataLoaded = data => {
     if (!data?.headList || !data?.headNameList || !data?.rstList2) return;
     if (data.rstList[0] === 'NO DATA') return;
 
@@ -49,7 +49,7 @@ const IntensivePieGraph = () => {
 
     setChartOptionSettings({ groupDateAndNm: groupDateAndNmOptions });
     setChartSelectedOption(groupDateAndNmOptions[0]);
-  }, []);
+  };
 
   // 그래프(산점도) 선택 옵션(x, y축) 변경 핸들러
   const handleChangeChartSelectedOption = e => {

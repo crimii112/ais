@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import {
   CartesianGrid,
@@ -26,7 +26,7 @@ import { Select, Option } from '@/components/ui/select-box';
 
 /**
  * 기상자료 검색 컴포넌트
- * @param {string} type - 기상자료 검색 타입
+ * @param {string} type - 기상자료 검색 타입 (weatherRvwr, weatherTimeseries, wswdGraph, weatherPivot)
  * @returns {React.ReactNode} 기상자료 검색 컴포넌트
  */
 const CustomScatterDot = props => {
@@ -91,7 +91,7 @@ const IntensiveWeather = ({ type }) => {
   };
 
   // 데이터 로드 시 데이터 가공
-  const handleDataLoaded = useCallback(data => {
+  const handleDataLoaded = data => {
     if (!data?.headList || !data?.headNameList || !data?.rstList2) return;
     if (data.rstList[0] === 'NO DATA') return;
 
@@ -114,7 +114,7 @@ const IntensiveWeather = ({ type }) => {
       setChartOptionList(prev => ({ ...prev, groupNmList: groupNms }));
       setSelectedGroupNm(groupNms[0].value);
     }
-  }, [type]);
+  };
 
   // 축 설정 업데이트
   const updateAxisSettings = (idx, updates) => {
@@ -194,9 +194,8 @@ const IntensiveWeather = ({ type }) => {
   };
 
   // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
-  const handleChartClick = useCallback(
-    e => {
-      if (!e?.activePayload?.[0]?.payload) return;
+  const handleChartClick = e => {
+    if (!e?.activePayload?.[0]?.payload) return;
 
       const clicked = e.activePayload[0].payload;
       const rowKey =
@@ -207,9 +206,7 @@ const IntensiveWeather = ({ type }) => {
       // 이전 값과 동일한 경우 업데이트 방지
       if (rowKey === highlightedRow) return;
       setHighlightedRow(rowKey);
-    },
-    [highlightedRow, type, selectedGroupNm]
-  );
+    };
 
   // 그래프 이미지로 저장
   const handleSaveImage = async (title) => {
@@ -225,7 +222,7 @@ const IntensiveWeather = ({ type }) => {
   };
 
   // 차트 렌더링
-  const renderChart = useMemo(() => {
+  const renderChart = () => {
     if(!chartConfig) return null;
 
     // (단일)기상자료검토, (선택)기상별 시계열
@@ -409,7 +406,6 @@ const IntensiveWeather = ({ type }) => {
                       onClick={() => handleSaveImage('풍향,풍속(기간별)')}
                       className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
                     >
-                      {/* {isSavingImage ? '이미지 저장 중...' : '이미지 저장'} */}
                       이미지 저장
                     </Button>
                   </FlexRowWrapper>
@@ -496,7 +492,6 @@ const IntensiveWeather = ({ type }) => {
                       onClick={() => handleSaveImage('목측시정,계산시정(기간별)')}
                       className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
                     >
-                      {/* {isSavingImage ? '이미지 저장 중...' : '이미지 저장'} */}
                       이미지 저장
                     </Button>
                   </FlexRowWrapper>
@@ -506,7 +501,7 @@ const IntensiveWeather = ({ type }) => {
       }
 
     return null;
-  }, [chartConfig, type, contentData, selectedGroupNm, handleChartClick, handleSaveImage, getYAxisDomain, getColorByKey]);
+  };
 
   return (
     <IntensiveDataFrame
@@ -516,7 +511,7 @@ const IntensiveWeather = ({ type }) => {
       initSettings={initSettings}
       highlightedRow={highlightedRow}
     >
-      {/** 그래프 설정 부분 공통으로 */}
+      {type === 'weatherPivot' ? null : (
       <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white items-start">
         {isLoading ? (
           <div className="w-full h-[400px] flex items-center justify-center">
@@ -607,10 +602,11 @@ const IntensiveWeather = ({ type }) => {
 
 
             {/** 그래프 그리기 버튼 클릭 시 결과 그래프(type에 따라 다름) */}
-            {renderChart}
+            {renderChart()}
           </>
         )}
       </FlexColWrapper>
+      )}
     </IntensiveDataFrame>
   );
 };

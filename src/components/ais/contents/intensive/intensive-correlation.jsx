@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, memo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { FlexRowWrapper, Button } from '@/components/ui/common';
 import { SelectWithArrows } from '@/components/ui/select-box';
@@ -35,7 +35,7 @@ const IntensiveCorrelation = ({ type }) => {
 
   const initSettings = () => setChartSettings(undefined);
 
-  const handleDataLoaded = useCallback(data => {
+  const handleDataLoaded = data => {
     if (!data?.headList || !data?.headNameList || !data?.rstList2) return;
 
     setContentData(data);
@@ -61,7 +61,7 @@ const IntensiveCorrelation = ({ type }) => {
       x: pollutantOptions[0],
       y: pollutantOptions[0],
     });
-  }, []);
+  };
 
   // 그래프(산점도) 선택 옵션(측정소명) 변경 핸들러
   const setSelectedGroupNms = selectedOptions => {
@@ -157,7 +157,7 @@ const IntensiveCorrelation = ({ type }) => {
   };
 
   // 커스텀 툴팁
-  const CustomTooltip = memo(({ active, payload }) => {
+  const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload?.length) return null;
 
     const { groupdate, groupNm, x, y } = payload[0].payload;
@@ -173,7 +173,7 @@ const IntensiveCorrelation = ({ type }) => {
         <p>{`${yLabel} : ${y}`}</p>
       </div>
     );
-  });
+  };
 
   return (
     <IntensiveDataFrame

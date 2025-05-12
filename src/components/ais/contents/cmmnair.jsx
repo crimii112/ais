@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -47,20 +47,8 @@ const CmmnAir = () => {
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
-  // API 데이터 메모이제이션
-  const apiData = useMemo(
-    () => ({
-      page: 'arpltn/cmmair',
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-    }),
-    [dateList, stationList, searchCond, pollutant]
-  );
-
-  // 검색 버튼 핸들러 메모이제이션
-  const handleClickSearchBtn = useCallback(async () => {
+  // 검색 버튼 핸들러
+  const handleClickSearchBtn = async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
@@ -68,6 +56,15 @@ const CmmnAir = () => {
     setIsLoading(true);
     setContentData(undefined);
 
+    // API 데이터
+    const apiData = {
+      page: 'arpltn/cmmair',
+      date: dateList,
+      site: stationList,
+      cond: searchCond,
+      polllist: pollutant,
+    };
+    
     try {
       let apiRes = await postMutation.mutateAsync({
         url: 'ais/srch/datas.do',
@@ -92,7 +89,7 @@ const CmmnAir = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, postMutation, dateList.length, stationList.length]);
+  }
 
   return (
     <>

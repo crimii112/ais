@@ -181,7 +181,12 @@ const data = {
             {
               pathName: 'intensive/psize',
               title: '(단일)입경크기분포',
-              content: <IntensivePsize />,
+              content: <IntensivePsize type="psize" />,
+            },
+            {
+              pathName: 'intensive/psizeCal',
+              title: '(선택)성분계산',
+              content: <IntensivePsize type="psizeCal" />,
             },
           ],
         },
@@ -189,11 +194,11 @@ const data = {
           id: 'intensiveWeather',
           title: '기상자료 검색',
           subItems: [
-            {
-              pathName: 'intensive/weatherrvwr',
-              title: '(단일)기상자료검토',
-              content: <IntensiveWeather type="weatherRvwr" />,
-            },
+            // {
+            //   pathName: 'intensive/weatherrvwr',
+            //   title: '(단일)기상자료검토',
+            //   content: <IntensiveWeather type="weatherRvwr" />,
+            // },
             {
               pathName: 'intensive/wswdgraph',
               title: '(단일)풍향,풍속그래프',
@@ -203,6 +208,11 @@ const data = {
               pathName: 'intensive/weathertimeseries',
               title: '(선택)기상별 시계열',
               content: <IntensiveWeather type="weatherTimeseries" />,
+            },
+            {
+              pathName: 'intensive/weatherpivot',
+              title: '(선택)기상자료(PIVOT)',
+              content: <IntensiveWeather type="weatherPivot" />,
             },
           ],
         },

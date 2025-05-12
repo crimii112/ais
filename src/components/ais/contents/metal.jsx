@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchFrame } from '../search-frame';
@@ -31,20 +31,7 @@ const Metal = ({ type }) => {
 
   const [highlightedRow, setHighlightedRow] = useState(null);
 
-  // API 데이터
-  const apiData = useMemo(
-    () => ({
-      page: config.page,
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-      type: 'tmp',
-    }),
-    [config.page, dateList, stationList, searchCond, pollutant]
-  );
-
-  const handleClickSearchBtn = useCallback(async () => {
+  const handleClickSearchBtn = async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 선택하여 주십시오.');
     if (postMutation.isLoading) return;
@@ -53,6 +40,16 @@ const Metal = ({ type }) => {
     setContentData(undefined);
     setHighlightedRow(null);
 
+    // API 데이터
+    const apiData = {
+      page: config.page,
+      date: dateList,
+      site: stationList,
+      cond: searchCond,
+      polllist: pollutant,
+      type: 'tmp',
+    };
+    
     try {
       let apiRes = await postMutation.mutateAsync({
         url: 'ais/srch/datas.do',
@@ -76,7 +73,7 @@ const Metal = ({ type }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, postMutation]);
+  };
 
   return (
     <>

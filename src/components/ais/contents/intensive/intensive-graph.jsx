@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, memo } from 'react';
+import React, { useState } from 'react';
 import html2canvas from 'html2canvas';
 import {
   Bar,
@@ -39,7 +39,7 @@ const BAR_SIZE_CONFIG = {
  */
 
 const IntensiveGraph = ({ type }) => {
-  const config = useMemo(() => GRAPH_CONFIG[type], [type]);
+  const config = GRAPH_CONFIG[type];
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingImage, setIsSavingImage] = useState(false);
@@ -58,7 +58,7 @@ const IntensiveGraph = ({ type }) => {
   };
 
   // 데이터 로드 시 데이터 가공
-  const handleDataLoaded = useCallback(data => {
+  const handleDataLoaded = data => {
     if (data.rstList[0] === 'NO DATA') return;
 
     setContentData(data);
@@ -71,12 +71,11 @@ const IntensiveGraph = ({ type }) => {
 
     setChartOptionSettings({ groupNm: groupNmOptions });
     setChartSelectedOption(groupNmOptions[0].value);
-  }, []);
+  };
 
   // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
-  const handleChartClick = useCallback(
-    e => {
-      if (!e?.activePayload?.[0]?.payload) return;
+  const handleChartClick = e => {
+    if (!e?.activePayload?.[0]?.payload) return;
 
       const clicked = e.activePayload[0].payload;
       const rowKey = `${clicked.groupdate}_${clicked.groupNm}`;
@@ -85,29 +84,25 @@ const IntensiveGraph = ({ type }) => {
       // 이전 값과 동일한 경우 업데이트 방지
       if (rowKey === highlightedRow) return;
 
-      setHighlightedRow(rowKey);
-    },
-    [highlightedRow]
-  );
+    setHighlightedRow(rowKey);
+  };
 
   // PM2.5/PM10비율(기간별) 그래프 데이터 크기에 따른 barSize, barGap 설정
   // recharts 라이브러리에 앞뒤로 겹치게 하는 기능이 없어서 barGap을 음수로 설정하여 겹치게 설정
-  const getBarSize = useCallback(dataLength => {
+  const getBarSize = dataLength => {
     if (dataLength < 20) return BAR_SIZE_CONFIG.small;
     if (dataLength < 50) return BAR_SIZE_CONFIG.medium;
     if (dataLength < 100) return BAR_SIZE_CONFIG.large;
     if (dataLength < 550) return BAR_SIZE_CONFIG.xlarge;
     return BAR_SIZE_CONFIG.xxlarge;
-  }, []);
+  };
 
-  const type2BarSize = useMemo(() => {
-    return chartDatas?.type2
-      ? getBarSize(chartDatas.type2.length)
-      : BAR_SIZE_CONFIG.small;
-  }, [chartDatas?.type2, getBarSize]);
+  const type2BarSize = chartDatas?.type2
+    ? getBarSize(chartDatas.type2.length)
+    : BAR_SIZE_CONFIG.small;
 
   // 성분별(기간별-STACKED) 그래프 커스텀 툴팁
-  const Type1Tooltip = memo(({ active, payload }) => {
+  const Type1Tooltip = ({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
 
     const groupDate = payload[0].payload.groupdate;
@@ -128,10 +123,10 @@ const IntensiveGraph = ({ type }) => {
         })}
       </div>
     );
-  });
+  };
 
   // PM2.5/PM10비율(기간별) 그래프 커스텀 툴팁
-  const Type2Tooltip = memo(({ active, payload }) => {
+  const Type2Tooltip = ({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
 
     const data = payload[0].payload;
@@ -145,10 +140,10 @@ const IntensiveGraph = ({ type }) => {
         <p style={{ color: COLORS[1] }}>PM2.5: {data.pm25}</p>
       </div>
     );
-  });
+  };
 
   // AM-SUL, AM-NIT(기간별) 그래프 커스텀 툴팁
-  const Type3Tooltip = memo(({ active, payload }) => {
+  const Type3Tooltip = ({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
 
     const data = payload[0].payload;
@@ -161,10 +156,10 @@ const IntensiveGraph = ({ type }) => {
         <p style={{ color: COLORS[1] }}>amNit(ug/m3): {data.amNit}</p>
       </div>
     );
-  });
+  };
 
   // 이미지 저장 버튼 핸들러
-  const handleSaveImage = useCallback(async title => {
+  const handleSaveImage = async title => {
     try {
       setIsSavingImage(true);
       await document.fonts.ready;
@@ -182,10 +177,10 @@ const IntensiveGraph = ({ type }) => {
     } finally {
       setIsSavingImage(false);
     }
-  }, []);
+  };
 
   // 그래프 그리기 버튼 클릭 핸들러
-  const handleClickDrawChart = useCallback(() => {
+  const handleClickDrawChart = () => {
     if (!contentData) return;
 
     // 선택한 측정소 데이터만 필터링
@@ -227,7 +222,7 @@ const IntensiveGraph = ({ type }) => {
     };
 
     setChartDatas(processedData);
-  }, [contentData, chartSelectedOption]);
+  };
 
   return (
     <IntensiveDataFrame

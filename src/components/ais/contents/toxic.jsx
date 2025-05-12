@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import usePostRequest from '@/hooks/usePostRequest';
 
 import { SearchDate } from '../search-date';
@@ -33,21 +33,8 @@ const Toxic = ({ type }) => {
 
   const [highlightedRow, setHighlightedRow] = useState(null);
 
-  // API 데이터
-  const apiData = useMemo(
-    () => ({
-      page: config.page,
-      date: dateList,
-      site: stationList,
-      cond: searchCond,
-      polllist: pollutant,
-      type: config.type,
-    }),
-    [config.page, config.type, dateList, stationList, searchCond, pollutant]
-  );
-
   // 검색 버튼 핸들러
-  const handleClickSearchBtn = useCallback(async () => {
+  const handleClickSearchBtn = async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
     if (!stationList.length) return alert('측정소를 설정하여 주십시오.');
     if (postMutation.isLoading) return;
@@ -55,6 +42,16 @@ const Toxic = ({ type }) => {
     setIsLoading(true);
     setContentData(undefined);
     setHighlightedRow(null);
+
+    // API 데이터
+    const apiData = {
+      page: config.page,
+      date: dateList,
+      site: stationList,
+      cond: searchCond,
+      polllist: pollutant,
+      type: config.type,
+    };
 
     try {
       let apiRes = await postMutation.mutateAsync({
@@ -79,7 +76,7 @@ const Toxic = ({ type }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [apiData, postMutation]);
+  };
 
   return (
     <>
