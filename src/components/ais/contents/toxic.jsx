@@ -307,9 +307,8 @@ const medianCondList = [
     title: '데이터단위',
     id: 'unit',
     content: [
-      { value: 'ppbV', text: 'ppbV' },
-      { value: 'ppbC', text: 'ppbC' },
-      { value: 'kOH', text: 'kOH' },
+      { value: 'ppb', text: 'ppb' },
+      { value: 'ug/m3', text: 'ug/m3' },
     ],
   },
   {

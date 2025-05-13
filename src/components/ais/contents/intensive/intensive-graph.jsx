@@ -48,7 +48,7 @@ const IntensiveGraph = ({ type }) => {
   const [chartOptionSettings, setChartOptionSettings] = useState(); //그래프 설정 옵션
   const [chartSelectedOption, setChartSelectedOption] = useState(); //선택한 그래프 설정 옵션
 
-  const [chartDatas, setChartDatas] = useState(); //그래프 데이터
+  const [    chartDatas, setChartDatas] = useState(); //그래프 데이터
 
   const [highlightedRow, setHighlightedRow] = useState(null); //그래프에서 클릭한 행의 rowKey 저장
 
@@ -221,6 +221,7 @@ const IntensiveGraph = ({ type }) => {
       })),
     };
 
+    console.log(processedData);
     setChartDatas(processedData);
   };
 

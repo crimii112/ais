@@ -139,6 +139,8 @@ const IntensiveCorrelation = ({ type }) => {
           return acc;
         }, {});
 
+    console.log(groupedData);
+    
     setChartSettings({
       xAxis: {
         dataKey: 'x',

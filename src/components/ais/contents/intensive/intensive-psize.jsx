@@ -5,6 +5,7 @@ import { SelectWithArrows } from '@/components/ui/select-box';
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { IntensiveDataFrame } from './intensive-data-frame';
 import { ContentScatterChartFrame } from '../../content-scatter-chart-frame';
+import { ContentChartFrame } from '@/components/ais/content-chart-frame';
 
 /**
  * (단일)입경크기분포 페이지
@@ -28,6 +29,7 @@ const IntensivePsize = ({type}) => {
   const [options, setOptions] = useState({}); // select box에 들어갈 옵션들
   const [chartSettings, setChartSettings] = useState();
 
+  const [highlightedRow, setHighlightedRow] = useState();
   const [shouldRedrawChart, setShouldRedrawChart] = useState(false);
 
   const initSettings = () => setChartSettings(undefined);
@@ -179,61 +181,72 @@ const IntensivePsize = ({type}) => {
       onLoadingChange={setIsLoading}
       initSettings={initSettings}
     >
-      <ContentScatterChartFrame
-        isLoading={isLoading}
-        title="입경크기분포"
-        chartSettings={chartSettings}
-      >
-        <FlexRowWrapper className="w-full gap-10 mb-4 items-center justify-between">
-          <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
-            그래프 설정
-          </div>
-          <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
-            <span className="flex flex-col items-center justify-center">
-              측정일자 :{' '}
-            </span>
-            <SelectWithArrows
-              id="groupdate"
-              value={options.groupdate}
-              options={optionSettings.groupdate}
-              onChange={e =>
-                setOptions(prev => ({ ...prev, groupdate: e.target.value }))
-              }
-              onNavigate={direction =>
-                handleOptionNavigation('groupdate', direction)
-              }
-            />
-            <span className="flex flex-col items-center justify-center">
-              TYPE :{' '}
-            </span>
-            <SelectWithArrows
-              id="type"
-              value={options.type}
-              options={optionSettings.type}
-              onChange={e =>
-                setOptions(prev => ({ ...prev, type: e.target.value }))
-              }
-              onNavigate={direction =>
-                handleOptionNavigation('type', direction)
-              }
-            />
-            <span className="flex flex-col items-center justify-center">
-              측정소 :{' '}
-            </span>
-            <CustomMultiSelect
-              className="w-100"
-              options={optionSettings?.groupNm}
-              setOutsideSelectedOptions={setSelectedGroupNms}
-            />
+      {type === 'psize' && (  //입경크기분포 그래프 
+        <ContentScatterChartFrame
+          isLoading={isLoading}
+          title="입경크기분포"
+          chartSettings={chartSettings}
+        >
+          <FlexRowWrapper className="w-full gap-10 mb-4 items-center justify-between">
+            <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
+              그래프 설정
+            </div>
+            <FlexRowWrapper className="w-full items-stretch justify-start gap-3">
+              <span className="flex flex-col items-center justify-center">
+                측정일자 :{' '}
+              </span>
+              <SelectWithArrows
+                id="groupdate"
+                value={options.groupdate}
+                options={optionSettings.groupdate}
+                onChange={e =>
+                  setOptions(prev => ({ ...prev, groupdate: e.target.value }))
+                }
+                onNavigate={direction =>
+                  handleOptionNavigation('groupdate', direction)
+                }
+              />
+              <span className="flex flex-col items-center justify-center">
+                TYPE :{' '}
+              </span>
+              <SelectWithArrows
+                id="type"
+                value={options.type}
+                options={optionSettings.type}
+                onChange={e =>
+                  setOptions(prev => ({ ...prev, type: e.target.value }))
+                }
+                onNavigate={direction =>
+                  handleOptionNavigation('type', direction)
+                }
+              />
+              <span className="flex flex-col items-center justify-center">
+                측정소 :{' '}
+              </span>
+              <CustomMultiSelect
+                className="w-100"
+                options={optionSettings?.groupNm}
+                setOutsideSelectedOptions={setSelectedGroupNms}
+              />
+            </FlexRowWrapper>
+            <Button
+              className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
+              onClick={handleClickDrawChart}
+            >
+              그래프 그리기
+            </Button>
           </FlexRowWrapper>
-          <Button
-            className="w-fit px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors duration-200"
-            onClick={handleClickDrawChart}
-          >
-            그래프 그리기
-          </Button>
-        </FlexRowWrapper>
-      </ContentScatterChartFrame>
+        </ContentScatterChartFrame>
+      )}
+      {type === 'psizeCal' && (  //(선택)성분계산 그래프 
+        <ContentChartFrame
+          datas={contentData}
+          isLoading={isLoading}
+          type='line'
+          title="(선택)성분계산"
+          setHighlightedRow={setHighlightedRow}
+        />
+      )}
     </IntensiveDataFrame>
   );
 };
