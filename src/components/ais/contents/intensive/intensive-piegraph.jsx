@@ -97,7 +97,7 @@ const IntensivePieGraph = () => {
         item.groupNm === chartSelectedOption.value.split(';')[1]
     );
     setChartDatas({ rstList: chartData });
-
+    console.log(JSON.stringify({rstList: chartData}));
     const axisSettings = [
       {
         label: '물질',

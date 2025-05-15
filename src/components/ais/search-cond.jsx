@@ -25,6 +25,7 @@ const SearchCond = ({ condList, markList, initialSearchCond, setSearchCond }) =>
   const [condJson, setCondJson] = useState(initialSearchCond);
 
   useEffect(() => {
+    console.log(condJson);
     setSearchCond(condJson);
   }, [condJson]);
 

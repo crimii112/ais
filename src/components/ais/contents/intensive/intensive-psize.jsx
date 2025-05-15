@@ -35,6 +35,7 @@ const IntensivePsize = ({type}) => {
   const initSettings = () => setChartSettings(undefined);
   const handleDataLoaded = data => {
     setContentData(data);
+    console.log(data);
 
     // 그래프 설정 옵션 설정
     const groupdate = [...new Set(data.rstList.map(item => item.groupdate))];
@@ -126,6 +127,8 @@ const IntensivePsize = ({type}) => {
       return acc;
     }, {});
 
+    console.log(groupedData)
+
     setChartSettings({
       xAxis: {
         dataKey: 'x',
@@ -140,6 +143,8 @@ const IntensivePsize = ({type}) => {
       data: groupedData,
       tooltip: CustomTooltip,
     });
+
+    
   };
 
   // Select Box 옵션 이동(up/down) 핸들러
@@ -180,6 +185,7 @@ const IntensivePsize = ({type}) => {
       onDataLoaded={handleDataLoaded}
       onLoadingChange={setIsLoading}
       initSettings={initSettings}
+      highlightedRow={highlightedRow}
     >
       {type === 'psize' && (  //입경크기분포 그래프 
         <ContentScatterChartFrame
