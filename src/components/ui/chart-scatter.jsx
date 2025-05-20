@@ -97,7 +97,8 @@ const ScatterChart = ({ chartSettings, setHighlightedRow }) => {
             border: 'none',
             outline: 'none',
             backgroundColor: 'transparent',
-        }} />
+          }} 
+        />
       </SChart>
     </ResponsiveContainer>
   );

@@ -25,7 +25,6 @@ const SearchCond = ({ condList, markList, initialSearchCond, setSearchCond }) =>
   const [condJson, setCondJson] = useState(initialSearchCond);
 
   useEffect(() => {
-    console.log(condJson);
     setSearchCond(condJson);
   }, [condJson]);
 
@@ -89,8 +88,8 @@ const SearchCond = ({ condList, markList, initialSearchCond, setSearchCond }) =>
                   className={`p-1.5 ${cond.disabled && 'bg-gray-200'}`}
                   disabled={cond.disabled}
                 >
-                  {cond.content.map(item => (
-                    <option key={item.value} value={item.value}>
+                  {cond.content.map((item, index) => (
+                    <option key={item.value === '' ? 'empty'+index : item.value} value={item.value}>
                       {item.text}
                     </option>
                   ))}

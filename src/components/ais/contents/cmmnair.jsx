@@ -113,7 +113,7 @@ const CmmnAir = () => {
         isLoading={isLoading}
         fileName="일반대기 검색"
         numberStartIndex={4}
-        numberEndIndex={9}
+        numberEndIndex={13}
       />
     </>
   );

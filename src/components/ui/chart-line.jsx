@@ -88,6 +88,50 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
     );
   }
 
+  // 툴팁 커스텀(null값 -> '-'로 표시)
+  const CustomTooltip = ({ active, payload, label }) => {
+    const dataKeys = Object.keys(processedData[0]);
+    const allKeys = dataKeys.filter(key => key !== 'groupdate');
+    const payloadDataKeys = payload.map(p => p.dataKey);
+
+    const difference = allKeys.filter(key => !payloadDataKeys.includes(key));
+
+    if (active && payload && payload.length) {
+      console.log(payload, label);
+      return (
+        <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+          <p className="pb-2">
+            <strong>{label}</strong>
+          </p>
+          {difference &&
+            difference.map(key => {
+              let newKey;
+              axisSettings[0].selectedOptions.forEach(option => {
+                if (key.includes(option.value)) {
+                  newKey = key.replace(option.value, option.text);
+                }
+              });
+
+              return (
+                <p key={key} style={{ color: getColorByKey(key) }}>
+                  {newKey} : -
+                </p>
+              );
+            })}
+          {payload.map((entry, index) => {
+            return (
+              <p key={index} style={{ color: entry.color }}>
+                {entry.name} : {entry.value != null ? entry.value : '-'}
+              </p>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <ResponsiveContainer width="100%" height={700}>
       <LChart
@@ -103,7 +147,7 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
             backgroundColor: 'transparent',
           }}
         />
-        <Tooltip />
+        <Tooltip content={<CustomTooltip />} />
         <CartesianGrid strokeDasharray="3" vertical={false} />
         <XAxis
           dataKey="groupdate"
@@ -155,7 +199,7 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
                   dataKey={option.value}
                   name={`${el.groupNm} - ${option.text}`}
                   stroke={getColorByKey(key)}
-                  connectNulls={false}
+                  connectNulls={true}
                   activeDot={{
                     onClick: handleActiveDotClick
                   }}

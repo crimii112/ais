@@ -156,7 +156,6 @@ const Table = ({ datas, highlightedRow, numberStartIndex, numberEndIndex }) => {
       else return `${row.yyyymmddhh}_${row.areaName}` === highlightedRow
     });
 
-    console.log(index);
     if (index !== -1) {
       debouncedScroll(index);
     }

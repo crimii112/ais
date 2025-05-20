@@ -192,6 +192,7 @@ const IntensivePsize = ({type}) => {
           isLoading={isLoading}
           title="입경크기분포"
           chartSettings={chartSettings}
+          setHighlightedRow={setHighlightedRow}
         >
           <FlexRowWrapper className="w-full gap-10 mb-4 items-center justify-between">
             <div className="text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
