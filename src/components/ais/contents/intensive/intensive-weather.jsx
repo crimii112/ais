@@ -194,7 +194,7 @@ const IntensiveWeather = ({ type }) => {
   };
 
   // 기상별 시계열(weatherTimeseries) 툴팁 커스텀
-  const CustomTooltip = ({ active, payload, label }) => {
+  const WeatherTimeseriesTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
 
     const groupNmList = contentData.rstList2.flatMap(el => el.groupNm);
@@ -227,6 +227,45 @@ const IntensiveWeather = ({ type }) => {
             </p>
           );
         })}
+      </div>
+    );
+  }
+
+  // 풍향,풍속그래프(wswdGraph) 툴팁 커스텀 => 목측시정, 계산시정 그래프만
+  const WswdGraphTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+
+    const optionList = ['VISIBLE(km)', '광학시정(km)'];
+    const allKeys = optionList.map(option => `${selectedGroupNm}[${option}]`)
+    console.log(allKeys);
+
+    const payloadNames = payload.map(item => item.name);
+    console.log(payloadNames);
+
+    const difference = allKeys.filter(key => !payloadNames.includes(key));
+
+    return (
+      <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+        <p className="pb-2">
+          <strong>{label}</strong>
+        </p>
+        {payload.map((entry, index) => {
+          return (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name} : {entry.value != null ? entry.value : '-'}
+            </p>
+          );
+        })}
+        {difference &&
+          difference.map(key => {
+            const color = key.includes('VISIBLE(km)') ? '#a05195' : '#FF8042';
+
+            return (
+              <p key={key} style={{ color: color }}>
+                {key} : -
+              </p>
+            );
+          })}
       </div>
     );
   }
@@ -290,7 +329,7 @@ const IntensiveWeather = ({ type }) => {
                                 backgroundColor: 'transparent',
                             }}
                         />
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip content={<WeatherTimeseriesTooltip />} />
                         <CartesianGrid strokeDasharray="3" vertical={false} />
                         <XAxis
                             dataKey={type === 'weatherRvwr' ? "yyyymmddhh" : "groupdate"}
@@ -519,7 +558,7 @@ const IntensiveWeather = ({ type }) => {
                           stroke="#FF8042"
                           dot={{ r: 4 }}
                         />
-                        <Tooltip />
+                        <Tooltip content={<WswdGraphTooltip />} />
                         <Legend
                           verticalAlign="bottom"
                           wrapperStyle={{
