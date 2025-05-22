@@ -79,7 +79,6 @@ const IntensiveGraph = ({ type }) => {
 
       const clicked = e.activePayload[0].payload;
       const rowKey = `${clicked.groupdate}_${clicked.groupNm}`;
-      console.log(rowKey);
 
       // 이전 값과 동일한 경우 업데이트 방지
       if (rowKey === highlightedRow) return;
@@ -105,6 +104,11 @@ const IntensiveGraph = ({ type }) => {
   const Type1Tooltip = ({ active, payload }) => {
     if (!active || !payload?.length || !payload[0].payload) return null;
 
+    const allKeys = [{value: 'amSul', text: 'AM_SUL'}, {value: 'amNit', text: 'AM_NIT'}, {value: 'om', text: 'OM'}, {value: 'ec', text: 'EC'}, {value: 'cm', text: 'CM'}, {value: 'tm', text: 'TM'}, {value: 'etc', text: 'ETC'}, {value: 'pm25', text: 'PM2.5'}];
+    const payloadKeys = payload.map(item => item.name);
+
+    const difference = allKeys.filter(key => !payloadKeys.includes(key.value));
+    
     const groupDate = payload[0].payload.groupdate;
     const groupNm = payload[0].payload.groupNm;
     return (
@@ -112,6 +116,7 @@ const IntensiveGraph = ({ type }) => {
         <p className="font-medium">
           {groupDate} - {groupNm}
         </p>
+        
         {payload.map((entry, index) => {
           const poll = pollutants.find(item => item.value === entry.name);
           if (!poll) return null;
@@ -121,6 +126,12 @@ const IntensiveGraph = ({ type }) => {
             </p>
           );
         })}
+        {difference &&
+          difference.map(key => {
+            return (
+              <p key={key.value}>{key.text} : -</p>
+            );
+          })}
       </div>
     );
   };
@@ -152,8 +163,8 @@ const IntensiveGraph = ({ type }) => {
         <p className="font-medium">
           {data.groupdate} - {data.groupNm}
         </p>
-        <p style={{ color: COLORS[0] }}>amSul(ug/m3): {data.amSul}</p>
-        <p style={{ color: COLORS[1] }}>amNit(ug/m3): {data.amNit}</p>
+        <p style={{ color: COLORS[0] }}>AM_SUL(ug/m3): {data.amSul}</p>
+        <p style={{ color: COLORS[1] }}>AM_NIT(ug/m3): {data.amNit}</p>
       </div>
     );
   };
@@ -221,7 +232,6 @@ const IntensiveGraph = ({ type }) => {
       })),
     };
 
-    console.log(processedData);
     setChartDatas(processedData);
   };
 
@@ -284,7 +294,7 @@ const IntensiveGraph = ({ type }) => {
                         margin={{ top: 20, right: 60, bottom: 30, left: 20 }}
                         data={chartDatas.type1}
                         barGap={0}
-                        // onClick={handleChartClick}
+                        onClick={handleChartClick}
                       >
                         <CartesianGrid strokeDasharray="3" vertical={false} />
                         <XAxis
@@ -312,18 +322,8 @@ const IntensiveGraph = ({ type }) => {
                             dataKey={pollutant.value}
                             fill={COLORS[idx]}
                             stackId="stackgroup"
-                          >
-                            {chartDatas.type1.map((entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                onClick={() =>
-                                  console.log(
-                                    `${entry.groupdate}_${entry.groupNm}_${pollutant.value}`
-                                  )
-                                }
-                              />
-                            ))}
-                          </Bar>
+                          />
+                            
                         ))}
                         {selectedPollutant.line.map(pollutant => (
                           <Line
@@ -331,27 +331,6 @@ const IntensiveGraph = ({ type }) => {
                             dataKey={pollutant.value}
                             stroke="red"
                             strokeWidth={2}
-                            dot={({ cx, cy, payload }) => {
-                              const value = payload[pollutant.value];
-                              if (!value) return null;
-
-                              const rowKey = `${payload.groupdate}_${payload.groupNm}_${pollutant.value}`;
-                              return (
-                                <circle
-                                  key={rowKey}
-                                  cx={cx}
-                                  cy={cy}
-                                  r={3}
-                                  fill="white"
-                                  stroke="red"
-                                  strokeWidth={2}
-                                  style={{ cursor: 'pointer' }}
-                                  onClick={() => {
-                                    console.log(rowKey);
-                                  }}
-                                />
-                              );
-                            }}
                           />
                         ))}
                         <Tooltip content={<Type1Tooltip />} />

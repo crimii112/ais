@@ -193,20 +193,64 @@ const IntensiveWeather = ({ type }) => {
     return [axis.min, axis.max];
   };
 
+  // 기상별 시계열(weatherTimeseries) 툴팁 커스텀
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+
+    const groupNmList = contentData.rstList2.flatMap(el => el.groupNm);
+    const selectedOptionList = chartConfig.axisSettings.flatMap(axis => axis.selectedOptions.map(option => option.text));
+    const allKeys = groupNmList.flatMap(groupNm => 
+      selectedOptionList.map(option => `${groupNm}[${option}]`)
+    );
+
+    const payloadNames = payload.map(item => item.name);
+
+    const difference = allKeys.filter(key => !payloadNames.includes(key));
+
+    return (
+      <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+        <p className="pb-2">
+          <strong>{label}</strong>
+        </p>
+        {difference &&
+          difference.map(key => {
+            return (
+              <p key={key} style={{ color: getColorByKey(key) }}>
+                {key} : -
+              </p>
+            );
+          })}
+        {payload.map((entry, index) => {
+          return (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name} : {entry.value != null ? entry.value : '-'}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+
   // 그래프 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
   const handleChartClick = e => {
     if (!e?.activePayload?.[0]?.payload) return;
 
-      const clicked = e.activePayload[0].payload;
-      const rowKey =
-        type === 'weatherRvwr'
-          ? `${clicked.yyyymmddhh}_${clicked.areaName}`
-          : `${clicked.groupdate}_${selectedGroupNm}`;
+    const clicked = e.activePayload[0].payload;
+    const rowKey =
+      type === 'weatherRvwr'
+        ? `${clicked.yyyymmddhh}_${clicked.areaName}`
+        : `${clicked.groupdate}_${selectedGroupNm}`;
 
-      // 이전 값과 동일한 경우 업데이트 방지
-      if (rowKey === highlightedRow) return;
-      setHighlightedRow(rowKey);
-    };
+    // 이전 값과 동일한 경우 업데이트 방지
+    if (rowKey === highlightedRow) return;
+    setHighlightedRow(rowKey);
+  };
+
+  // 그래프 도트 클릭 시 rowKey 설정 => 테이블에서 해당하는 행에 하이라이트 표시할 용도
+  const handleActiveDotClick = (e, payload) => {
+    const rowKey = payload.payload.groupdate + '_' + payload.payload.groupNm;
+    setHighlightedRow(rowKey);
+  };
 
   // 그래프 이미지로 저장
   const handleSaveImage = async (title) => {
@@ -235,7 +279,7 @@ const IntensiveWeather = ({ type }) => {
                     <LineChart
                         data={chartConfig.datas}
                         margin={{ top: 20, right: 40, bottom: 30, left: 20 }}
-                        onClick={handleChartClick}
+                        // onClick={handleChartClick}
                     >
                         <Legend
                             verticalAlign="bottom"
@@ -246,7 +290,7 @@ const IntensiveWeather = ({ type }) => {
                                 backgroundColor: 'transparent',
                             }}
                         />
-                        <Tooltip />
+                        <Tooltip content={<CustomTooltip />} />
                         <CartesianGrid strokeDasharray="3" vertical={false} />
                         <XAxis
                             dataKey={type === 'weatherRvwr' ? "yyyymmddhh" : "groupdate"}
@@ -283,21 +327,23 @@ const IntensiveWeather = ({ type }) => {
                         {contentData.rstList2.map(el =>
                             chartConfig.axisSettings.map(axis =>
                                 axis.selectedOptions.map(option => {
-                                    const key = `${el.groupNm}-${option.text}`;
+                                    const key = `${el.groupNm}[${option.text}]`;
 
                                     return (
                                         <Line
-                                            key={el.groupNm + ' - ' + option.text}
+                                            key={key}
                                             data={chartConfig.datas.filter(
                                                 data => type === 'weatherRvwr' ? data.areaName === el.groupNm : data.groupNm === el.groupNm
                                             )}
                                             yAxisId={axis.label}
                                             dataKey={option.value}
-                                            name={`${el.groupNm}[${option.text}]`}
+                                            name={key}
                                             stroke={getColorByKey(key)}
                                             dot={{ r: 4 }}
                                             connectNulls={false}
-                                            // activeDot={{ onClick: handleActiveDotClick }}
+                                            activeDot={{
+                                              onClick: handleActiveDotClick
+                                            }}
                                         />
                                     );
                                 })
@@ -380,7 +426,6 @@ const IntensiveWeather = ({ type }) => {
                           stroke="#01437D"
                           shape={<CustomScatterDot />}
                         />
-                        {/* <Line yAxisId='wd' dataKey='wd' name={`${selectedGroupNm}[WD(도)]`} stroke='none' dot={{r: 3, fill: 'white', stroke: '#0088FE'}}/> */}
                         <Line
                           yAxisId="ws"
                           dataKey="ws"

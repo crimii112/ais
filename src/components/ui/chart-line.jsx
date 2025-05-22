@@ -54,6 +54,15 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
     });
 
     setProcessedData(clonedData);
+
+    // 선택한 측정소+물질 조합 모두 추출
+    const groupNmList = datas.rstList2.flatMap(el => el.groupNm);
+    const selectedOptionsList = axisSettings.flatMap(axis => axis.selectedOptions.map(option => option.text));
+    const allKeys = groupNmList.flatMap(groupNm => 
+      selectedOptionsList.map(option => `${groupNm}-${option}`)
+    );
+
+    allKeys.forEach(key => getColorByKey(key));
   }, [datas, pollutantList]);
 
   // Line 색상 지정
@@ -90,14 +99,20 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
 
   // 툴팁 커스텀(null값 -> '-'로 표시)
   const CustomTooltip = ({ active, payload, label }) => {
-    const dataKeys = Object.keys(processedData[0]);
-    const allKeys = dataKeys.filter(key => key !== 'groupdate');
-    const payloadDataKeys = payload.map(p => p.dataKey);
+    // 선택한 측정소+물질 조합 모두 추출
+    const groupNmList = datas.rstList2.flatMap(el => el.groupNm);
+    const selectedOptionsList = axisSettings.flatMap(axis => axis.selectedOptions.map(option => option.text));
+    const allKeys = groupNmList.flatMap(groupNm => 
+      selectedOptionsList.map(option => `${groupNm} - ${option}`)
+    );
 
-    const difference = allKeys.filter(key => !payloadDataKeys.includes(key));
+    // 데이터가 있는 측정소+물질 조합
+    const payloadNames = payload.map(p => p.name);
+
+    // 데이터가 없는 측정소+물질 조합 추출
+    const difference = allKeys.filter(key => !payloadNames.includes(key));
 
     if (active && payload && payload.length) {
-      console.log(payload, label);
       return (
         <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
           <p className="pb-2">
@@ -105,16 +120,9 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
           </p>
           {difference &&
             difference.map(key => {
-              let newKey;
-              axisSettings[0].selectedOptions.forEach(option => {
-                if (key.includes(option.value)) {
-                  newKey = key.replace(option.value, option.text);
-                }
-              });
-
               return (
                 <p key={key} style={{ color: getColorByKey(key) }}>
-                  {newKey} : -
+                  {key} : -
                 </p>
               );
             })}
@@ -188,16 +196,16 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
         {datas.rstList2.map(el =>
           axisSettings.map(axis =>
             axis.selectedOptions.map(option => {
-              const key = `${el.groupNm}-${option.text}`;
+              const key = `${el.groupNm} - ${option.text}`;
               return (
                 <Line
-                  key={el.groupNm + ' - ' + option.text}
+                  key={key}
                   data={processedData.filter(
                     data => data.groupNm === el.groupNm
                   )}
                   yAxisId={axis.label}
                   dataKey={option.value}
-                  name={`${el.groupNm} - ${option.text}`}
+                  name={key}
                   stroke={getColorByKey(key)}
                   connectNulls={true}
                   activeDot={{
