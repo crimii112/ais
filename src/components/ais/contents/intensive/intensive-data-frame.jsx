@@ -43,6 +43,7 @@ const IntensiveDataFrame = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
+  const [endIndex, setEndIndex] = useState(0);
 
   // isLoading 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
@@ -102,6 +103,8 @@ const IntensiveDataFrame = ({
       console.log(apiRes);
       setContentData(apiRes);
 
+      setEndIndex(apiRes.headList.length - 1);
+
       if (onDataLoaded) {
         onDataLoaded(apiRes);
       }
@@ -149,7 +152,7 @@ const IntensiveDataFrame = ({
         fileName={config.title}
         highlightedRow={highlightedRow}
         numberStartIndex={config.numberStartIndex}
-        numberEndIndex={config.numberEndIndex}
+        numberEndIndex={endIndex}
       />
 
       {children}

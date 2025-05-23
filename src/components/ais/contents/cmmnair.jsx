@@ -47,6 +47,9 @@ const CmmnAir = () => {
   const [contentData, setContentData] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [startIndex, setStartIndex] = useState(0);
+  const [endIndex, setEndIndex] = useState(0);
+
   // 검색 버튼 핸들러
   const handleClickSearchBtn = async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
@@ -83,6 +86,15 @@ const CmmnAir = () => {
       console.log(apiData);
       console.log(apiRes);
 
+      const orderIndex = apiRes.headList.findIndex(item => item === 'orderindex');
+      if(orderIndex === -1) { //데이터권역 === '전체'인 경우
+        setStartIndex(3);
+        setEndIndex(apiRes.headList.length - 1);
+      } else {
+        setStartIndex(orderIndex + 1);
+        setEndIndex(apiRes.headList.length - 1);
+      }
+      
       setContentData(apiRes);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -112,8 +124,8 @@ const CmmnAir = () => {
         datas={contentData}
         isLoading={isLoading}
         fileName="일반대기 검색"
-        numberStartIndex={4}
-        numberEndIndex={13}
+        numberStartIndex={startIndex}
+        numberEndIndex={endIndex}
       />
     </>
   );
@@ -142,13 +154,14 @@ const condList = [
       { value: 'season', text: '계절별' },
       { value: 'ys', text: '년도-계절별' },
       { value: 'lys', text: '전년도-계절별' },
-      { value: 'accmonth', text: '월별누적' },
+      { value: 'a4', text: '년도-시간대별' },
+      { value: 'a5', text: '전체-월별' },
+      { value: 'a7', text: '전체-일별' },
+      { value: 'accmonth', text: '년도-월별누적' },
       { value: 'accseason', text: '계절관리제누적' },
       { value: 'a1', text: '계절관리제연차누적' },
       { value: 'a2', text: '년도-일별누적' },
       { value: 'a3', text: '전체-일별누적' },
-      { value: 'a4', text: '년도-시간대별' },
-      { value: 'a5', text: '전체-월별' },
       { value: 'a6', text: '계절관리제일별누적' },
     ],
   },

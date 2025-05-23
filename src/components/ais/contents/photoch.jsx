@@ -34,6 +34,8 @@ const PhotoCh = ({ type }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [contentData, setContentData] = useState();
 
+  const [endIndex, setEndIndex] = useState(0);
+
   const [highlightedRow, setHighlightedRow] = useState(null);
 
   // 검색 버튼 핸들러
@@ -72,6 +74,13 @@ const PhotoCh = ({ type }) => {
 
       console.log(apiData);
       console.log(apiRes);
+
+      const flagIndex = apiRes.headList.findIndex(item => item === 'rflag');
+      if(flagIndex === -1) {
+        setEndIndex(apiRes.headList.findIndex(item => item === 'sido') - 1);
+      } else {
+        setEndIndex(flagIndex - 1);
+      }
 
       setContentData(apiRes);
     } catch (error) {
@@ -112,8 +121,8 @@ const PhotoCh = ({ type }) => {
         datas={contentData}
         isLoading={isLoading}
         fileName="광화학 분석"
-        numberStartIndex={2}
-        numberEndIndex={64}
+        numberStartIndex={2}  //고정
+        numberEndIndex={endIndex}  //FLAG 인덱스 - 1
         highlightedRow={highlightedRow}
       />
 
