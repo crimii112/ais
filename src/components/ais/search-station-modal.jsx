@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { SquareArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,9 @@ import {
 } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
 import usePostRequest from '@/hooks/usePostRequest';
+import MapContext from '@/components/map/MapContext';
+import { ContentGis } from './search-station-gis';
+import { MapNgii } from '@/components/map';
 
 
 /**
@@ -32,18 +35,20 @@ import usePostRequest from '@/hooks/usePostRequest';
 
 
 const SearchStationModal = ({
-  tabType,
+  title,
   siteType = '',
   onTms,
   setIsModalOpened,
   initialStationList,
   setMultipleStationList,
 }) => {
+  const map = useContext(MapContext);
+
   const postMutation = usePostRequest();
 
+  const [modalTabType, setModalTabType] = useState(0); // title에 따른 모달 탭 구성 설정
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [selectedStationList, setSelectedStationList] =
-    useState(initialStationList); //선택한 측정소 - list
+  const [selectedStationList, setSelectedStationList] = useState(initialStationList); //선택한 측정소 - list
   const [selectedOptions, setSelectedOptions] = useState([]); //선택한 측정소 - select onChange에 사용
 
   // 우측 상단 - tms 설정, 추이측정소
@@ -77,6 +82,25 @@ const SearchStationModal = ({
     { value: 'gyeongnam', text: '경남', checked: false },
     { value: 'jeju', text: '제주', checked: false },
   ]);
+
+  // title에 따라 모달 탭 구성 설정
+  useEffect(() => {
+    if (['대기측정소', '기상대'].includes(title)) {
+      setModalTabType(1);
+    } else if (
+      [
+        '광화학',
+        'TMS',
+        '유해대기',
+        '중금속',
+        '산성강하물',
+        '입경중량',
+        '대기환경연구소',
+      ].includes(title)
+    ) {
+      setModalTabType(2);
+    }
+  }, [title]);
 
   // api(/sido.do) 호출 함수
   const getStationList = async sidoNm => {
@@ -310,20 +334,39 @@ const SearchStationModal = ({
     </GridWrapper>
   );
 
+  const ContentSearchRadius = (
+    <GridWrapper className="grid-cols-[10fr_1fr] gap-2">
+      <FlexColWrapper className="items-stretch box-border border-1 border-gray-300">
+          <SelectBoxTitle type="text">반경 내 검색</SelectBoxTitle>
+          <GridWrapper className="grow grid-cols-1 w-full h-full">
+            <MapNgii><ContentGis type={title} /></MapNgii> 
+          </GridWrapper>
+      </FlexColWrapper>
+      <FlexRowWrapper>
+          <SquareArrowRight
+              width="40px"
+              height="40px"
+              className="rounded-xl text-blue-900"
+          />
+      </FlexRowWrapper>
+    </GridWrapper>
+  );
+
   // tabType에 따른 탭 구성
-  const tabList =
-    tabType === 1
+  const tabList = 
+    modalTabType === 1
       ? [
           { title: '시도 선택 방식', content: ContentSelectSido },
           { title: '검색 방식', content: ContentSearch },
           { title: '기타 방식', content: ContentEtc },
+          { title: '반경 내 검색', content: ContentSearchRadius },
         ]
-      : tabType === 2
+      : modalTabType === 2
       ? [
           { title: '시도 선택 방식', content: ContentSelectSido },
           { title: '검색 방식', content: ContentSearch },
         ]
-      : tabType === 3 && [
+      : modalTabType === 3 && [
           { title: '가까운 측정소 검색 방식', content: <div></div> },
           { title: '검색 방식', content: ContentSearch },
         ];
@@ -396,7 +439,7 @@ const SearchStationModal = ({
       <ModalContent>
         <FlexRowWrapper className="justify-between w-full h-9">
           <FlexRowWrapper className="gap-0.5 h-full">
-            {tabList.map((tab, idx) => (
+            {tabList && tabList.map((tab, idx) => (
               <Button
                 key={tab.title}
                 id={idx}
@@ -437,12 +480,12 @@ const SearchStationModal = ({
             </FlexRowWrapper>
           )}
         </FlexRowWrapper>
-        {tabList.map((tab, idx) => (
+        {tabList && tabList.map((tab, idx) => (
           <TabContentWrapper
             key={idx}
             className={`${
               activeTabIndex === idx
-                ? 'grid grid-cols-2 gap-1 justify-stretch'
+                ? 'grid grid-cols-[1.5fr_1fr] gap-1 justify-stretch'
                 : 'hidden'
             }`}
           >

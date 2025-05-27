@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import html2canvas from 'html2canvas';
 import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   ComposedChart,
   Legend,
   Line,
@@ -18,6 +16,7 @@ import { FlexColWrapper, FlexRowWrapper, Button } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
 import { Loading } from '@/components/ui/loading';
 import { IntensiveDataFrame } from './intensive-data-frame';
+import ChartWrapper from '@/components/ui/chart-wrapper';
 
 const BAR_SIZE_CONFIG = {
   small: { barSize: 40, barGap: -40 },
@@ -42,13 +41,12 @@ const IntensiveGraph = ({ type }) => {
   const config = GRAPH_CONFIG[type];
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isSavingImage, setIsSavingImage] = useState(false);
 
   const [contentData, setContentData] = useState(); //테이블 전체 데이터
   const [chartOptionSettings, setChartOptionSettings] = useState(); //그래프 설정 옵션
   const [chartSelectedOption, setChartSelectedOption] = useState(); //선택한 그래프 설정 옵션
 
-  const [    chartDatas, setChartDatas] = useState(); //그래프 데이터
+  const [chartDatas, setChartDatas] = useState(); //그래프 데이터
 
   const [highlightedRow, setHighlightedRow] = useState(null); //그래프에서 클릭한 행의 rowKey 저장
 
@@ -95,7 +93,6 @@ const IntensiveGraph = ({ type }) => {
     if (dataLength < 550) return BAR_SIZE_CONFIG.xlarge;
     return BAR_SIZE_CONFIG.xxlarge;
   };
-
   const type2BarSize = chartDatas?.type2
     ? getBarSize(chartDatas.type2.length)
     : BAR_SIZE_CONFIG.small;
@@ -167,27 +164,6 @@ const IntensiveGraph = ({ type }) => {
         <p style={{ color: COLORS[1] }}>AM_NIT(ug/m3): {data.amNit}</p>
       </div>
     );
-  };
-
-  // 이미지 저장 버튼 핸들러
-  const handleSaveImage = async title => {
-    try {
-      setIsSavingImage(true);
-      await document.fonts.ready;
-      const canvas = await html2canvas(
-        document.getElementById(`${title}-chart-wrapper`),
-        { backgroundColor: '#fff', useCORS: true, scale: 1.5 }
-      );
-      const link = document.createElement('a');
-      link.download = `${title}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    } catch (error) {
-      console.error('이미지 저장 중 오류 발생:', error);
-      alert('이미지 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsSavingImage(false);
-    }
   };
 
   // 그래프 그리기 버튼 클릭 핸들러
@@ -285,11 +261,8 @@ const IntensiveGraph = ({ type }) => {
                     성분별(기간별-STACKED)
                   </div>
                   <div className="w-full border-t border-gray-200" />
-                  <div
-                    id={`성분별(기간별-STACKED)-chart-wrapper`}
-                    className="w-full h-full py-6"
-                  >
-                    <ResponsiveContainer width="100%" height={700}>
+                  <ChartWrapper title='성분별(기간별-STACKED)'>
+                  <ResponsiveContainer width="100%" height={700}>
                       <ComposedChart
                         margin={{ top: 20, right: 60, bottom: 30, left: 20 }}
                         data={chartDatas.type1}
@@ -345,15 +318,7 @@ const IntensiveGraph = ({ type }) => {
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
-                  </div>
-                  <FlexRowWrapper className="w-full justify-end gap-2">
-                    <Button
-                      onClick={() => handleSaveImage('성분별(기간별-STACKED)')}
-                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                    >
-                      {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                    </Button>
-                  </FlexRowWrapper>
+                  </ChartWrapper>
                 </div>
 
                 {/* PM2.5/PM10비율(기간별) 그래프 */}
@@ -363,10 +328,7 @@ const IntensiveGraph = ({ type }) => {
                       PM2.5/PM10비율(기간별)
                     </div>
                     <div className="w-full border-t border-gray-200" />
-                    <div
-                      id={`PM2.5/PM10비율(기간별)-chart-wrapper`}
-                      className="w-full h-full py-6"
-                    >
+                    <ChartWrapper title='PM2.5/PM10비율(기간별)'>
                       <ResponsiveContainer width="100%" height={700}>
                         <ComposedChart
                           margin={{ top: 20, right: 30, bottom: 30, left: 20 }}
@@ -442,17 +404,7 @@ const IntensiveGraph = ({ type }) => {
                           />
                         </ComposedChart>
                       </ResponsiveContainer>
-                    </div>
-                    <FlexRowWrapper className="w-full justify-end gap-2">
-                      <Button
-                        onClick={() =>
-                          handleSaveImage('PM2.5/PM10비율(기간별)')
-                        }
-                        className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                      >
-                        {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                      </Button>
-                    </FlexRowWrapper>
+                    </ChartWrapper>
                   </div>
                 )}
 
@@ -462,10 +414,7 @@ const IntensiveGraph = ({ type }) => {
                     AM-SUL, AM-NIT(기간별)
                   </div>
                   <div className="w-full border-t border-gray-200" />
-                  <div
-                    id={`AM-SUL,AM-NIT(기간별)-chart-wrapper`}
-                    className="w-full h-full py-6"
-                  >
+                  <ChartWrapper title='AM-SUL,AM-NIT(기간별)'>
                     <ResponsiveContainer width="100%" height={700}>
                       <BarChart
                         data={chartDatas.type3}
@@ -523,15 +472,7 @@ const IntensiveGraph = ({ type }) => {
                         />
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
-                  <FlexRowWrapper className="w-full justify-end gap-2">
-                    <Button
-                      onClick={() => handleSaveImage('AM-SUL,AM-NIT(기간별)')}
-                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                    >
-                      {isSavingImage ? '이미지 저장 중...' : '이미지 저장'}
-                    </Button>
-                  </FlexRowWrapper>
+                  </ChartWrapper>
                 </div>
               </>
             )}

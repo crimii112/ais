@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
 import {
   CartesianGrid,
   ComposedChart,
@@ -23,6 +22,7 @@ import {
 import CustomMultiSelect from '@/components/ui/custom-multiple-select';
 import { Loading } from '@/components/ui/loading';
 import { Select, Option } from '@/components/ui/select-box';
+import ChartWrapper from '@/components/ui/chart-wrapper';
 
 /**
  * 기상자료 검색 컴포넌트
@@ -88,6 +88,7 @@ const IntensiveWeather = ({ type }) => {
 
   const initSettings = () => {
     setChartConfig(null);
+    setHighlightedRow(null);
   };
 
   // 데이터 로드 시 데이터 가공
@@ -237,10 +238,8 @@ const IntensiveWeather = ({ type }) => {
 
     const optionList = ['VISIBLE(km)', '광학시정(km)'];
     const allKeys = optionList.map(option => `${selectedGroupNm}[${option}]`)
-    console.log(allKeys);
 
     const payloadNames = payload.map(item => item.name);
-    console.log(payloadNames);
 
     const difference = allKeys.filter(key => !payloadNames.includes(key));
 
@@ -291,19 +290,6 @@ const IntensiveWeather = ({ type }) => {
     setHighlightedRow(rowKey);
   };
 
-  // 그래프 이미지로 저장
-  const handleSaveImage = async (title) => {
-    await document.fonts.ready;
-    const canvas = await html2canvas(
-      document.getElementById(`${title}-chart-wrapper`),
-      { backgroundColor: '#fff', useCORS: true, scale: 1.5}
-    );
-    const link = document.createElement('a');
-    link.download = `${title}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   // 차트 렌더링
   const renderChart = () => {
     if(!chartConfig) return null;
@@ -313,7 +299,9 @@ const IntensiveWeather = ({ type }) => {
         return (
         <>
             <div className="w-full border-t border-gray-200" />
-            <div id={`${type === 'weatherRvwr' ? '기상자료검토' : '기상별 시계열'}-chart-wrapper`} className="w-full h-full py-6">
+            <ChartWrapper title={`${type === 'weatherRvwr' ? '기상자료검토' : '기상별 시계열'}`}>
+
+            
                 <ResponsiveContainer width="100%" height={700}>
                     <LineChart
                         data={chartConfig.datas}
@@ -390,15 +378,7 @@ const IntensiveWeather = ({ type }) => {
                         )}
                     </LineChart>
                 </ResponsiveContainer>
-            </div>
-            <FlexRowWrapper className="w-full justify-end gap-2">
-                <Button 
-                    onClick={() => handleSaveImage(type === 'weatherRvwr' ? '기상자료검토' : '기상별 시계열')} 
-                    className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                >
-                    이미지 저장
-                </Button>
-            </FlexRowWrapper>
+                </ChartWrapper>
         </>
       );
     }
@@ -410,10 +390,7 @@ const IntensiveWeather = ({ type }) => {
                 <div className="w-full h-full p-2">
                   <div className="text-lg font-bold">풍향,풍속(기간별)</div>
                   <div className="w-full border-t border-gray-200" />
-                  <div
-                    id={`풍향,풍속(기간별)-chart-wrapper`}
-                    className="w-full h-full py-6"
-                  >
+                  <ChartWrapper title='풍향,풍속(기간별)'>
                     <ResponsiveContainer width="100%" height={700}>
                       <ComposedChart
                         data={chartConfig.datas}
@@ -484,25 +461,14 @@ const IntensiveWeather = ({ type }) => {
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
-                  </div>
-                  <FlexRowWrapper className="w-full justify-end gap-2">
-                    <Button
-                      onClick={() => handleSaveImage('풍향,풍속(기간별)')}
-                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                    >
-                      이미지 저장
-                    </Button>
-                  </FlexRowWrapper>
+                    </ChartWrapper>
                 </div>
                 <div className="w-full h-full p-2">
                   <div className="text-lg font-bold">
                     목측시정,계산시정(기간별)
                   </div>
                   <div className="w-full border-t border-gray-200" />
-                  <div
-                    id={`목측시정,계산시정(기간별)-chart-wrapper`}
-                    className="w-full h-full py-6"
-                  >
+                  <ChartWrapper title='목측시정,계산시정(기간별)'>
                     <ResponsiveContainer width="100%" height={700}>
                       <LineChart
                         data={chartConfig.datas}
@@ -570,15 +536,7 @@ const IntensiveWeather = ({ type }) => {
                         />
                       </LineChart>
                     </ResponsiveContainer>
-                  </div>
-                  <FlexRowWrapper className="w-full justify-end gap-2">
-                    <Button
-                      onClick={() => handleSaveImage('목측시정,계산시정(기간별)')}
-                      className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                    >
-                      이미지 저장
-                    </Button>
-                  </FlexRowWrapper>
+                  </ChartWrapper>
                 </div>
               </>
         );

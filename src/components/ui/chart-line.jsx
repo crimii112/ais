@@ -99,6 +99,8 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
 
   // 툴팁 커스텀(null값 -> '-'로 표시)
   const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length || !payload[0].payload) return null;
+
     // 선택한 측정소+물질 조합 모두 추출
     const groupNmList = datas.rstList2.flatMap(el => el.groupNm);
     const selectedOptionsList = axisSettings.flatMap(axis => axis.selectedOptions.map(option => option.text));
@@ -112,32 +114,28 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
     // 데이터가 없는 측정소+물질 조합 추출
     const difference = allKeys.filter(key => !payloadNames.includes(key));
 
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
-          <p className="pb-2">
-            <strong>{label}</strong>
-          </p>
-          {difference &&
-            difference.map(key => {
-              return (
-                <p key={key} style={{ color: getColorByKey(key) }}>
-                  {key} : -
-                </p>
-              );
-            })}
-          {payload.map((entry, index) => {
+    return (
+      <div className="bg-white p-2.5 border-1 border-gray-300 rounded-md">
+        <p className="pb-2">
+          <strong>{label}</strong>
+        </p>
+        {difference &&
+          difference.map((key, index) => {
             return (
-              <p key={index} style={{ color: entry.color }}>
-                {entry.name} : {entry.value != null ? entry.value : '-'}
+              <p key={key + index} style={{ color: getColorByKey(key) }}>
+                {key} : -
               </p>
             );
           })}
-        </div>
-      );
-    }
-
-    return null;
+        {payload.map((entry, index) => {
+          return (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name} : {entry.value != null ? entry.value : '-'}
+            </p>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -207,7 +205,7 @@ const LineChart = ({ datas, axisSettings, pollutantList, setHighlightedRow }) =>
                   dataKey={option.value}
                   name={key}
                   stroke={getColorByKey(key)}
-                  connectNulls={true}
+                  connectNulls={false}
                   activeDot={{
                     onClick: handleActiveDotClick
                   }}

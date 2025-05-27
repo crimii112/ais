@@ -32,10 +32,13 @@ const IntensivePsize = ({type}) => {
   const [highlightedRow, setHighlightedRow] = useState();
   const [shouldRedrawChart, setShouldRedrawChart] = useState(false);
 
-  const initSettings = () => setChartSettings(undefined);
+  const initSettings = () => {
+    setChartSettings(undefined);
+    setHighlightedRow(null);
+  };
+
   const handleDataLoaded = data => {
     setContentData(data);
-    console.log(data);
 
     // 그래프 설정 옵션 설정
     const groupdate = [...new Set(data.rstList.map(item => item.groupdate))];
@@ -58,7 +61,6 @@ const IntensivePsize = ({type}) => {
     }));
 
     const poll = data.headNameList.slice(3);
-    console.log(poll)
 
     setOptions({
       groupdate: groupdate[0],
@@ -126,8 +128,6 @@ const IntensivePsize = ({type}) => {
       acc[curr.groupNm].push(curr);
       return acc;
     }, {});
-
-    console.log(groupedData)
 
     setChartSettings({
       xAxis: {

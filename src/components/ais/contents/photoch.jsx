@@ -130,7 +130,7 @@ const PhotoCh = ({ type }) => {
         datas={contentData}
         isLoading={isLoading}
         type={config.chartType}
-        title="광화학"
+        title={config.title}
         setHighlightedRow={setHighlightedRow}
       />
     </>
@@ -359,6 +359,7 @@ const PHOTOCH_SETTINGS = {
       percentile: 0.99,
     },
     condList: condList,
+    title: '광화학 데이터 그래프'
   },
   pie: {
     page: 'photoch/pieGraph',
@@ -373,6 +374,7 @@ const PHOTOCH_SETTINGS = {
       percentile: 0.99,
     },
     condList: pieCondList,
+    title: '광화학 성분 파이그래프'
   },
   bar: {
     page: 'photoch/lineGraph',
@@ -388,6 +390,7 @@ const PHOTOCH_SETTINGS = {
       statsDisabled: false,
     },
     condList: condList,
+    title: '광화학 성분 막대그래프'
   },
   medianLine: {
     page: 'photoch/medianGraph',
@@ -402,5 +405,6 @@ const PHOTOCH_SETTINGS = {
       percentile: 0.99,
     },
     condList: medianCondList,
+    title: '광화학 일중간값 그래프'
   },
 };

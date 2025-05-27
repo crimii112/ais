@@ -1,12 +1,7 @@
-import html2canvas from 'html2canvas';
-
-import {
-  FlexRowWrapper,
-  FlexColWrapper,
-  Button,
-} from '@/components/ui/common';
+import { FlexColWrapper } from '@/components/ui/common';
 import { Loading } from '@/components/ui/loading';
 import { ScatterChart } from '@/components/ui/chart-scatter';
+import ChartWrapper from '@/components/ui/chart-wrapper';
 
 
 /**
@@ -28,19 +23,6 @@ import { ScatterChart } from '@/components/ui/chart-scatter';
 
 const ContentScatterChartFrame = ({ children, isLoading, title, chartSettings, setHighlightedRow }) => {
 
-  // 이미지 저장 버튼 핸들러
-  const handleSaveImage = async () => {
-    await document.fonts.ready;
-    const canvas = await html2canvas(
-      document.getElementById(`${title}-scatter-chart-wrapper`),
-      { backgroundColor: '#fff', useCORS: true, scale: 1.5}
-    );
-    const link = document.createElement('a');
-    link.download = `${title}-scatterChart.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   return (
     <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
       {isLoading ? (
@@ -56,20 +38,9 @@ const ContentScatterChartFrame = ({ children, isLoading, title, chartSettings, s
           {chartSettings && (
             <>
               <div className="w-full border-t border-gray-200" />
-              <div
-                id={`${title}-scatter-chart-wrapper`}
-                className="w-full h-full py-6"
-              >
-                <ScatterChart chartSettings={chartSettings} setHighlightedRow={setHighlightedRow} />
-              </div>
-              <FlexRowWrapper className="w-full justify-end gap-2">
-                <Button
-                  onClick={handleSaveImage}
-                  className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                >
-                  이미지 저장
-                </Button>
-              </FlexRowWrapper>
+              <ChartWrapper title={title}>
+                <ScatterChart chartSettings={chartSettings} setHighlightedRow={setHighlightedRow} />  
+              </ChartWrapper>
             </>
           )}
         </>

@@ -33,7 +33,10 @@ const IntensiveCorrelation = ({ type }) => {
 
   const [highlightedRow, setHighlightedRow] = useState(null);
 
-  const initSettings = () => setChartSettings(undefined);
+  const initSettings = () => {
+    setChartSettings(undefined);
+    setHighlightedRow(null);
+  };
 
   const handleDataLoaded = data => {
     if (!data?.headList || !data?.headNameList || !data?.rstList2) return;
@@ -160,7 +163,7 @@ const IntensiveCorrelation = ({ type }) => {
 
   // 커스텀 툴팁
   const CustomTooltip = ({ active, payload }) => {
-    if (!active || !payload?.length) return null;
+    if (!active || !payload?.length || !payload[0].payload) return null;
 
     const { groupdate, groupNm, x, y } = payload[0].payload;
     const xLabel = payload[0].name;

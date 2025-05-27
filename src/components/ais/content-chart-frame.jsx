@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import html2canvas from 'html2canvas';
 
 import {
   FlexRowWrapper,
@@ -12,6 +11,7 @@ import { Loading } from '@/components/ui/loading';
 import { LineChart } from '@/components/ui/chart-line';
 import { PieChart } from '@/components/ui/chart-pie';
 import { BarChart } from '@/components/ui/chart-bar';
+import ChartWrapper from '@/components/ui/chart-wrapper';
 
 // 그래프 옵션 설정
 const CHART_SETTINGS = {
@@ -90,19 +90,6 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
     setChartConfig({ datas, axisSettings, pollutantList });
   };
 
-  // 그래프 이미지로 저장
-  const handleSaveImage = async () => {
-    await document.fonts.ready;
-    const canvas = await html2canvas(
-      document.getElementById(`${title}-${type}-chart-wrapper`),
-      { backgroundColor: '#fff', useCORS: true, scale: 1.5}
-    );
-    const link = document.createElement('a');
-    link.download = `${title}-${type}Chart.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   return (
     <FlexColWrapper className="w-full p-6 border border-gray-200 rounded-lg shadow-sm bg-white">
       {isLoading ? (
@@ -173,12 +160,10 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
             </FlexRowWrapper>
           </FlexRowWrapper>
 
-          
-
           {chartConfig && (
             <>
               <div className="w-full border-t border-gray-200" />
-              <div id={`${title}-${type}-chart-wrapper`} className="w-full h-full py-6">
+              <ChartWrapper title={title} >
                 {type === 'line' && (
                   <LineChart
                     datas={chartConfig.datas}
@@ -202,15 +187,7 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
                     setHighlightedRow={setHighlightedRow}
                   />
                 )}
-              </div>
-              <FlexRowWrapper className="w-full justify-end gap-2">
-                <Button 
-                  onClick={handleSaveImage} 
-                  className="w-fit flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors duration-200 font-medium"
-                >
-                  이미지 저장
-                </Button>
-              </FlexRowWrapper>
+              </ChartWrapper>
             </>
           )}
         </>

@@ -660,7 +660,7 @@ const INTENSIVE_SETTINGS = {
       { id: 'Low', checked: true, signvalue: '##' },
       { id: 'dumy', checked: false },
     ],
-    condList: condList_3,
+    condList: condList_2,
     markList: markList_1,
     digitList: digitList,
     signList: signList,

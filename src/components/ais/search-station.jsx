@@ -29,28 +29,8 @@ const SearchStation = ({
   const [multipleStationList, setMultipleStationList] = useState([]);
 
   const [isModalOpened, setIsModalOpened] = useState(false);
-  const [modalTabType, setModalTabType] = useState(0);
 
   const multipleSelectRef = useRef();
-
-  // title에 따라 모달 탭 구성 설정
-  useEffect(() => {
-    if (['대기측정소', '기상대'].includes(title)) {
-      setModalTabType(1);
-    } else if (
-      [
-        '광화학',
-        'TMS',
-        '유해대기',
-        '중금속',
-        '산성강하물',
-        '입경중량',
-        '대기환경연구소',
-      ].includes(title)
-    ) {
-      setModalTabType(2);
-    }
-  }, [title]);
 
   useEffect(() => {
     const arr = [];
@@ -104,14 +84,14 @@ const SearchStation = ({
         </FlexRowWrapper>
       </SearchCondFrame>
       {isModalOpened && (
-        <SearchStationModal
-          tabType={modalTabType}
-          siteType={siteType}
-          onTms={onTms}
-          setIsModalOpened={setIsModalOpened}
-          initialStationList={multipleStationList}
-          setMultipleStationList={setMultipleStationList}
-        />
+          <SearchStationModal
+            title={title}
+            siteType={siteType}
+            onTms={onTms}
+            setIsModalOpened={setIsModalOpened}
+            initialStationList={multipleStationList}
+            setMultipleStationList={setMultipleStationList}
+          />
       )}
     </>
   );

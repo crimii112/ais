@@ -5,6 +5,7 @@ import { SelectWithArrows } from '@/components/ui/select-box';
 import { Loading } from '@/components/ui/loading';
 import { IntensiveDataFrame } from './intensive-data-frame';
 import { PieChart } from '@/components/ui/chart-pie';
+import ChartWrapper from '@/components/ui/chart-wrapper';
 
 /**
  * 자동-(단일)성분파이그래프 페이지
@@ -97,7 +98,7 @@ const IntensivePieGraph = () => {
         item.groupNm === chartSelectedOption.value.split(';')[1]
     );
     setChartDatas({ rstList: chartData });
-    console.log(JSON.stringify({rstList: chartData}));
+
     const axisSettings = [
       {
         label: '물질',
@@ -127,7 +128,7 @@ const IntensivePieGraph = () => {
             <Loading />
           </div>
         ) : (
-          <FlexColWrapper className="w-full h-full gap-15">
+          <FlexColWrapper className="w-full h-full">
             <FlexRowWrapper className="w-full gap-10 mb-4 items-stretch justify-between">
               <div className="mt-1.5 text-lg font-semibold text-gray-900 whitespace-nowrap p-1">
                 그래프 설정
@@ -152,11 +153,16 @@ const IntensivePieGraph = () => {
               </Button>
             </FlexRowWrapper>
             {chartDatas && axisSettings && (
-              <PieChart
-                datas={chartDatas}
-                axisSettings={axisSettings}
-                setHighlightedRow={setHighlightedRow}
-              />
+              <>
+                <div className="w-full border-t border-gray-200" />
+                <ChartWrapper title='자동-(단일)성분파이그래프'>
+                  <PieChart
+                    datas={chartDatas}
+                    axisSettings={axisSettings}
+                    setHighlightedRow={setHighlightedRow}
+                  />
+                </ChartWrapper>
+              </>
             )}
           </FlexColWrapper>
         )}

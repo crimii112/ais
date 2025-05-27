@@ -126,7 +126,7 @@ const Toxic = ({ type }) => {
         datas={contentData}
         isLoading={isLoading}
         type={config.chartType}
-        title="유해대기"
+        title={config.title}
         setHighlightedRow={setHighlightedRow}
       />
     </>
@@ -354,6 +354,7 @@ const TOXIC_SETTINGS = {
       percentile: 0.99,
     },
     condList: condList,
+    title: '유해자동 데이터 그래프'
   },
   pie: {
     page: 'toxic/pieGraph',
@@ -368,6 +369,7 @@ const TOXIC_SETTINGS = {
       percentile: 0.99,
     },
     condList: pieCondList,
+    title: '유해자동 파이그래프'
   },
   bar: {
     page: 'toxic/lineGraph',
@@ -382,6 +384,7 @@ const TOXIC_SETTINGS = {
       percentile: 0.99,
     },
     condList: condList,
+    title: '유해자동 막대그래프'
   },
   medianLine: {
     page: 'toxic/medianGraph',
@@ -396,5 +399,6 @@ const TOXIC_SETTINGS = {
       percentile: 0.99,
     },
     condList: medianCondList,
+    title: '유해자동 일중간값 그래프'
   },
 };
