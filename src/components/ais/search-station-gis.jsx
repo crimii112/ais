@@ -8,14 +8,13 @@ import { Circle, Point } from "ol/geom";
 import GeoJSON from 'ol/format/GeoJSON';
 import { Style, Icon} from 'ol/style';
 import { Feature, Overlay } from 'ol';
+import { Control, defaults as defaultControls } from 'ol/control';
 import { IClickOn } from '@/img';
 
 import { cn } from '@/lib/utils';
 import MapContext from '@/components/map/MapContext';
 
-
-
-const ContentGis = ({ SetMap, type }) => {
+const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     const map = useContext(MapContext);
 
     let overlay;
@@ -51,24 +50,25 @@ const ContentGis = ({ SetMap, type }) => {
     const [areatype, setAreatype] = useState('');   // GetAllSite에서 사용
     const [searchType, setSearchType] = useState('');   // SearchInRadius에서 사용
 
-    // type에 따라 areatype 설정
+    // sitetype에 따라 areatype 설정
     // areatype 종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
     // [1,2,3,4,5,6,13,12,14,8,7,11]
     useEffect(() => {
-        if(type === '대기측정소') {
+        if(sitetype === '대기측정소') {
             setAreatype("1,2,3,4,5,6");
             setSearchType(["001", "002", "003", "004", "005", "006"]);
-        } else if(type === '광화학') {
+            // tms 종류에 따라 설정해야하는데 ...
+        } else if(sitetype === '광화학') {
             setAreatype("14");
             setSearchType(["014"]);
-        } else if(type === '유해대기') {
+        } else if(sitetype === '유해대기') {
             setAreatype("13");
             setSearchType(["013"]);
-        } else if(type === '대기환경연구소') {
+        } else if(sitetype === '대기환경연구소') {
             setAreatype("8");
             setSearchType(["008"]);
         } 
-    }, [type]);
+    }, [sitetype]);
 
     // 지도 설정
     useEffect(() => {
@@ -78,16 +78,64 @@ const ContentGis = ({ SetMap, type }) => {
         map.on('pointermove', handleMapPointermove);
         
         overlay = new Overlay({ element: refPopup.current, autoPan: { animation: true }, stopEvent:false });
-        // stopEvent:false로 인해 feature위에서도 zoom 또는 dragging이 가능해짐
         map.addOverlay(overlay);
         handlePopUpClose();
-        // LAYER
+        
         map.addLayer(layerMarker);
         map.addLayer(layerGnrl);
         map.addLayer(layerSearchedSites);
         map.addLayer(layerSearchRadius);
         map.getView().setZoom(0);
-        map.getView().setCenter([1005321.0, 1771271.0]);    // 센터가 조금 안맞아서 수정함
+        map.getView().setCenter([1005321.0, 1771271.0]);
+
+        // 반경 설정 버튼 추가
+        const divRadiusControlContainer = document.createElement('div');
+        divRadiusControlContainer.className = 'radius-control-container';
+        const divRadiusControl = document.createElement('div');
+        divRadiusControl.className = 'radius-control';
+        const divRadiusControlSub = document.createElement('div');
+        divRadiusControlSub.id = 'radius-list';
+        divRadiusControlSub.className = 'radius-list';
+        divRadiusControlSub.onmouseleave = DivRadiusControlSubMouseLeave;
+
+        const buttonRadiusChoose = document.createElement('button');
+        buttonRadiusChoose.className = 'radius-choose';
+        buttonRadiusChoose.innerText = '반경\n설정';
+        buttonRadiusChoose.onclick = BtnChooseRadiusOnClick;
+        
+        const buttonRadius1 = document.createElement('button');
+        buttonRadius1.className = 'radius-type';
+        buttonRadius1.id = 'radius-1';
+        buttonRadius1.innerText = '3km';
+        buttonRadius1.onclick = OnClickButtonRadius;
+        
+        const buttonRadius2 = document.createElement('button');
+        buttonRadius2.className = 'radius-type';
+        buttonRadius2.id = 'radius-2';
+        buttonRadius2.innerText = '5km';
+        buttonRadius2.onclick = OnClickButtonRadius;
+        
+        const buttonRadius3 = document.createElement('button');
+        buttonRadius3.className = 'radius-type';
+        buttonRadius3.id = 'radius-3';
+        buttonRadius3.innerText = '10km';
+        buttonRadius3.onclick = OnClickButtonRadius;
+        
+        const buttonRadius4 = document.createElement('button');
+        buttonRadius4.className = 'radius-type';
+        buttonRadius4.id = 'radius-4';
+        buttonRadius4.innerText = '20km';
+        buttonRadius4.onclick = OnClickButtonRadius;
+
+        divRadiusControlSub.append(buttonRadius1);
+        divRadiusControlSub.append(buttonRadius2);
+        divRadiusControlSub.append(buttonRadius3);
+        divRadiusControlSub.append(buttonRadius4);
+        divRadiusControl.append(buttonRadiusChoose);
+        divRadiusControlContainer.append(divRadiusControlSub);
+        divRadiusControlContainer.append(divRadiusControl);
+        const controlObj = new Control({ element: divRadiusControlContainer });
+        map.addControl(controlObj);
 
         if(SetMap) {
             SetMap(map);
@@ -97,10 +145,29 @@ const ContentGis = ({ SetMap, type }) => {
         
     }, [map, map.ol_uid]);
 
+    useEffect(() => {
+      if(onInit) { initMap(); }
+    }, [onInit]);
+    
+    const initMap = () => {
+      ClearMarker();
+
+      sourceSearchRadius.clear();
+      layerSearchRadius.getSource().clear();
+      layerSearchRadius.setStyle(null);
+
+      sourceSearchedSites.clear();
+      layerSearchedSites.getSource().clear();
+      layerSearchedSites.setStyle(null);
+
+      map.getView().setZoom(0);
+      map.getView().setCenter([1005321.0, 1771271.0]);
+    }
+
     const ClearMarker = () => { sourceMarker.clear(); }
+
     const handleMapClick = (e) => {
         SetMarker(e.coordinate);
-        console.log(e.coordinate);
 
         // 클릭한 좌표 기준 반경 내 검색
         const coord = {x: e.coordinate[0], y: e.coordinate[1]};
@@ -213,7 +280,6 @@ const ContentGis = ({ SetMap, type }) => {
   
             // 반경 내 검색된 features
             const searchList = data.searchList;
-            console.log(searchList);
             layerSearchedSites.setStyle({
               "circle-radius": message.site_point_size,
               "circle-fill-color": message.site_fill_color,
@@ -233,9 +299,20 @@ const ContentGis = ({ SetMap, type }) => {
               "stroke-width": 2,
             });
   
+            const modalStationList = [];
             searchList.forEach((item) => {
-              sourceSearchedSites.addFeature(gsonFormat.readFeature(item.gis));
+              // 모달 선택한 측정소에 추가하기 위해 기존 데이터 형식 맞춰줌
+              // 기존 데이터 형식 : { siteCd: 422141, siteData: '422141;[도시대기]대구.남구.대명동' }
+              const feature = gsonFormat.readFeature(item.gis);
+              const siteData = feature.get('site_cd') + ';[' + feature.get('area_type2') + ']' + feature.get('gungu_nm') + '.' + feature.get('site_nm');
+              const siteJson = {siteCd: Number(feature.get('site_cd')), siteData: siteData};
+
+              modalStationList.push(siteJson);
+
+              sourceSearchedSites.addFeature(feature);
             });
+
+            onAddStation(modalStationList);
   
             // 검색 반경 feature
             if (data.centerList) {
@@ -564,14 +641,14 @@ const ContentGis = ({ SetMap, type }) => {
     };
 
     // 반경 내 측정소 가져오는 함수
-    const SearchInRadius = (searchType, coord) => {
+    const SearchInRadius = (searchType, coord, radius = 10000) => {
         sourceSearchRadius.clear();
         sourceSearchedSites.clear();
     
         const test = {
           data: {
             pagetype: "searchradiuscoord",
-            radius: 10000, // 검색 반경(m)
+            radius: radius, // 검색 반경(m)
             searchMethod: "within", // 반경에 완전 포함인지, 접점이 있기만 해도 검색될 것인지 조건. polygon 검색할 때에만 바꿔주면 됨
             searchType: searchType, // 측정소종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
             searchRegStartDate: "202301", // 측정소검색시작연월
@@ -599,12 +676,45 @@ const ContentGis = ({ SetMap, type }) => {
         handleWindowMessage(test);
     };
 
+    const OnClickButtonRadius = e => {
+        const id = e.target.id;
+        console.log(id);
+        let radius = 10000; // 기본값 10km
+
+        if (id === 'radius-1') {
+            radius = 3000; // 3km
+        } else if (id === 'radius-2') {
+            radius = 5000; // 5km
+        } else if (id === 'radius-3') {
+            radius = 10000; // 10km
+        } else if (id === 'radius-4') {
+            radius = 20000; // 20km
+        }
+
+        // 현재 마커가 있는 위치에서 반경 검색 실행
+        const features = sourceMarker.getFeatures();
+        if (features.length > 0) {
+            const coord = features[0].getGeometry().getCoordinates();
+            SearchInRadius(searchType, {x: coord[0], y: coord[1]}, radius);
+        }
+    };
+
+    const BtnChooseRadiusOnClick = () => {
+        if (!document.getElementById('radius-list').className.includes('active')) {
+            document.getElementById('radius-list').classList.add('active');
+        }
+    };
+
+    const DivRadiusControlSubMouseLeave = () => {
+        document.getElementById('radius-list').classList.remove('active');
+    };
 
     return (
         <Container id="ngii">
             <PopupContainer ref={refPopup}>
                 <PopupWrap>{txtPopup}</PopupWrap>
             </PopupContainer>
+            
         </Container>
     )
 }
@@ -652,13 +762,89 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     line-height: normal;
   }
 
+  // 반경 설정 컨트롤러
+  .radius-control-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    font-family: NanumBarumGothic;
+
+    .radius-control {
+      button {
+        box-sizing: border-box;
+        width: 50px;
+        height: 50px;
+        padding: 3px;
+        background: #ffffff;
+        border-radius: 3px 5px;
+        border: none;
+        font-size: 11px;
+        line-height: 14px;
+        color: #333;
+        cursor: pointer;
+      }
+    }
+    .radius-list {
+      position: absolute;
+      left: 100%;
+      top: auto;
+      width: 76px;
+      height: 0;
+      margin-top: 12px;
+      padding-left: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s;
+
+      button {
+        position: static;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        padding-bottom: 1px;
+        background: #333;
+        border-radius: 0;
+        border: none;
+        outline: none;
+        font-size: 11px;
+        height: 33px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #999;
+        cursor: pointer;
+        overflow: hidden;
+      }
+      button:hover {
+        background: #222;
+        color: #ff96a3;
+      }
+    }
+    .radius-list:after {
+      position: absolute;
+      width: 0;
+      height: 0;
+      top: 15px;
+      left: 0px;
+      border: 5px solid transparent;
+      border-right-color: #333;
+      display: block;
+      content: "";
+    }
+    .radius-list.active {
+      height: calc(36px * 3 - 1px);
+    }
+  }
+
   // 줌 컨트롤러
   .ol-zoom {
     position: absolute;
     width: 50px;
     top: 90px;
     right: 20px;
-    // padding: 3px;
     padding: 0;
     margin: 0;
     background: rgba(255, 255, 255, 0);
@@ -669,10 +855,8 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
 
     .ol-zoom-in,
     .ol-zoom-out {
-      width: 100%; //50px;
+      width: 100%;
       height: 24px;
-      // margin: 1px;
-      // margin-left: 5px;
       padding: 0;
       background: #ffffff;
       border: none;
@@ -685,7 +869,6 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     }
     .ol-zoom-out {
       border-radius: 0 0 2px 2px;
-      // margin-top: 213px;
     }
     .ol-zoom-in.ol-has-tooltip:hover[role="tooltip"],
     .ol-zoom-in.ol-has-tooltip:focus[role="tooltip"] {
@@ -696,6 +879,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       top: 232px;
     }
   }
+
   // 배경지도
   .gis-control-container {
     position: absolute;
@@ -724,7 +908,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       right: 100%;
       top: auto;
       width: 76px;
-      height: 0; //calc(36px * 3 - 1px);
+      height: 0;
       margin-top: 12px;
       padding-right: 10px;
       display: flex;
@@ -742,7 +926,6 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
         border-radius: 0;
         border: none;
         outline: none;
-
         font-size: 11px;
         line-height: 33px;
         text-align: center;
@@ -756,7 +939,6 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       }
     }
     .gis-list:after {
-      // 삼각형
       position: absolute;
       width: 0;
       height: 0;
@@ -774,21 +956,14 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
 
   // 범례
   .ol-legend.ol-legend-right {
-    // position: absolute;
     width: fit-content;
     padding: 0 10px 0 0;
-    // height: 100px;
-    // left: auto;
-    // right: 20px;
-    // bottom: 7%;
-    // display: none;
     display: flex;
     flex-direction: column;
     border-radius: 5px;
     background-color: rgba(255, 255, 255, 0.8);
     font-family: NanumBarumGothic;
 
-    //.ol-closebox
     button {
       outline: none;
       margin: 1px;
@@ -815,10 +990,9 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     display: none;
   }
 `;
+
 const PopupContainer = styled.div`
   position: relative;
-  // min-width: 0px;
-  // min-height: 0px;
   top: 28px;
   left: -50px;
   padding: 10px;
@@ -829,7 +1003,6 @@ const PopupContainer = styled.div`
 
   &:after,
   &:before {
-    //말풍선 및 삼각형
     position: absolute;
     width: 0;
     height: 0;
@@ -851,9 +1024,9 @@ const PopupContainer = styled.div`
     border-width: 11px;
   }
 `;
+
 const PopupWrap = styled.div`
   width: 100%;
-  // font
   font-family: 나눔바른고딕;
   font-size: 14px;
   line-height: 18px;

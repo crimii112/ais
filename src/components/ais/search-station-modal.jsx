@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SquareArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
 import usePostRequest from '@/hooks/usePostRequest';
-import MapContext from '@/components/map/MapContext';
 import { ContentGis } from './search-station-gis';
 import { MapNgii } from '@/components/map';
 
@@ -42,7 +41,6 @@ const SearchStationModal = ({
   initialStationList,
   setMultipleStationList,
 }) => {
-  const map = useContext(MapContext);
 
   const postMutation = usePostRequest();
 
@@ -82,6 +80,9 @@ const SearchStationModal = ({
     { value: 'gyeongnam', text: '경남', checked: false },
     { value: 'jeju', text: '제주', checked: false },
   ]);
+
+  // 반경 내 검색 지도 초기화 여부
+  const [shouldInit, setShouldInit] = useState(false);
 
   // title에 따라 모달 탭 구성 설정
   useEffect(() => {
@@ -217,6 +218,11 @@ const SearchStationModal = ({
     setSelectedStationList(stationList);
   };
 
+  // 반경 내 검색 방식
+  const handleSearchRadiusAddStation = (stationList) => {
+    setSelectedStationList(stationList);
+  }
+
   // Content 1) 시도 선택 방식
   const ContentSelectSido = (
     <GridWrapper className="grid-cols-[6fr_1fr] gap-2">
@@ -334,12 +340,13 @@ const SearchStationModal = ({
     </GridWrapper>
   );
 
+  // Content 4) 반경 내 검색 방식
   const ContentSearchRadius = (
     <GridWrapper className="grid-cols-[10fr_1fr] gap-2">
       <FlexColWrapper className="items-stretch box-border border-1 border-gray-300">
-          <SelectBoxTitle type="text">반경 내 검색</SelectBoxTitle>
+          <SelectBoxTitle type="text">지도에서 원하는 위치를 클릭해주세요. 기본 반경은 10km입니다.</SelectBoxTitle>
           <GridWrapper className="grow grid-cols-1 w-full h-full">
-            <MapNgii><ContentGis type={title} /></MapNgii> 
+            <MapNgii><ContentGis sitetype={title} tms={tms.airqltKndNm} onAddStation={handleSearchRadiusAddStation} onInit={shouldInit}/></MapNgii> 
           </GridWrapper>
       </FlexColWrapper>
       <FlexRowWrapper>
@@ -378,11 +385,13 @@ const SearchStationModal = ({
 
   // 좌측 상단 - 탭 이동시 검색 데이터 초기화
   const initSearchData = () => {
+    // 시도 선택 방식
     setSidoCheckboxList(prev => {
       prev.forEach(item => (item.checked = false));
       return prev;
     });
 
+    // 검색 방식
     document.getElementsByName(
       'searchTypeSidoNm'
     )[0].options[0].selected = true;
@@ -390,9 +399,13 @@ const SearchStationModal = ({
     setSearchStationList([]);
     setSelectboxSidoNm([]);
 
+    // 기타 방식
     if (document.getElementsByName('etc')[0] !== undefined) {
       document.getElementsByName('etc')[0].checked = true;
     }
+
+    // 반경 내 검색 방식
+    setShouldInit(prev => !prev);
   };
 
   // 좌측 상단 - 탭 버튼 클릭 이벤트
