@@ -416,13 +416,17 @@ const SearchStationModal = ({
 
   // 우측 상단 - TMS 변경 이벤트
   const handleChangeAirqltKndNm = e => {
-    tms.airqltKndNm = e.target.value;
-    setTms(tms);
+    setTms(prev => ({
+      ...prev,
+      airqltKndNm: e.target.value
+    }));
   };
   // 우측 상단 - 추이 측정소 변경 이벤트
   const handleChangeProgressYn = e => {
-    tms.progressYn = e.target.checked ? '1' : '0';
-    setTms(tms);
+    setTms(prev => ({
+      ...prev,
+      progressYn: e.target.checked ? '1' : '0'
+    }));
   };
 
   // 선택한 측정소 - multiple select 변경 이벤트

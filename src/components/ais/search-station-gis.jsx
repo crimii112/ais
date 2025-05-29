@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import MapContext from '@/components/map/MapContext';
 
 const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
-    const map = useContext(MapContext);
+  const map = useContext(MapContext);
 
     let overlay;
     const gsonFormat = new GeoJSON();
@@ -48,27 +48,70 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     const [txtPopup, setTxtPopup] = useState('');
 
     const [areatype, setAreatype] = useState('');   // GetAllSite에서 사용
-    const [searchType, setSearchType] = useState('');   // SearchInRadius에서 사용
+    const [radiusSearchType, setRadiusSearchType] = useState([]);   // SearchInRadius에서 사용
+
+    const _setRadiusSearchType = (val) => {
+      console.log('_setRadiusSearchType 호출됨');
+      console.log('입력된 val:', val);
+      console.log('val[0]:', val[0]);
+      console.log('val[0] === "001":', val[0] === '001');
+
+      if (val && val[0] === '001') {
+        console.trace('setRadiusSearchType 호출! [' + val + ']');
+      } else {
+        console.log('setRadiusSearchType 호출!', val);
+      }
+      setRadiusSearchType(val);
+    };
+
+    useEffect(() => {
+      console.log('ContentGis 마운트됨');
+      return () => {
+        console.log('ContentGis 언마운트됨');
+      }
+    }, []);
 
     // sitetype에 따라 areatype 설정
     // areatype 종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
     // [1,2,3,4,5,6,13,12,14,8,7,11]
     useEffect(() => {
-        if(sitetype === '대기측정소') {
-            setAreatype("1,2,3,4,5,6");
-            setSearchType(["001", "002", "003", "004", "005", "006"]);
-            // tms 종류에 따라 설정해야하는데 ...
-        } else if(sitetype === '광화학') {
-            setAreatype("14");
-            setSearchType(["014"]);
-        } else if(sitetype === '유해대기') {
-            setAreatype("13");
-            setSearchType(["013"]);
-        } else if(sitetype === '대기환경연구소') {
-            setAreatype("8");
-            setSearchType(["008"]);
-        } 
-    }, [sitetype]);
+      console.log('sitetype, tms 변경됨 !!!!!!!!!!!!!!! ')
+      console.log('sitetype:', sitetype);
+      console.log('tms:', tms);
+      let newAreatype = '';
+      let newRadiusSearchType = [];
+
+      if(sitetype === '대기측정소') {
+          newAreatype = "1,2,3,4,5,6";
+          console.log('tms:', tms);
+          if (tms === '도시대기') newRadiusSearchType = ['001'];
+          else if (tms === '도로변대기') newRadiusSearchType = ['002'];
+          else if (tms === '교외대기') newRadiusSearchType = ['003'];
+          else if (tms === '국가배경') newRadiusSearchType = ['004'];
+          else if (tms === '항만') newRadiusSearchType = ['005'];
+          else if (tms === '선박권역') newRadiusSearchType = ['006'];
+          else newRadiusSearchType = ["001", "002", "003", "004", "005", "006"];
+      } else if(sitetype === '광화학') {
+          newAreatype = "14";
+          newRadiusSearchType = ["014"];
+      } else if(sitetype === '유해대기') {
+          newAreatype = "13";
+          newRadiusSearchType = ["013"];
+      } else if(sitetype === '대기환경연구소') {
+          newAreatype = "8";
+          newRadiusSearchType = ["008"];
+      } 
+
+      setAreatype(newAreatype);
+      _setRadiusSearchType(newRadiusSearchType);
+    }, [sitetype, tms]);
+
+    useEffect(() => {
+      console.log('changed radiusSearchType:', radiusSearchType);
+      console.log('현재 sitetype:', sitetype);
+  console.log('현재 tms:', tms);
+  console.trace('radiusSearchType 변경 스택 트레이스');
+    }, [radiusSearchType]);
 
     // 지도 설정
     useEffect(() => {
@@ -167,11 +210,12 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     const ClearMarker = () => { sourceMarker.clear(); }
 
     const handleMapClick = (e) => {
+      console.log('Map clicked, current radiusSearchType:', radiusSearchType);
         SetMarker(e.coordinate);
 
         // 클릭한 좌표 기준 반경 내 검색
         const coord = {x: e.coordinate[0], y: e.coordinate[1]};
-        SearchInRadius(searchType, coord);
+        SearchInRadius(coord);
     }
 
     const handleMapPointermove = (e) => {
@@ -348,26 +392,27 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
           .finally(() => {
             document.body.style.cursor = "default";
           });
-      } else if (message.pagetype === "geocoder") {
-        //주소찾기
-        const result = await Geocoding("poi", message.addr);
-        const newResult = [];
+      } 
+      // else if (message.pagetype === "geocoder") {
+      //   //주소찾기
+      //   const result = await Geocoding("poi", message.addr);
+      //   const newResult = [];
   
-        result.poi.forEach((item) => {
-          const newpoi = Object.assign({}, item);
-          newpoi.jibunAdres = item.jibunAdres;
-          newpoi.name = item.name;
-          newpoi.roadAdres = item.roadAdres;
-          newpoi.typeCode = item.typeCode;
-          newpoi.x = parseFloat(item.x).toFixed();
-          newpoi.y = parseFloat(item.y).toFixed();
-          const wgs = transform([parseFloat(item.x), parseFloat(item.y)], "EPSG:5179", "EPSG:4326");
-          newpoi.lon = wgs[0].toFixed(5);
-          newpoi.lat = wgs[1].toFixed(5);
+      //   result.poi.forEach((item) => {
+      //     const newpoi = Object.assign({}, item);
+      //     newpoi.jibunAdres = item.jibunAdres;
+      //     newpoi.name = item.name;
+      //     newpoi.roadAdres = item.roadAdres;
+      //     newpoi.typeCode = item.typeCode;
+      //     newpoi.x = parseFloat(item.x).toFixed();
+      //     newpoi.y = parseFloat(item.y).toFixed();
+      //     const wgs = transform([parseFloat(item.x), parseFloat(item.y)], "EPSG:5179", "EPSG:4326");
+      //     newpoi.lon = wgs[0].toFixed(5);
+      //     newpoi.lat = wgs[1].toFixed(5);
   
-          newResult.push(newpoi);
-        });
-      }
+      //     newResult.push(newpoi);
+      //   });
+      // }
     }
 
     /*
@@ -641,8 +686,14 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     };
 
     // 반경 내 측정소 가져오는 함수
-    const SearchInRadius = (searchType, coord, radius = 10000) => {
-        sourceSearchRadius.clear();
+    const SearchInRadius = (coord, radius = 10000) => {
+      console.log('SearchInRadius 호출됨');
+  console.log('현재 radiusSearchType:', radiusSearchType);
+  console.log('현재 sitetype:', sitetype);
+  console.log('현재 tms:', tms);
+  console.log('coord:', coord);
+  console.log('radius:', radius);
+      sourceSearchRadius.clear();
         sourceSearchedSites.clear();
     
         const test = {
@@ -650,7 +701,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
             pagetype: "searchradiuscoord",
             radius: radius, // 검색 반경(m)
             searchMethod: "within", // 반경에 완전 포함인지, 접점이 있기만 해도 검색될 것인지 조건. polygon 검색할 때에만 바꿔주면 됨
-            searchType: searchType, // 측정소종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
+            searchType: radiusSearchType, // 측정소종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
             searchRegStartDate: "202301", // 측정소검색시작연월
             searchRegEndDate: "202312", // 측정소검색끝연월
             pollutant: "",
@@ -672,13 +723,12 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
             },
           },
         };
-    
+        console.log('Sending request with radiusSearchType:', radiusSearchType); 
         handleWindowMessage(test);
     };
 
     const OnClickButtonRadius = e => {
         const id = e.target.id;
-        console.log(id);
         let radius = 10000; // 기본값 10km
 
         if (id === 'radius-1') {
@@ -695,7 +745,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
         const features = sourceMarker.getFeatures();
         if (features.length > 0) {
             const coord = features[0].getGeometry().getCoordinates();
-            SearchInRadius(searchType, {x: coord[0], y: coord[1]}, radius);
+            SearchInRadius({x: coord[0], y: coord[1]}, radius);
         }
     };
 
