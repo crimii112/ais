@@ -22,7 +22,6 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     const refPopup = useRef(null);
     const sourceMarkerRef = useRef(new VectorSource({ wrapX: false }));
     const sourceMarker = sourceMarkerRef.current;
-    // const sourceMarker = new VectorSource({ wrapX: false });
     const layerMarker = new VectorLayer({
         source: sourceMarker,
         id: "Marker",
@@ -37,45 +36,24 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
         }),
         zIndex: 99,
     });    
+
     // 일반대기측정소, 광화학, 유해대기 == 측정망
     const sourceGnrl = new VectorSource({ wrapX: false });
     const layerGnrl = new VectorLayer({ source: sourceGnrl, id: 'gnrl', zIndex: 10 });
     // 반경 안에 들어간 site를 넣어주는 layer
-    const sourceSearchedSites = new VectorSource({ wrapX: false });
+    const sourceSearchedSitesRef = useRef(new VectorSource({ wrapX: false }));
+    const sourceSearchedSites = sourceSearchedSitesRef.current;
     const layerSearchedSites = new VectorLayer({ source: sourceSearchedSites, id: 'SearchedSites', style: null, zIndex: 10 });
     // 검색 반경을 넣어주는 layer
-    const sourceSearchRadius = new VectorSource({ wrapX: false });
+    const sourceSearchRadiusRef = useRef(new VectorSource({ wrapX: false }));
+    const sourceSearchRadius = sourceSearchRadiusRef.current;
     const layerSearchRadius = new VectorLayer({ source: sourceSearchRadius, id: 'SearchRadius', style: null, zIndex: 9 });
     //popup
     const [txtPopup, setTxtPopup] = useState('');
 
     const [areatype, setAreatype] = useState('');   // GetAllSite에서 사용
-    const [radiusSearchType, setRadiusSearchType] = useState([]);   // SearchInRadius에서 사용
-
-    useEffect(() => {
-      if(sitetype !== '대기측정소') return;
-
-      let newRadiusSearchType = [];
-      if(tms === '도시대기') newRadiusSearchType = ['001'];
-      else if(tms === '도로변대기') newRadiusSearchType = ['002'];
-      else if(tms === '교외대기') newRadiusSearchType = ['003'];
-      else if(tms === '국가배경') newRadiusSearchType = ['004'];
-      else if(tms === '항만') newRadiusSearchType = ['005'];
-      else if(tms === '선박권역') newRadiusSearchType = ['006'];
-      else newRadiusSearchType = ['001', '002', '003', '004', '005', '006'];
-
-      console.log('newRadiusSearchType:', newRadiusSearchType);
-      setRadiusSearchType(newRadiusSearchType);
-
-      // 현재 마커가 있는 위치에서 반경 검색 실행
-      const features = sourceMarker.getFeatures();
-      if (features.length > 0) {
-        const coord = features[0].getGeometry().getCoordinates();
-        console.log('coord:', coord);
-        SearchInRadius(newRadiusSearchType, {x: coord[0], y: coord[1]});
-      }
-      
-    }, [tms]);
+    const radiusSearchTypeRef = useRef([]);   // SearchInRadius에서 사용
+    const radiusRef = useRef(10000);   // 반경(기본값: 10km)
 
     // sitetype에 따라 areatype 설정
     // areatype 종류 [도시대기,도로변대기,교외대기,국가배경,항만,선박권역,유해대기,대기중금속,광화학,대기환경연구소,집중측정,산성강하물]
@@ -99,8 +77,31 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
       } 
 
       setAreatype(newAreatype);
-      setRadiusSearchType(newRadiusSearchType);
+      radiusSearchTypeRef.current = newRadiusSearchType;
     }, [sitetype]);
+
+    useEffect(() => {
+      if(sitetype !== '대기측정소') return;
+
+      let newRadiusSearchType = [];
+      if(tms === '도시대기') newRadiusSearchType = ['001'];
+      else if(tms === '도로변대기') newRadiusSearchType = ['002'];
+      else if(tms === '교외대기') newRadiusSearchType = ['003'];
+      else if(tms === '국가배경') newRadiusSearchType = ['004'];
+      else if(tms === '항만') newRadiusSearchType = ['005'];
+      else if(tms === '선박권역') newRadiusSearchType = ['006'];
+      else newRadiusSearchType = ['001', '002', '003', '004', '005', '006'];
+      
+      radiusSearchTypeRef.current = newRadiusSearchType;
+
+      // 현재 마커가 있는 위치에서 반경 검색 실행
+      const features = sourceMarker.getFeatures();
+      if (features.length > 0) {
+        const coord = features[0].getGeometry().getCoordinates();
+        SearchInRadius(radiusSearchTypeRef.current, {x: coord[0], y: coord[1]}, radiusRef.current);
+      }
+
+    }, [tms]);
 
     // 지도 설정
     useEffect(() => {
@@ -163,6 +164,32 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
         divRadiusControlSub.append(buttonRadius2);
         divRadiusControlSub.append(buttonRadius3);
         divRadiusControlSub.append(buttonRadius4);
+
+        // 입력 필드와 적용 버튼 DOM 생성 및 추가
+        const divCustomRadius = document.createElement('div');
+        divCustomRadius.className = 'custom-radius';
+
+        const inputRadius = document.createElement('input');
+        inputRadius.type = 'text';
+        inputRadius.id = 'radius-input';
+        inputRadius.placeholder = '직접 입력';
+        inputRadius.className = 'radius-input';
+
+        const spanUnit = document.createElement('span');
+        spanUnit.innerText = 'km';
+        spanUnit.className = 'radius-unit';
+
+        const buttonApply = document.createElement('button');
+        buttonApply.className = 'radius-apply';
+        buttonApply.id = 'radius-5';
+        buttonApply.innerText = '적용';
+        buttonApply.onclick = OnClickButtonRadius;
+
+        divCustomRadius.append(inputRadius);
+        divCustomRadius.append(spanUnit);
+        divCustomRadius.append(buttonApply);
+
+        divRadiusControlSub.append(divCustomRadius);
         divRadiusControl.append(buttonRadiusChoose);
         divRadiusControlContainer.append(divRadiusControlSub);
         divRadiusControlContainer.append(divRadiusControl);
@@ -203,7 +230,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
 
         // 클릭한 좌표 기준 반경 내 검색
         const coord = {x: e.coordinate[0], y: e.coordinate[1]};
-        SearchInRadius(radiusSearchType, coord);
+        SearchInRadius(radiusSearchTypeRef.current, coord, radiusRef.current);
     }
 
     const handleMapPointermove = (e) => {
@@ -307,14 +334,11 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
           })
           .then((res) => res.data)
           .then((data) => {
-            layerSearchedSites.setStyle(null);
-            layerSearchRadius.setStyle(null);
             sourceSearchRadius.clear();
             sourceSearchedSites.clear();
   
             // 반경 내 검색된 features
             const searchList = data.searchList;
-            console.log(searchList)
             layerSearchedSites.setStyle({
               "circle-radius": message.site_point_size,
               "circle-fill-color": message.site_fill_color,
@@ -682,8 +706,6 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
       sourceSearchRadius.clear();
       sourceSearchedSites.clear();
     
-      console.log('searchType:', searchType);
-
       const test = {
         data: {
           pagetype: "searchradiuscoord",
@@ -717,23 +739,36 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
 
     const OnClickButtonRadius = e => {
         const id = e.target.id;
-        let radius = 10000; // 기본값 10km
 
         if (id === 'radius-1') {
-            radius = 3000; // 3km
+            radiusRef.current = 3000; // 3km
         } else if (id === 'radius-2') {
-            radius = 5000; // 5km
+            radiusRef.current = 5000; // 5km
         } else if (id === 'radius-3') {
-            radius = 10000; // 10km
+            radiusRef.current = 10000; // 10km
         } else if (id === 'radius-4') {
-            radius = 20000; // 20km
+            radiusRef.current = 20000; // 20km
+        } else if (id === 'radius-5') { // 사용자 입력 값
+          const inputValue = document.getElementById('radius-input').value;
+
+          if(inputValue === '') {
+            alert('반경 입력 후에 버튼을 눌러주시길 바랍니다.');
+            return;
+          }
+
+          if(isNaN(inputValue) || !/^\d+$/.test(inputValue)) {
+            alert('숫자를 입력해주시길 바랍니다.');
+            return;
+          }
+
+          radiusRef.current = inputValue * 1000; 
         }
 
         // 현재 마커가 있는 위치에서 반경 검색 실행
         const features = sourceMarker.getFeatures();
         if (features.length > 0) {
             const coord = features[0].getGeometry().getCoordinates();
-            SearchInRadius(radiusSearchType, {x: coord[0], y: coord[1]}, radius);
+            SearchInRadius(radiusSearchTypeRef.current, {x: coord[0], y: coord[1]}, radiusRef.current);
         }
     };
 
@@ -826,7 +861,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       position: absolute;
       left: 100%;
       top: auto;
-      width: 76px;
+      width: 150px;
       height: 0;
       margin-top: 12px;
       padding-left: 10px;
@@ -845,8 +880,8 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
         border-radius: 0;
         border: none;
         outline: none;
-        font-size: 11px;
-        height: 33px;
+        font-size: 13px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -858,6 +893,50 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       button:hover {
         background: #222;
         color: #ff96a3;
+      }
+      .custom-radius {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 4px;
+        background: #333;
+        margin-top: 1px;
+        justify-content: center;
+
+        .radius-input {
+          width: 60px;
+          height: 25px;
+          padding: 0 6px;
+          border: none;
+          border-radius: 2px;
+          background: #fff;
+          color: #333;
+          font-size: 13px;
+          text-align: center;
+        }
+
+        .radius-unit {
+          color: #999;
+          font-size: 13px;
+        }
+
+        .radius-apply {
+          height: 25px;
+          padding: 0 10px;
+          border: none;
+          border-radius: 2px;
+          background: #444;
+          color: #999;
+          font-size: 13px;
+          cursor: pointer;
+          margin-left: 2px;
+          transition: background 0.2s;
+
+          &:hover {
+            background: #555;
+            color: #ff96a3;
+          }
+        }
       }
     }
     .radius-list:after {
@@ -872,7 +951,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
       content: "";
     }
     .radius-list.active {
-      height: calc(36px * 3 - 1px);
+      height: calc(50px * 3 - 1px);
     }
   }
 
