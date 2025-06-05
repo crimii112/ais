@@ -880,7 +880,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
         border-radius: 0;
         border: none;
         outline: none;
-        font-size: 13px;
+        font-size: 11px;
         height: 50px;
         display: flex;
         align-items: center;
@@ -911,13 +911,13 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
           border-radius: 2px;
           background: #fff;
           color: #333;
-          font-size: 13px;
+          font-size: 11px;
           text-align: center;
         }
 
         .radius-unit {
           color: #999;
-          font-size: 13px;
+          font-size: 11px;
         }
 
         .radius-apply {
@@ -927,7 +927,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
           border-radius: 2px;
           background: #444;
           color: #999;
-          font-size: 13px;
+          font-size: 11px;
           cursor: pointer;
           margin-left: 2px;
           transition: background 0.2s;
@@ -1144,7 +1144,7 @@ const PopupContainer = styled.div`
 const PopupWrap = styled.div`
   width: 100%;
   font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 18px;
   color: #000000;
   white-space: pre-line;
