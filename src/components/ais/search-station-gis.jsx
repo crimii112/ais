@@ -840,7 +840,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     top: 20px;
     left: 20px;
     display: flex;
-    font-family: NanumBarumGothic;
+    font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
 
     .radius-control {
       button {
@@ -1002,7 +1002,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     top: 20px;
     right: 20px;
     display: flex;
-    font-family: NanumBarumGothic;
+    font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
 
     .gis-control {
       button {
@@ -1078,7 +1078,7 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
     flex-direction: column;
     border-radius: 5px;
     background-color: rgba(255, 255, 255, 0.8);
-    font-family: NanumBarumGothic;
+    font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
 
     button {
       outline: none;
@@ -1113,7 +1113,7 @@ const PopupContainer = styled.div`
   left: -50px;
   padding: 10px;
   border: 1px solid #cccccc;
-  border-radius: 10px;
+  border-radius: 5px;
   background: #ffffff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 
@@ -1143,7 +1143,7 @@ const PopupContainer = styled.div`
 
 const PopupWrap = styled.div`
   width: 100%;
-  font-family: 나눔바른고딕;
+  font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
   font-size: 14px;
   line-height: 18px;
   color: #000000;
