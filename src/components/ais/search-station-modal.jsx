@@ -372,6 +372,7 @@ const SearchStationModal = ({
       ? [
           { title: '시도 선택 방식', content: ContentSelectSido },
           { title: '검색 방식', content: ContentSearch },
+          { title: '반경 내 검색', content: ContentSearchRadius },
         ]
       : modalTabType === 3 && [
           { title: '가까운 측정소 검색 방식', content: <div></div> },

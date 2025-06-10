@@ -68,6 +68,9 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
       } else if(sitetype === '광화학') {
         newAreatype = "14";
         newRadiusSearchType = ["014"];
+      } else if(sitetype === '중금속') {
+        newAreatype = "12";
+        newRadiusSearchType = ["012"];
       } else if(sitetype === '유해대기') {
         newAreatype = "13";
         newRadiusSearchType = ["013"];
@@ -265,6 +268,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
     
     // common function
     const SetMarker = async (coord) => {
+      console.log(coord)
         // 사용자가 지도를 클릭했을 때 해당 위치에 마커 찍기
         ClearMarker();
         sourceMarker.addFeature(
@@ -435,6 +439,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
         - 데이터들이 고정이 아니고 동적으로 바뀜
     */
     const StylingLayers = (obj = {}) => {
+      console.log(obj)
         Object.keys(obj).forEach((key) => {
         if (key === "pagetype") {
             return;
@@ -459,13 +464,16 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
             let hasArray = false;
 
             obj[key].forEach((item) => {
+              console.log(item);
             if (hasArray) {
                 return;
             }
             // 측정소가 오염물질값으로 되어있을 경우에는 모든 측정소 style이 동일하게 오염물질범위 값으로 이루어져있을거지만
             // 혹시나 하나만 오염물질범위값으로만 전달했을 경우 나머지 측정소 스타일은 무시하고 범위범례만 표출할 것
             if (Array.isArray(item.styles)) {
-                // 도시대기처럼 단계 style이 있는 경우
+              // console.log(item.gnrlType)
+
+                // 도시대기처럼 단계 style이 있는 경우 => ????????? 도로변대기아닌가 ,,?
                 item.styles.forEach((step) => {
                 arrStyles.push({
                     filter: [
@@ -484,6 +492,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
 
                 hasArray = true;
             } else {
+              console.log(item.gnrlType)
                 // 도로변대기처럼 key value로 구분하는 경우
                 arrStyles.push({
                 filter: ["==", ["get", "area_type2"], item.gnrlType],
@@ -544,6 +553,7 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
               styles: {
                 data_key: "001",
                 fill_color: "rgba(255,236,20,0.7)",
+                // fill_color: "rgba(0,0,0, 0.5)",
                 stroke_color: "rgba(0,0,0,1)",
                 stroke_width: "2",
                 point_size: "5",
@@ -808,8 +818,8 @@ const SelectBoxTitle = ({ type, className, children, ...props }) => {
   SelectBoxTitle.displayName = 'SelectBoxTitle';
   
   const Container = styled.div`
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 
   // 국토정보지리원 로고
   .ol-attribution {
@@ -1144,7 +1154,7 @@ const PopupContainer = styled.div`
 const PopupWrap = styled.div`
   width: 100%;
   font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
-  font-size: 11px;
+  font-size: 15px;
   line-height: 18px;
   color: #000000;
   white-space: pre-line;

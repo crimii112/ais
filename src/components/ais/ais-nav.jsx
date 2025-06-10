@@ -19,6 +19,9 @@ import { IntensiveCorrelation } from './contents/intensive/intensive-correlation
 import { IntensiveGraph } from './contents/intensive/intensive-graph';
 import { IntensivePieGraph } from './contents/intensive/intensive-piegraph';
 import { IntensiveWeather } from './contents/intensive/intensive-weather';
+import { GisPie } from './contents/gispie';
+import { MapNgii } from '@/components/map';
+import { FlexColWrapper } from '@/components/ui/common';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -46,9 +49,9 @@ const data = {
           title: '기타 분석',
           subItems: [
             {
-              pathName: 'nav1-sub2',
-              title: 'nav1-sub2',
-              content: 'nav1-sub2',
+              pathName: 'gisPie',
+              title: 'GIS 파이그래프',
+              content: <FlexColWrapper className="w-full h-[750px]"><MapNgii><GisPie /></MapNgii></FlexColWrapper>,
             },
             {
               pathName: 'nav1-sub3',
