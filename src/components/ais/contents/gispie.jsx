@@ -1,17 +1,22 @@
 import { useContext, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios"; 
 
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Chart from 'ol-ext/style/Chart';
-
-import MapContext from "@/components/map/MapContext";
 import { Feature } from "ol";
 import { Point } from "ol/geom"
 import { Stroke, Style } from "ol/style";
+import GeoJSON from 'ol/format/GeoJSON';
+
+import MapContext from "@/components/map/MapContext";
+import { Select } from "ol/interaction";
 
 const GisPie = ({ SetMap }) => {
     const map = useContext(MapContext);
+
+    const gsonFormat = new GeoJSON();
 
     const sourceChart = new VectorSource({ wrapX: false });
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
@@ -21,35 +26,62 @@ const GisPie = ({ SetMap }) => {
 
         map.addLayer(layerChart);
 
-        map.getView().setZoom(2);
+        map.getView().setZoom(1);
         map.getView().setCenter([1005321.0, 1771271.0]);
         
         if(SetMap) {
             SetMap(map);
         }
-
-        chartFeature();
-        
-        layerChart.setStyle(chartStyle);
-
     }, [map, map.ol_uid]);
 
-    const chartFeature = () => {
-        const feature = new Feature({
-            geometry: new Point([1036655.3999999999, 1806517.6062700134]),
-            data: [3, 2, 6, 9],
-            sum: 20
-        });
-
-        sourceChart.addFeature(feature);
+    const handleClickDrawChartBtn = async() => {
+      sourceChart.clear();
+      layerChart.setStyle(null);
+      
+      addChartFeature();
+      layerChart.setStyle(chartStyle);
     }
 
+    const addChartFeature = async () => {
+      document.body.style.cursor = "progress";
+
+      await axios.post('/ais/gis/datas.do', { pagetype: "site", areatype: '8' }, {
+        baseURL: import.meta.env.VITE_API_URL,
+        responseEncoding: "UTF-8",
+        responseType: "json",
+      })
+      .then((res) => res.data)
+      .then((data) => {
+        data.gnrl.forEach((item) => {
+          const siteFeature = gsonFormat.readFeature(item.gis);
+          const siteCoord = siteFeature.getGeometry().getCoordinates();
+
+          const feature = new Feature({
+            geometry: new Point(siteCoord),
+            data: [3, 2, 6, 9],
+            sum: 20
+          });
+
+          sourceChart.addFeature(feature);
+        });
+
+      })
+      .finally(() => {
+        document.body.style.cursor = "default";
+      });
+    }
+
+    const addInteraction = () => {
+      const select = new Select({
+        style: f=> {return chartStyle(f, true)}
+      })
+    }
     const chartStyle = (feature) => {
         const style = new Style({
             image: new Chart({
                 type: 'pie',
-                colors: 'pastel',
-                radius: 30,
+                colors: 'pastel',   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+                radius: 25,
                 data: feature.get('data'),
                 rotateWithView: true,
                 stroke: new Stroke({
@@ -57,7 +89,7 @@ const GisPie = ({ SetMap }) => {
                     width: 2
                 })
             }),
-            zIndex: 10
+            zIndex: 1000
         })
 
         return style;
@@ -65,9 +97,9 @@ const GisPie = ({ SetMap }) => {
 
     return (
         <Container id="ngii">
-            {/* <PopupContainer ref={refPopup}>
-                <PopupWrap>{txtPopup}</PopupWrap>
-            </PopupContainer> */}
+          <button className='draw-chart-btn' onClick={handleClickDrawChartBtn}>
+              파이 차트 그리기
+          </button>
         </Container>
     )
 }
@@ -251,6 +283,18 @@ const Container = styled.div`
   // 2025-01-07 추가
   .hidden {
     display: none;
+  }
+
+  .draw-chart-btn {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    z-index: 100;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    cursor: pointer;
   }
 `;
 
