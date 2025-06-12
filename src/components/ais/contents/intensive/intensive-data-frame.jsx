@@ -99,7 +99,7 @@ const IntensiveDataFrame = ({
         };
       }
 
-      console.log(apiData);
+      console.log(JSON.stringify(apiData));
       console.log(apiRes);
       setContentData(apiRes);
 

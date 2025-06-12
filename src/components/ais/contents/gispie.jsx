@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import axios from "axios"; 
 
@@ -7,14 +7,16 @@ import VectorSource from "ol/source/Vector";
 import Chart from 'ol-ext/style/Chart';
 import { Feature } from "ol";
 import { Point } from "ol/geom"
-import { Stroke, Style } from "ol/style";
+import { Stroke, Style, Text } from "ol/style";
 import GeoJSON from 'ol/format/GeoJSON';
-
-import MapContext from "@/components/map/MapContext";
 import { Select } from "ol/interaction";
+
+import usePostRequest from '@/hooks/usePostRequest';
+import MapContext from "@/components/map/MapContext";
 
 const GisPie = ({ SetMap }) => {
     const map = useContext(MapContext);
+    const postMutation = usePostRequest();
 
     const gsonFormat = new GeoJSON();
 
@@ -34,17 +36,23 @@ const GisPie = ({ SetMap }) => {
         }
     }, [map, map.ol_uid]);
 
-    const handleClickDrawChartBtn = async() => {
+    const handleClickDrawChartBtn = () => {
       sourceChart.clear();
       layerChart.setStyle(null);
       
       addChartFeature();
       layerChart.setStyle(chartStyle);
+
+      const select = new Select({
+        style: f => chartStyle(f, true),
+      });
+      map.addInteraction(select);
     }
 
-    const addChartFeature = async () => {
+    const addChartFeature = async() => {
       document.body.style.cursor = "progress";
-
+      
+      let siteFeatures = [];
       await axios.post('/ais/gis/datas.do', { pagetype: "site", areatype: '8' }, {
         baseURL: import.meta.env.VITE_API_URL,
         responseEncoding: "UTF-8",
@@ -52,32 +60,60 @@ const GisPie = ({ SetMap }) => {
       })
       .then((res) => res.data)
       .then((data) => {
-        data.gnrl.forEach((item) => {
-          const siteFeature = gsonFormat.readFeature(item.gis);
-          const siteCoord = siteFeature.getGeometry().getCoordinates();
-
-          const feature = new Feature({
-            geometry: new Point(siteCoord),
-            data: [3, 2, 6, 9],
-            sum: 20
-          });
-
-          sourceChart.addFeature(feature);
-        });
-
+        siteFeatures = data.gnrl;
       })
       .finally(() => {
         document.body.style.cursor = "default";
       });
+
+      // test 데이터
+      const apiData = {
+        "page":"intensive/autopiegraph",
+        "date":["DATARF;2015/01/01 01;2015/01/31 24"],
+        "site":["132001","131001","324001","100000","525001","111001","238001","823001","735001","339001","534001","633001"],
+        "cond":{"sect":"all","poll":"calc","dust":"include","stats":"","eqType":"SMPS_APS_O"},
+        "mark":[{"id":"unit1","checked":false},{"id":"unit2","checked":false}],
+        "digitlist":{"pm":1,"lon":3,"carbon":1,"metal":1,"gas":1,"other":6},
+        "polllist":[{"id":"High","checked":true,"signvalue":"#"},{"id":"Low","checked":true,"signvalue":"##"},{"id":"dumy","checked":false}]
+      };
+
+      let apiRes = await postMutation.mutateAsync({
+        url: 'ais/srch/datas.do',
+        data: apiData,
+      });
+      console.log(apiRes);
+      
+      apiRes.rstList.forEach((data) => {
+        const siteFeature = siteFeatures.find((item) => {
+          return gsonFormat.readFeature(item.gis).get('site_nm') === data.groupNm;
+        });
+        if(!siteFeature) { return; }
+
+        const feature = gsonFormat.readFeature(siteFeature.gis);
+        const siteCoord = feature.getGeometry().getCoordinates();
+
+        const siteData = [
+          parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
+          parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
+          parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
+          parseFloat(data.om) ? parseFloat(data.om) : 0, 
+          parseFloat(data.ec) ? parseFloat(data.ec) : 0
+        ];
+        const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
+
+        const chartFeature = new Feature({
+          geometry: new Point(siteCoord),
+          data: siteData,
+          sum: siteSum
+        });
+
+        sourceChart.addFeature(chartFeature);
+      });
+
     }
 
-    const addInteraction = () => {
-      const select = new Select({
-        style: f=> {return chartStyle(f, true)}
-      })
-    }
-    const chartStyle = (feature) => {
-        const style = new Style({
+    const chartStyle = (feature, sel) => {
+        const style = [new Style({
             image: new Chart({
                 type: 'pie',
                 colors: 'pastel',   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
@@ -89,9 +125,26 @@ const GisPie = ({ SetMap }) => {
                     width: 2
                 })
             }),
-            zIndex: 1000
-        })
+            zIndex: sel ? 1 : 0
+        })]
 
+        if(sel) {
+          const sum = feature.get('sum');
+          const data = feature.get('data');
+
+          data.forEach((item) => {
+            const ratio = Math.round((item / sum) * 100);
+
+            if(ratio > 0) {
+              style.push(new Style({
+                text: new Text({
+                  text: `${ratio}%`,
+                })
+              }))
+            }
+          })
+
+        }
         return style;
     }
 
