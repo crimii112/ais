@@ -17,7 +17,7 @@ import MapContext from './MapContext';
    - layer는 기본이미지, 백지도, (위성지도-국토정보플랫폼 폐쇄망 서비스가 없음), 지도없음 으로 되어있음
  */
 
-const MapNgii = ({ children }) => {
+const MapNgii = ({ children, id='ngii' }) => {
   const [mapObj, setMapObj] = useState({});
   const [btnBActive, setBtnBActive] = useState('active'); //Base
   const [btnWActive, setBtnWActive] = useState('');       // White
@@ -91,7 +91,7 @@ const MapNgii = ({ children }) => {
         constrainResolution: true,
       }),
       logo: false,
-      target: 'ngii',
+      target: id,
     });
 
     // 사용자가 지도 선택할 수 있게 만든 버튼

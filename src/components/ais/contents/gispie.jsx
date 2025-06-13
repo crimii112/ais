@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import axios from "axios"; 
 
@@ -9,18 +9,18 @@ import { Feature } from "ol";
 import { Point } from "ol/geom"
 import { Stroke, Style, Text } from "ol/style";
 import GeoJSON from 'ol/format/GeoJSON';
-import { Select } from "ol/interaction";
 
 import usePostRequest from '@/hooks/usePostRequest';
 import MapContext from "@/components/map/MapContext";
 
-const GisPie = ({ SetMap }) => {
+const GisPie = ({ SetMap, mapId }) => {
     const map = useContext(MapContext);
     const postMutation = usePostRequest();
 
     const gsonFormat = new GeoJSON();
 
-    const sourceChart = new VectorSource({ wrapX: false });
+    const sourceChartRef = useRef(new VectorSource({ wrapX: false }));
+    const sourceChart = sourceChartRef.current;
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
 
     useEffect(() => {
@@ -34,22 +34,34 @@ const GisPie = ({ SetMap }) => {
         if(SetMap) {
             SetMap(map);
         }
+
+        return () => {
+          map.removeLayer(layerChart);
+          sourceChart.clear();
+        }
     }, [map, map.ol_uid]);
 
-    const handleClickDrawChartBtn = () => {
+    const handleClickDrawPieChartBtn = () => {
       sourceChart.clear();
+      layerChart.getSource().clear();
       layerChart.setStyle(null);
       
-      addChartFeature();
+      addChartFeature('pie');
       layerChart.setStyle(chartStyle);
 
-      const select = new Select({
-        style: f => chartStyle(f, true),
-      });
-      map.addInteraction(select);
     }
 
-    const addChartFeature = async() => {
+    const handleClickDrawBarChartBtn = () => {
+      sourceChart.clear();
+      layerChart.getSource().clear();
+      layerChart.setStyle(null);
+
+      addChartFeature('bar');
+      layerChart.setStyle(chartStyle);
+
+    }
+
+    const addChartFeature = async(chartType) => {
       document.body.style.cursor = "progress";
       
       let siteFeatures = [];
@@ -61,17 +73,15 @@ const GisPie = ({ SetMap }) => {
       .then((res) => res.data)
       .then((data) => {
         siteFeatures = data.gnrl;
-      })
-      .finally(() => {
-        document.body.style.cursor = "default";
       });
 
+      const sect = chartType === 'pie' ? 'all' : 'year';
       // test 데이터
       const apiData = {
         "page":"intensive/autopiegraph",
-        "date":["DATARF;2015/01/01 01;2015/01/31 24"],
+        "date":["DATARF;2015/01/01 01;2018/12/31 24"],
         "site":["132001","131001","324001","100000","525001","111001","238001","823001","735001","339001","534001","633001"],
-        "cond":{"sect":"all","poll":"calc","dust":"include","stats":"","eqType":"SMPS_APS_O"},
+        "cond":{"sect":sect,"poll":"calc","dust":"include","stats":"","eqType":"SMPS_APS_O"},
         "mark":[{"id":"unit1","checked":false},{"id":"unit2","checked":false}],
         "digitlist":{"pm":1,"lon":3,"carbon":1,"metal":1,"gas":1,"other":6},
         "polllist":[{"id":"High","checked":true,"signvalue":"#"},{"id":"Low","checked":true,"signvalue":"##"},{"id":"dumy","checked":false}]
@@ -82,77 +92,105 @@ const GisPie = ({ SetMap }) => {
         data: apiData,
       });
       console.log(apiRes);
-      
-      apiRes.rstList.forEach((data) => {
-        const siteFeature = siteFeatures.find((item) => {
-          return gsonFormat.readFeature(item.gis).get('site_nm') === data.groupNm;
+
+      if(chartType === 'pie') {
+        apiRes.rstList.forEach((data) => {
+          const siteFeature = siteFeatures.find((item) => {
+            return gsonFormat.readFeature(item.gis).get('site_nm') === data.groupNm;
+          });
+          if(!siteFeature) { return; }
+  
+          const feature = gsonFormat.readFeature(siteFeature.gis);
+          const siteCoord = feature.getGeometry().getCoordinates();
+  
+          const siteData = [
+              parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
+              parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
+              parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
+              parseFloat(data.om) ? parseFloat(data.om) : 0, 
+              parseFloat(data.ec) ? parseFloat(data.ec) : 0
+            ];
+          const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
+  
+          const chartFeature = new Feature({
+            geometry: new Point(siteCoord),
+            data: siteData,
+            sum: siteSum,
+            chartType: chartType
+          });
+  
+          sourceChart.addFeature(chartFeature);
         });
-        if(!siteFeature) { return; }
+      } else if(chartType === 'bar') {
+        const groupedData = apiRes.rstList.reduce((acc, curr) => {
+          if (!acc[curr.groupNm]) {
+            acc[curr.groupNm] = [];
+          }
+          acc[curr.groupNm].push(curr);
+          return acc;
+        }, {});
 
-        const feature = gsonFormat.readFeature(siteFeature.gis);
-        const siteCoord = feature.getGeometry().getCoordinates();
+        Object.keys(groupedData).forEach(groupNm => {
+          const siteFeature = siteFeatures.find((item) => {
+            return gsonFormat.readFeature(item.gis).get('site_nm') === groupNm;
+          });
+          if(!siteFeature) { return; }
+  
+          const feature = gsonFormat.readFeature(siteFeature.gis);
+          const siteCoord = feature.getGeometry().getCoordinates();
 
-        const siteData = [
-          parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
-          parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
-          parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
-          parseFloat(data.om) ? parseFloat(data.om) : 0, 
-          parseFloat(data.ec) ? parseFloat(data.ec) : 0
-        ];
-        const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
+          const siteData = groupedData[groupNm].map((item) => {
+            return parseFloat(item.pm25) ? parseFloat(item.pm25) : 0;
+          });
+          const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
 
-        const chartFeature = new Feature({
-          geometry: new Point(siteCoord),
-          data: siteData,
-          sum: siteSum
-        });
+          const chartFeature = new Feature({
+            geometry: new Point(siteCoord),
+            data: siteData,
+            sum: siteSum,
+            chartType: chartType
+          });
 
-        sourceChart.addFeature(chartFeature);
-      });
+          sourceChart.addFeature(chartFeature);
+        })
+        
+      }
 
+      document.body.style.cursor = "default";
     }
 
-    const chartStyle = (feature, sel) => {
-        const style = [new Style({
-            image: new Chart({
-                type: 'pie',
-                colors: 'pastel',   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
-                radius: 25,
-                data: feature.get('data'),
-                rotateWithView: true,
-                stroke: new Stroke({
-                    color: 'white',
-                    width: 2
-                })
-            }),
-            zIndex: sel ? 1 : 0
-        })]
+    const chartStyle = (feature) => {
+      const chartType = feature.get('chartType');
+      const radius = chartType === 'pie' ? 25 : 15;
+      const data = feature.get('data');
 
-        if(sel) {
-          const sum = feature.get('sum');
-          const data = feature.get('data');
+      const style = [new Style({
+          image: new Chart({
+              type: chartType,
+              colors: 'classic',   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+              radius: radius,
+              data: data,
+              rotateWithView: true,
+              stroke: new Stroke({
+                  color: 'white',
+                  width: 2
+              })
+          }),
+      })];
 
-          data.forEach((item) => {
-            const ratio = Math.round((item / sum) * 100);
-
-            if(ratio > 0) {
-              style.push(new Style({
-                text: new Text({
-                  text: `${ratio}%`,
-                })
-              }))
-            }
-          })
-
-        }
-        return style;
+      return style;
     }
 
     return (
-        <Container id="ngii">
-          <button className='draw-chart-btn' onClick={handleClickDrawChartBtn}>
-              파이 차트 그리기
-          </button>
+        <Container id={mapId}>
+          <div className="draw-chart-btn-wrapper">
+            <button className='draw-chart-btn' onClick={handleClickDrawPieChartBtn}>
+                파이 차트 그리기
+            </button>
+            <button className='draw-chart-btn' onClick={handleClickDrawBarChartBtn}>
+                바 차트 그리기
+            </button>
+          </div>
         </Container>
     )
 }
@@ -338,11 +376,17 @@ const Container = styled.div`
     display: none;
   }
 
-  .draw-chart-btn {
+  // 차트 그리기 버튼
+  .draw-chart-btn-wrapper {
     position: absolute;
     top: 40px;
     left: 40px;
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .draw-chart-btn {
     background: #ffffff;
     padding: 10px;
     border-radius: 10px;

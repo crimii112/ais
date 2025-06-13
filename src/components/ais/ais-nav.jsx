@@ -51,7 +51,7 @@ const data = {
             {
               pathName: 'gisPie',
               title: 'GIS 파이그래프',
-              content: <FlexColWrapper className="w-full h-[750px]"><MapNgii><GisPie /></MapNgii></FlexColWrapper>,
+              content: <FlexColWrapper className="w-full h-[750px]"><MapNgii id="gisPie"><GisPie /></MapNgii></FlexColWrapper>,
             },
             {
               pathName: 'nav1-sub3',
@@ -240,7 +240,14 @@ const AisNav = () => {
    */
   const handleAddTab = useCallback(
     subItem => {
-      setTabList(prev => [...prev, { ...subItem, id: uuidv4() }]);
+      // GIS 파이 그래프 탭은 독립적인 지도 Context를 사용하기 위해 id에 랜덤 값을 추가(id 중복 방지)
+      if(subItem.pathName === 'gisPie') {
+        const randomId = uuidv4();
+        const content = <FlexColWrapper className="w-full h-[750px]"><MapNgii id={`gisPie-${randomId}`}><GisPie mapId={`gisPie-${randomId}`} /></MapNgii></FlexColWrapper>;
+        setTabList(prev => [...prev, { ...subItem, id: uuidv4(), content: content }]);
+      } else {
+        setTabList(prev => [...prev, { ...subItem, id: uuidv4() }]);
+      }
       setActiveMenuId(null);
       setActiveSubMenuId(null);
     },

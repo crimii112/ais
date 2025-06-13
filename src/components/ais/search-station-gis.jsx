@@ -205,6 +205,35 @@ const ContentGis = ({ SetMap, sitetype, tms, onAddStation, onInit }) => {
 
         GetAllSite(areatype);
         
+        // cleanup 함수 추가
+        return () => {
+          // 이벤트 리스너 제거
+          map.un('singleclick', handleMapClick);
+          map.un('pointermove', handleMapPointermove);
+          
+          // 오버레이 제거
+          map.removeOverlay(overlay);
+          
+          // 레이어 제거
+          map.removeLayer(layerMarker);
+          map.removeLayer(layerGnrl);
+          map.removeLayer(layerSearchedSites);
+          map.removeLayer(layerSearchRadius);
+          
+          // 소스 클리어
+          sourceMarker.clear();
+          sourceGnrl.clear();
+          sourceSearchedSites.clear();
+          sourceSearchRadius.clear();
+          
+          // 컨트롤 제거
+          const controls = map.getControls().getArray();
+          controls.forEach(control => {
+              if (control.element && control.element.className === 'radius-control-container') {
+                  map.removeControl(control);
+              }
+          });
+      };
     }, [map, map.ol_uid]);
 
     useEffect(() => {
