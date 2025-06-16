@@ -206,43 +206,43 @@ const GisPie = ({ SetMap, mapId }) => {
       if (animationListenerRef.current) return;
       console.log('if문 패스');
 
-        const start = new Date().getTime();
-        const duration = 1000;
-        animationRef.current = 0;
+      const start = new Date().getTime();
+      const duration = 1000;
+      animationRef.current = 0;
 
-        animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
-            console.log('event 함수 안')  
-          const frameState = event.frameState;
-            const elapsed = frameState.time - start;
+      animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
+        console.log('event 함수 안')  
+        const frameState = event.frameState;
+        const elapsed = frameState.time - start;
 
-            console.log(elapsed, duration)
+        console.log(elapsed, duration)
 
-            if (elapsed > duration) {
-                unByKey(animationListenerRef.current);
-                animationListenerRef.current = null;
-                animationRef.current = false;
-            } else {
-                animationRef.current = easeOut(elapsed / duration);
-                frameState.animate = true;
-            }
-            layerChart.changed();
-        });
-
-        // Force redraw
+        if (elapsed > duration) {
+            unByKey(animationListenerRef.current);
+            animationListenerRef.current = null;
+            animationRef.current = false;
+        } else {
+            animationRef.current = easeOut(elapsed / duration);
+            frameState.animate = true;
+        }
         layerChart.changed();
+      });
+
+      // Force redraw
+      layerChart.changed();
     }
 
     return (
-        <Container id={mapId}>
-          <div className="draw-chart-btn-wrapper">
-            <button className='draw-chart-btn' onClick={handleClickDrawPieChartBtn}>
-                파이 차트 그리기
-            </button>
-            <button className='draw-chart-btn' onClick={handleClickDrawBarChartBtn}>
-                바 차트 그리기
-            </button>
-          </div>
-        </Container>
+      <Container id={mapId}>
+        <div className="draw-chart-btn-wrapper">
+          <button className='draw-chart-btn' onClick={handleClickDrawPieChartBtn}>
+              파이 차트 그리기
+          </button>
+          <button className='draw-chart-btn' onClick={handleClickDrawBarChartBtn}>
+              바 차트 그리기
+          </button>
+        </div>
+      </Container>
     )
 }
 
