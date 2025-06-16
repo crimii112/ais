@@ -7,8 +7,10 @@ import VectorSource from "ol/source/Vector";
 import Chart from 'ol-ext/style/Chart';
 import { Feature } from "ol";
 import { Point } from "ol/geom"
-import { Stroke, Style, Text } from "ol/style";
+import { Stroke, Style } from "ol/style";
 import GeoJSON from 'ol/format/GeoJSON';
+import { easeOut } from "ol/easing";
+import { unByKey } from "ol/Observable";
 
 import usePostRequest from '@/hooks/usePostRequest';
 import MapContext from "@/components/map/MapContext";
@@ -22,6 +24,10 @@ const GisPie = ({ SetMap, mapId }) => {
     const sourceChartRef = useRef(new VectorSource({ wrapX: false }));
     const sourceChart = sourceChartRef.current;
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
+
+    // const [animation, setAnimation] = useState(false);
+    const animationRef = useRef(false);
+    const animationListenerRef = useRef(null);
 
     useEffect(() => {
         if(!map.ol_uid) { return; }
@@ -38,27 +44,38 @@ const GisPie = ({ SetMap, mapId }) => {
         return () => {
           map.removeLayer(layerChart);
           sourceChart.clear();
+          if (animationListenerRef.current) {
+            unByKey(animationListenerRef.current);
+          }
         }
     }, [map, map.ol_uid]);
 
-    const handleClickDrawPieChartBtn = () => {
+    const handleClickDrawPieChartBtn = async() => {
+      unByKey(animationListenerRef.current);
+      animationListenerRef.current = null;
+      animationRef.current = false;
+      
       sourceChart.clear();
       layerChart.getSource().clear();
       layerChart.setStyle(null);
-      
-      addChartFeature('pie');
-      layerChart.setStyle(chartStyle);
 
+      await addChartFeature('pie');
+      layerChart.setStyle(chartStyle);
+      doAnimate();
     }
 
-    const handleClickDrawBarChartBtn = () => {
+    const handleClickDrawBarChartBtn = async() => {
+      unByKey(animationListenerRef.current);
+      animationListenerRef.current = null;
+      animationRef.current = false;
+
       sourceChart.clear();
       layerChart.getSource().clear();
       layerChart.setStyle(null);
 
-      addChartFeature('bar');
+      await addChartFeature('bar');
       layerChart.setStyle(chartStyle);
-
+      doAnimate();
     }
 
     const addChartFeature = async(chartType) => {
@@ -160,6 +177,7 @@ const GisPie = ({ SetMap, mapId }) => {
     }
 
     const chartStyle = (feature) => {
+      console.log(animationRef.current);
       const chartType = feature.get('chartType');
       const radius = chartType === 'pie' ? 25 : 15;
       const data = feature.get('data');
@@ -171,6 +189,7 @@ const GisPie = ({ SetMap, mapId }) => {
               radius: radius,
               data: data,
               rotateWithView: true,
+              animation: animationRef.current,
               stroke: new Stroke({
                   color: 'white',
                   width: 2
@@ -178,7 +197,39 @@ const GisPie = ({ SetMap, mapId }) => {
           }),
       })];
 
+      style[0].getImage().setAnimation(animationRef.current);
       return style;
+    }
+
+    const doAnimate = () => {
+      console.log(animationListenerRef.current);
+      if (animationListenerRef.current) return;
+      console.log('if문 패스');
+
+        const start = new Date().getTime();
+        const duration = 1000;
+        animationRef.current = 0;
+
+        animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
+            console.log('event 함수 안')  
+          const frameState = event.frameState;
+            const elapsed = frameState.time - start;
+
+            console.log(elapsed, duration)
+
+            if (elapsed > duration) {
+                unByKey(animationListenerRef.current);
+                animationListenerRef.current = null;
+                animationRef.current = false;
+            } else {
+                animationRef.current = easeOut(elapsed / duration);
+                frameState.animate = true;
+            }
+            layerChart.changed();
+        });
+
+        // Force redraw
+        layerChart.changed();
     }
 
     return (
