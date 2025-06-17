@@ -22,6 +22,7 @@ import { IntensiveWeather } from './contents/intensive/intensive-weather';
 import { GisPie } from './contents/gispie';
 import { MapNgii } from '@/components/map';
 import { FlexColWrapper } from '@/components/ui/common';
+import Test from './contents/test';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -54,9 +55,9 @@ const data = {
               content: <FlexColWrapper className="w-full h-[750px]"><MapNgii id="gisPie"><GisPie /></MapNgii></FlexColWrapper>,
             },
             {
-              pathName: 'nav1-sub3',
+              pathName: 'test',
               title: 'nav1-sub3',
-              content: 'nav1-sub3',
+              content: <Test/>,
             },
           ],
         },

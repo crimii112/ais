@@ -25,7 +25,6 @@ const GisPie = ({ SetMap, mapId }) => {
     const sourceChart = sourceChartRef.current;
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
 
-    // const [animation, setAnimation] = useState(false);
     const animationRef = useRef(false);
     const animationListenerRef = useRef(null);
 
@@ -41,42 +40,14 @@ const GisPie = ({ SetMap, mapId }) => {
             SetMap(map);
         }
 
-        return () => {
-          map.removeLayer(layerChart);
-          sourceChart.clear();
-          if (animationListenerRef.current) {
-            unByKey(animationListenerRef.current);
-          }
-        }
+        // return () => {
+        //   map.removeLayer(layerChart);
+        //   sourceChart.clear();
+        //   if (animationListenerRef.current) {
+        //     unByKey(animationListenerRef.current);
+        //   }
+        // }
     }, [map, map.ol_uid]);
-
-    const handleClickDrawPieChartBtn = async() => {
-      unByKey(animationListenerRef.current);
-      animationListenerRef.current = null;
-      animationRef.current = false;
-      
-      sourceChart.clear();
-      layerChart.getSource().clear();
-      layerChart.setStyle(null);
-
-      await addChartFeature('pie');
-      layerChart.setStyle(chartStyle);
-      doAnimate();
-    }
-
-    const handleClickDrawBarChartBtn = async() => {
-      unByKey(animationListenerRef.current);
-      animationListenerRef.current = null;
-      animationRef.current = false;
-
-      sourceChart.clear();
-      layerChart.getSource().clear();
-      layerChart.setStyle(null);
-
-      await addChartFeature('bar');
-      layerChart.setStyle(chartStyle);
-      doAnimate();
-    }
 
     const addChartFeature = async(chartType) => {
       document.body.style.cursor = "progress";
@@ -121,12 +92,12 @@ const GisPie = ({ SetMap, mapId }) => {
           const siteCoord = feature.getGeometry().getCoordinates();
   
           const siteData = [
-              parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
-              parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
-              parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
-              parseFloat(data.om) ? parseFloat(data.om) : 0, 
-              parseFloat(data.ec) ? parseFloat(data.ec) : 0
-            ];
+            parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
+            parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
+            parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
+            parseFloat(data.om) ? parseFloat(data.om) : 0, 
+            parseFloat(data.ec) ? parseFloat(data.ec) : 0
+          ];
           const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
   
           const chartFeature = new Feature({
@@ -177,7 +148,7 @@ const GisPie = ({ SetMap, mapId }) => {
     }
 
     const chartStyle = (feature) => {
-      console.log(animationRef.current);
+      console.log('chartStyle called');
       const chartType = feature.get('chartType');
       const radius = chartType === 'pie' ? 25 : 15;
       const data = feature.get('data');
@@ -195,43 +166,58 @@ const GisPie = ({ SetMap, mapId }) => {
                   width: 2
               })
           }),
-      })];
+        })];
 
       style[0].getImage().setAnimation(animationRef.current);
       return style;
     }
 
+    // 애니메이션 함수
     const doAnimate = () => {
-      console.log(animationListenerRef.current);
       if (animationListenerRef.current) return;
-      console.log('if문 패스');
-
+  
       const start = new Date().getTime();
       const duration = 1000;
       animationRef.current = 0;
-
+  
       animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
-        console.log('event 함수 안')  
         const frameState = event.frameState;
         const elapsed = frameState.time - start;
-
-        console.log(elapsed, duration)
-
+  
         if (elapsed > duration) {
-            unByKey(animationListenerRef.current);
-            animationListenerRef.current = null;
-            animationRef.current = false;
+          unByKey(animationListenerRef.current);
+          animationListenerRef.current = null;
+          animationRef.current = false;
         } else {
-            animationRef.current = easeOut(elapsed / duration);
-            frameState.animate = true;
+          animationRef.current = easeOut(elapsed / duration);
+          frameState.animate = true;
         }
         layerChart.changed();
       });
-
-      // Force redraw
+  
       layerChart.changed();
+    };
+
+    const handleClickDrawPieChartBtn = async() => {
+      sourceChart.clear();
+      layerChart.getSource().clear();
+      layerChart.setStyle(null);
+
+      await addChartFeature('pie');
+      layerChart.setStyle(chartStyle);
+      doAnimate();
     }
 
+    const handleClickDrawBarChartBtn = async() => {
+      sourceChart.clear();
+      layerChart.getSource().clear();
+      layerChart.setStyle(null);
+
+      await addChartFeature('bar');
+      layerChart.setStyle(chartStyle);
+      doAnimate();
+    }
+  
     return (
       <Container id={mapId}>
         <div className="draw-chart-btn-wrapper">
