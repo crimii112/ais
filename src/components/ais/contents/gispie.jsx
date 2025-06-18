@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import axios from "axios"; 
 
-import VectorLayer from "ol/layer/Vector";
+import {Vector as VectorLayer} from "ol/layer";
 import VectorSource from "ol/source/Vector";
 import Chart from 'ol-ext/style/Chart';
 import { Feature } from "ol";
@@ -14,6 +14,8 @@ import { unByKey } from "ol/Observable";
 
 import usePostRequest from '@/hooks/usePostRequest';
 import MapContext from "@/components/map/MapContext";
+import { FlexRowWrapper, Input, Button } from "@/components/ui/common";
+import { Select, Option } from "@/components/ui/select-box";
 
 const GisPie = ({ SetMap, mapId }) => {
     const map = useContext(MapContext);
@@ -24,6 +26,9 @@ const GisPie = ({ SetMap, mapId }) => {
     const sourceChartRef = useRef(new VectorSource({ wrapX: false }));
     const sourceChart = sourceChartRef.current;
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
+
+    const [radius, setRadius] = useState(20);
+    const [color, setColor] = useState('classic');
 
     const animationRef = useRef(false);
     const animationListenerRef = useRef(null);
@@ -148,15 +153,14 @@ const GisPie = ({ SetMap, mapId }) => {
     }
 
     const chartStyle = (feature) => {
-      console.log('chartStyle called');
+      console.log('chartStyle called', color);
       const chartType = feature.get('chartType');
-      const radius = chartType === 'pie' ? 25 : 15;
       const data = feature.get('data');
 
       const style = [new Style({
           image: new Chart({
               type: chartType,
-              colors: 'classic',   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+              colors: color,   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
               radius: radius,
               data: data,
               rotateWithView: true,
@@ -205,7 +209,7 @@ const GisPie = ({ SetMap, mapId }) => {
 
       await addChartFeature('pie');
       layerChart.setStyle(chartStyle);
-      doAnimate();
+      // doAnimate();
     }
 
     const handleClickDrawBarChartBtn = async() => {
@@ -215,8 +219,23 @@ const GisPie = ({ SetMap, mapId }) => {
 
       await addChartFeature('bar');
       layerChart.setStyle(chartStyle);
-      doAnimate();
+      // doAnimate();
     }
+
+    useEffect(() => {
+      console.log('useEffect called', color);
+      if (layerChart && sourceChart.getFeatures().length > 0) {
+        console.log('useEffect called 2', color);
+        layerChart.setStyle(null);
+        layerChart.setStyle(chartStyle);
+        layerChart.changed();
+      }
+    }, [color]);
+
+    const handleChangeColor = (e) => {
+      setColor(e.target.value);
+    }
+
   
     return (
       <Container id={mapId}>
@@ -227,6 +246,24 @@ const GisPie = ({ SetMap, mapId }) => {
           <button className='draw-chart-btn' onClick={handleClickDrawBarChartBtn}>
               바 차트 그리기
           </button>
+        </div>
+        <div className='set-chart-wrapper'>
+          <span>차트 설정</span>
+          <FlexRowWrapper className='justify-start gap-2'>
+            <span>Radius</span>
+            <Input type="number" defaultValue={20} className="w-1/2" />
+            <Button className='w-fit text-sm'>적용</Button>
+          </FlexRowWrapper>
+          <FlexRowWrapper className='justify-start gap-2'>
+            <span>Color</span>
+            <Select value={color} onChange={handleChangeColor}>
+              <Option value="classic">Classic</Option>
+              <Option value="dark">Dark</Option>
+              <Option value="pale">Pale</Option>
+              <Option value="pastel">Pastel</Option>
+              <Option value="neon">Neon</Option>
+            </Select>
+          </FlexRowWrapper>
         </div>
       </Container>
     )
@@ -429,6 +466,21 @@ const Container = styled.div`
     border-radius: 10px;
     border: 1px solid #cccccc;
     cursor: pointer;
+  }
+
+  .set-chart-wrapper {
+    position: absolute;
+    top: 150px;
+    left: 40px;
+    width: 200px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
   }
 `;
 
