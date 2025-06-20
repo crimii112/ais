@@ -14,7 +14,7 @@ import { unByKey } from "ol/Observable";
 
 import usePostRequest from '@/hooks/usePostRequest';
 import MapContext from "@/components/map/MapContext";
-import { FlexRowWrapper, Input, Button } from "@/components/ui/common";
+import { GridWrapper, Input } from "@/components/ui/common";
 import { Select, Option } from "@/components/ui/select-box";
 
 const GisPie = ({ SetMap, mapId }) => {
@@ -27,6 +27,7 @@ const GisPie = ({ SetMap, mapId }) => {
     const sourceChart = sourceChartRef.current;
     const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
 
+    const [chartType, setChartType] = useState();
     const [radius, setRadius] = useState(20);
     const [color, setColor] = useState('classic');
 
@@ -146,14 +147,12 @@ const GisPie = ({ SetMap, mapId }) => {
 
           sourceChart.addFeature(chartFeature);
         })
-        
       }
 
       document.body.style.cursor = "default";
     }
 
     const chartStyle = (feature) => {
-      console.log('chartStyle called', color);
       const chartType = feature.get('chartType');
       const data = feature.get('data');
 
@@ -171,19 +170,24 @@ const GisPie = ({ SetMap, mapId }) => {
               })
           }),
         })];
-
       style[0].getImage().setAnimation(animationRef.current);
+
       return style;
     }
 
     // 애니메이션 함수
     const doAnimate = () => {
-      if (animationListenerRef.current) return;
-  
+      // 기존 리스너가 살아있으면 제거
+      if (animationListenerRef.current) {
+        unByKey(animationListenerRef.current);
+        animationListenerRef.current = null;
+      }
+
       const start = new Date().getTime();
       const duration = 1000;
       animationRef.current = 0;
   
+      console.log('layerChart에 애니메이션 리스너 추가')
       animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
         const frameState = event.frameState;
         const elapsed = frameState.time - start;
@@ -196,6 +200,7 @@ const GisPie = ({ SetMap, mapId }) => {
           animationRef.current = easeOut(elapsed / duration);
           frameState.animate = true;
         }
+
         layerChart.changed();
       });
   
@@ -203,39 +208,82 @@ const GisPie = ({ SetMap, mapId }) => {
     };
 
     const handleClickDrawPieChartBtn = async() => {
+      // 이전 애니메이션 정리
+      if (animationListenerRef.current) {
+        unByKey(animationListenerRef.current);
+        animationListenerRef.current = null;
+      }
+      
+      setChartType('pie');
+      setRadius(20);
+      setColor('classic');
+
       sourceChart.clear();
       layerChart.getSource().clear();
       layerChart.setStyle(null);
 
       await addChartFeature('pie');
       layerChart.setStyle(chartStyle);
-      // doAnimate();
+      doAnimate();
     }
 
     const handleClickDrawBarChartBtn = async() => {
+      // 이전 애니메이션 정리
+      if (animationListenerRef.current) {
+        unByKey(animationListenerRef.current);
+        animationListenerRef.current = null;
+      }
+      
+      setChartType('bar');
+      setRadius(20);
+      setColor('classic');
+      
       sourceChart.clear();
       layerChart.getSource().clear();
       layerChart.setStyle(null);
 
       await addChartFeature('bar');
       layerChart.setStyle(chartStyle);
-      // doAnimate();
+      doAnimate();
     }
 
+    // 차트 설정 변경(color, radius)
     useEffect(() => {
-      console.log('useEffect called', color);
-      if (layerChart && sourceChart.getFeatures().length > 0) {
-        console.log('useEffect called 2', color);
-        layerChart.setStyle(null);
-        layerChart.setStyle(chartStyle);
-        layerChart.changed();
-      }
-    }, [color]);
+      if(!layerChart || !sourceChart.getFeatures().length) return;
+
+      const features = sourceChart.getFeatures();
+
+      features.forEach((feature) => {
+        const newStyle = [
+          new Style({
+            image: new Chart({
+              type: chartType,
+              colors: color,   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+              radius: radius,
+              data: feature.get('data'),
+              rotateWithView: true,
+              animation: animationRef.current,
+              stroke: new Stroke({
+                  color: 'white',
+                  width: 2
+              })
+            }),
+          })
+        ];
+
+        feature.setStyle(newStyle);
+      });
+      
+      layerChart.changed();
+    }, [color, radius]);
 
     const handleChangeColor = (e) => {
       setColor(e.target.value);
     }
 
+    const handleChangeRadius = (e) => {
+      setRadius(Number(e.target.value));
+    }
   
     return (
       <Container id={mapId}>
@@ -249,13 +297,12 @@ const GisPie = ({ SetMap, mapId }) => {
         </div>
         <div className='set-chart-wrapper'>
           <span>차트 설정</span>
-          <FlexRowWrapper className='justify-start gap-2'>
-            <span>Radius</span>
-            <Input type="number" defaultValue={20} className="w-1/2" />
-            <Button className='w-fit text-sm'>적용</Button>
-          </FlexRowWrapper>
-          <FlexRowWrapper className='justify-start gap-2'>
-            <span>Color</span>
+          <GridWrapper className='grid-cols-[1fr_2fr] justify-start gap-2'>
+            <span className='m-auto'>Radius</span>
+            <Input type="number" defaultValue={radius} className="w-[113px]" onChange={handleChangeRadius} />
+          </GridWrapper>
+          <GridWrapper className='grid-cols-[1fr_2fr] justify-start gap-2'>
+            <span className='m-auto'>Color</span>
             <Select value={color} onChange={handleChangeColor}>
               <Option value="classic">Classic</Option>
               <Option value="dark">Dark</Option>
@@ -263,7 +310,7 @@ const GisPie = ({ SetMap, mapId }) => {
               <Option value="pastel">Pastel</Option>
               <Option value="neon">Neon</Option>
             </Select>
-          </FlexRowWrapper>
+          </GridWrapper>
         </div>
       </Container>
     )
