@@ -22,7 +22,7 @@ import { IntensiveWeather } from './contents/intensive/intensive-weather';
 import { GisPie } from './contents/gispie';
 import { MapNgii } from '@/components/map';
 import { FlexColWrapper } from '@/components/ui/common';
-import Test from './contents/test';
+import { GisWindMap } from './contents/gis-wind-map';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -52,12 +52,24 @@ const data = {
             {
               pathName: 'gisPie',
               title: 'GIS 파이그래프',
-              content: <FlexColWrapper className="w-full h-[750px]"><MapNgii id="gisPie"><GisPie /></MapNgii></FlexColWrapper>,
+              content: (
+                <FlexColWrapper className="w-full h-[750px]">
+                  <MapNgii id="gisPie">
+                    <GisPie />
+                  </MapNgii>
+                </FlexColWrapper>
+              ),
             },
             {
-              pathName: 'test',
-              title: 'nav1-sub3',
-              content: <Test/>,
+              pathName: 'gisWindMap',
+              title: 'GIS 바람지도',
+              content: (
+                <FlexColWrapper className="w-full h-[750px]">
+                  <MapNgii id="gisWindMap">
+                    <GisWindMap />
+                  </MapNgii>
+                </FlexColWrapper>
+              ),
             },
           ],
         },
@@ -242,10 +254,32 @@ const AisNav = () => {
   const handleAddTab = useCallback(
     subItem => {
       // GIS 파이 그래프 탭은 독립적인 지도 Context를 사용하기 위해 id에 랜덤 값을 추가(id 중복 방지)
-      if(subItem.pathName === 'gisPie') {
+      if (subItem.pathName === 'gisPie') {
         const randomId = uuidv4();
-        const content = <FlexColWrapper className="w-full h-[750px]"><MapNgii id={`gisPie-${randomId}`}><GisPie mapId={`gisPie-${randomId}`} /></MapNgii></FlexColWrapper>;
-        setTabList(prev => [...prev, { ...subItem, id: uuidv4(), content: content }]);
+        const content = (
+          <FlexColWrapper className="w-full h-[750px]">
+            <MapNgii id={`gisPie-${randomId}`}>
+              <GisPie mapId={`gisPie-${randomId}`} />
+            </MapNgii>
+          </FlexColWrapper>
+        );
+        setTabList(prev => [
+          ...prev,
+          { ...subItem, id: uuidv4(), content: content },
+        ]);
+      } else if (subItem.pathName === 'gisWindMap') {
+        const randomId = uuidv4();
+        const content = (
+          <FlexColWrapper className="w-full h-[750px]">
+            <MapNgii id={`gisWindMap-${randomId}`}>
+              <GisWindMap mapId={`gisWindMap-${randomId}`} />
+            </MapNgii>
+          </FlexColWrapper>
+        );
+        setTabList(prev => [
+          ...prev,
+          { ...subItem, id: uuidv4(), content: content },
+        ]);
       } else {
         setTabList(prev => [...prev, { ...subItem, id: uuidv4() }]);
       }

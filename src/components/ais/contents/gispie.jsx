@@ -1,197 +1,246 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import axios from "axios"; 
+import { useContext, useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+import axios from 'axios';
 
-import {Vector as VectorLayer} from "ol/layer";
-import VectorSource from "ol/source/Vector";
+import { Vector as VectorLayer } from 'ol/layer';
+import VectorSource from 'ol/source/Vector';
 import Chart from 'ol-ext/style/Chart';
-import { Feature } from "ol";
-import { Point } from "ol/geom"
-import { Stroke, Style } from "ol/style";
+import { Feature } from 'ol';
+import { Point } from 'ol/geom';
+import { Stroke, Style } from 'ol/style';
 import GeoJSON from 'ol/format/GeoJSON';
-import { easeOut } from "ol/easing";
-import { unByKey } from "ol/Observable";
+import { easeOut } from 'ol/easing';
+import { unByKey } from 'ol/Observable';
 
 import usePostRequest from '@/hooks/usePostRequest';
-import MapContext from "@/components/map/MapContext";
-import { GridWrapper, Input } from "@/components/ui/common";
-import { Select, Option } from "@/components/ui/select-box";
+import MapContext from '@/components/map/MapContext';
+import { GridWrapper, Input } from '@/components/ui/common';
+import { Select, Option } from '@/components/ui/select-box';
 
 const GisPie = ({ SetMap, mapId }) => {
-    const map = useContext(MapContext);
-    const postMutation = usePostRequest();
+  const map = useContext(MapContext);
+  const postMutation = usePostRequest();
 
-    const gsonFormat = new GeoJSON();
+  const gsonFormat = new GeoJSON();
 
-    const sourceChartRef = useRef(new VectorSource({ wrapX: false }));
-    const sourceChart = sourceChartRef.current;
-    const layerChart = new VectorLayer({ source: sourceChart, style: null, id: 'chart', zIndex: 10 });
+  const sourceChartRef = useRef(new VectorSource({ wrapX: false }));
+  const sourceChart = sourceChartRef.current;
+  const layerChart = new VectorLayer({
+    source: sourceChart,
+    style: null,
+    id: 'chart',
+    zIndex: 10,
+  });
 
-    const [chartType, setChartType] = useState();
-    const [radius, setRadius] = useState(20);
-    const [color, setColor] = useState('classic');
+  const [chartType, setChartType] = useState();
+  const [radius, setRadius] = useState(20);
+  const [color, setColor] = useState('classic');
 
-    const animationRef = useRef(false);
-    const animationListenerRef = useRef(null);
+  const animationRef = useRef(false);
+  const animationListenerRef = useRef(null);
 
-    useEffect(() => {
-        if(!map.ol_uid) { return; }
+  useEffect(() => {
+    if (!map.ol_uid) {
+      return;
+    }
 
-        map.addLayer(layerChart);
+    map.addLayer(layerChart);
 
-        map.getView().setZoom(1);
-        map.getView().setCenter([1005321.0, 1771271.0]);
-        
-        if(SetMap) {
-            SetMap(map);
+    map.getView().setZoom(1);
+    map.getView().setCenter([1005321.0, 1771271.0]);
+
+    if (SetMap) {
+      SetMap(map);
+    }
+
+    // return () => {
+    //   map.removeLayer(layerChart);
+    //   sourceChart.clear();
+    //   if (animationListenerRef.current) {
+    //     unByKey(animationListenerRef.current);
+    //   }
+    // }
+  }, [map, map.ol_uid]);
+
+  const addChartFeature = async chartType => {
+    document.body.style.cursor = 'progress';
+
+    let siteFeatures = [];
+    await axios
+      .post(
+        '/ais/gis/datas.do',
+        { pagetype: 'site', areatype: '8' },
+        {
+          baseURL: import.meta.env.VITE_API_URL,
+          responseEncoding: 'UTF-8',
+          responseType: 'json',
         }
-
-        // return () => {
-        //   map.removeLayer(layerChart);
-        //   sourceChart.clear();
-        //   if (animationListenerRef.current) {
-        //     unByKey(animationListenerRef.current);
-        //   }
-        // }
-    }, [map, map.ol_uid]);
-
-    const addChartFeature = async(chartType) => {
-      document.body.style.cursor = "progress";
-      
-      let siteFeatures = [];
-      await axios.post('/ais/gis/datas.do', { pagetype: "site", areatype: '8' }, {
-        baseURL: import.meta.env.VITE_API_URL,
-        responseEncoding: "UTF-8",
-        responseType: "json",
-      })
-      .then((res) => res.data)
-      .then((data) => {
+      )
+      .then(res => res.data)
+      .then(data => {
         siteFeatures = data.gnrl;
       });
 
-      const sect = chartType === 'pie' ? 'all' : 'year';
-      // test 데이터
-      const apiData = {
-        "page":"intensive/autopiegraph",
-        "date":["DATARF;2015/01/01 01;2018/12/31 24"],
-        "site":["132001","131001","324001","100000","525001","111001","238001","823001","735001","339001","534001","633001"],
-        "cond":{"sect":sect,"poll":"calc","dust":"include","stats":"","eqType":"SMPS_APS_O"},
-        "mark":[{"id":"unit1","checked":false},{"id":"unit2","checked":false}],
-        "digitlist":{"pm":1,"lon":3,"carbon":1,"metal":1,"gas":1,"other":6},
-        "polllist":[{"id":"High","checked":true,"signvalue":"#"},{"id":"Low","checked":true,"signvalue":"##"},{"id":"dumy","checked":false}]
-      };
+    const sect = chartType === 'pie' ? 'all' : 'year';
+    // test 데이터
+    const apiData = {
+      page: 'intensive/autopiegraph',
+      date: ['DATARF;2015/01/01 01;2018/12/31 24'],
+      site: [
+        '132001',
+        '131001',
+        '324001',
+        '100000',
+        '525001',
+        '111001',
+        '238001',
+        '823001',
+        '735001',
+        '339001',
+        '534001',
+        '633001',
+      ],
+      cond: {
+        sect: sect,
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      mark: [
+        { id: 'unit1', checked: false },
+        { id: 'unit2', checked: false },
+      ],
+      digitlist: { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      polllist: [
+        { id: 'High', checked: true, signvalue: '#' },
+        { id: 'Low', checked: true, signvalue: '##' },
+        { id: 'dumy', checked: false },
+      ],
+    };
 
-      let apiRes = await postMutation.mutateAsync({
-        url: 'ais/srch/datas.do',
-        data: apiData,
-      });
-      console.log(apiRes);
+    let apiRes = await postMutation.mutateAsync({
+      url: 'ais/srch/datas.do',
+      data: apiData,
+    });
+    console.log(apiRes);
 
-      if(chartType === 'pie') {
-        apiRes.rstList.forEach((data) => {
-          const siteFeature = siteFeatures.find((item) => {
-            return gsonFormat.readFeature(item.gis).get('site_nm') === data.groupNm;
-          });
-          if(!siteFeature) { return; }
-  
-          const feature = gsonFormat.readFeature(siteFeature.gis);
-          const siteCoord = feature.getGeometry().getCoordinates();
-  
-          const siteData = [
-            parseFloat(data.amSul) ? parseFloat(data.amSul) : 0, 
-            parseFloat(data.amNit) ? parseFloat(data.amNit) : 0, 
-            parseFloat(data.etc) ? parseFloat(data.etc) : 0, 
-            parseFloat(data.om) ? parseFloat(data.om) : 0, 
-            parseFloat(data.ec) ? parseFloat(data.ec) : 0
-          ];
-          const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
-  
-          const chartFeature = new Feature({
-            geometry: new Point(siteCoord),
-            data: siteData,
-            sum: siteSum,
-            chartType: chartType
-          });
-  
-          sourceChart.addFeature(chartFeature);
+    if (chartType === 'pie') {
+      apiRes.rstList.forEach(data => {
+        const siteFeature = siteFeatures.find(item => {
+          return (
+            gsonFormat.readFeature(item.gis).get('site_nm') === data.groupNm
+          );
         });
-      } else if(chartType === 'bar') {
-        const groupedData = apiRes.rstList.reduce((acc, curr) => {
-          if (!acc[curr.groupNm]) {
-            acc[curr.groupNm] = [];
-          }
-          acc[curr.groupNm].push(curr);
-          return acc;
-        }, {});
+        if (!siteFeature) {
+          return;
+        }
 
-        Object.keys(groupedData).forEach(groupNm => {
-          const siteFeature = siteFeatures.find((item) => {
-            return gsonFormat.readFeature(item.gis).get('site_nm') === groupNm;
-          });
-          if(!siteFeature) { return; }
-  
-          const feature = gsonFormat.readFeature(siteFeature.gis);
-          const siteCoord = feature.getGeometry().getCoordinates();
+        const feature = gsonFormat.readFeature(siteFeature.gis);
+        const siteCoord = feature.getGeometry().getCoordinates();
 
-          const siteData = groupedData[groupNm].map((item) => {
-            return parseFloat(item.pm25) ? parseFloat(item.pm25) : 0;
-          });
-          const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
+        const siteData = [
+          parseFloat(data.amSul) ? parseFloat(data.amSul) : 0,
+          parseFloat(data.amNit) ? parseFloat(data.amNit) : 0,
+          parseFloat(data.etc) ? parseFloat(data.etc) : 0,
+          parseFloat(data.om) ? parseFloat(data.om) : 0,
+          parseFloat(data.ec) ? parseFloat(data.ec) : 0,
+        ];
+        const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
 
-          const chartFeature = new Feature({
-            geometry: new Point(siteCoord),
-            data: siteData,
-            sum: siteSum,
-            chartType: chartType
-          });
+        const chartFeature = new Feature({
+          geometry: new Point(siteCoord),
+          data: siteData,
+          sum: siteSum,
+          chartType: chartType,
+        });
 
-          sourceChart.addFeature(chartFeature);
-        })
-      }
+        sourceChart.addFeature(chartFeature);
+      });
+    } else if (chartType === 'bar') {
+      const groupedData = apiRes.rstList.reduce((acc, curr) => {
+        if (!acc[curr.groupNm]) {
+          acc[curr.groupNm] = [];
+        }
+        acc[curr.groupNm].push(curr);
+        return acc;
+      }, {});
 
-      document.body.style.cursor = "default";
+      Object.keys(groupedData).forEach(groupNm => {
+        const siteFeature = siteFeatures.find(item => {
+          return gsonFormat.readFeature(item.gis).get('site_nm') === groupNm;
+        });
+        if (!siteFeature) {
+          return;
+        }
+
+        const feature = gsonFormat.readFeature(siteFeature.gis);
+        const siteCoord = feature.getGeometry().getCoordinates();
+
+        const siteData = groupedData[groupNm].map(item => {
+          return parseFloat(item.pm25) ? parseFloat(item.pm25) : 0;
+        });
+        const siteSum = siteData.reduce((acc, curr) => acc + curr, 0);
+
+        const chartFeature = new Feature({
+          geometry: new Point(siteCoord),
+          data: siteData,
+          sum: siteSum,
+          chartType: chartType,
+        });
+
+        sourceChart.addFeature(chartFeature);
+      });
     }
 
-    const chartStyle = (feature) => {
-      const chartType = feature.get('chartType');
-      const data = feature.get('data');
+    document.body.style.cursor = 'default';
+  };
 
-      const style = [new Style({
-          image: new Chart({
-              type: chartType,
-              colors: color,   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
-              radius: radius,
-              data: data,
-              rotateWithView: true,
-              animation: animationRef.current,
-              stroke: new Stroke({
-                  color: 'white',
-                  width: 2
-              })
+  const chartStyle = feature => {
+    const chartType = feature.get('chartType');
+    const data = feature.get('data');
+
+    const style = [
+      new Style({
+        image: new Chart({
+          type: chartType,
+          colors: color, // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+          radius: radius,
+          data: data,
+          rotateWithView: true,
+          animation: animationRef.current,
+          stroke: new Stroke({
+            color: 'white',
+            width: 2,
           }),
-        })];
-      style[0].getImage().setAnimation(animationRef.current);
+        }),
+      }),
+    ];
+    style[0].getImage().setAnimation(animationRef.current);
 
-      return style;
+    return style;
+  };
+
+  // 애니메이션 함수
+  const doAnimate = () => {
+    // 기존 리스너가 살아있으면 제거
+    if (animationListenerRef.current) {
+      unByKey(animationListenerRef.current);
+      animationListenerRef.current = null;
     }
 
-    // 애니메이션 함수
-    const doAnimate = () => {
-      // 기존 리스너가 살아있으면 제거
-      if (animationListenerRef.current) {
-        unByKey(animationListenerRef.current);
-        animationListenerRef.current = null;
-      }
+    const start = new Date().getTime();
+    const duration = 1000;
+    animationRef.current = 0;
 
-      const start = new Date().getTime();
-      const duration = 1000;
-      animationRef.current = 0;
-  
-      console.log('layerChart에 애니메이션 리스너 추가')
-      animationListenerRef.current = layerChart.on(['precompose', 'prerender'], (event) => {
+    console.log('Adding prerender listener again');
+    animationListenerRef.current = layerChart.on(
+      ['precompose', 'prerender'],
+      event => {
+        console.log('🔥 prerender event fired');
         const frameState = event.frameState;
         const elapsed = frameState.time - start;
-  
+
         if (elapsed > duration) {
           unByKey(animationListenerRef.current);
           animationListenerRef.current = null;
@@ -202,125 +251,141 @@ const GisPie = ({ SetMap, mapId }) => {
         }
 
         layerChart.changed();
-      });
-  
-      layerChart.changed();
-    };
-
-    const handleClickDrawPieChartBtn = async() => {
-      // 이전 애니메이션 정리
-      if (animationListenerRef.current) {
-        unByKey(animationListenerRef.current);
-        animationListenerRef.current = null;
       }
-      
-      setChartType('pie');
-      setRadius(20);
-      setColor('classic');
+    );
 
-      sourceChart.clear();
-      layerChart.getSource().clear();
-      layerChart.setStyle(null);
+    layerChart.changed();
+    map.render();
+  };
 
-      await addChartFeature('pie');
-      layerChart.setStyle(chartStyle);
-      doAnimate();
+  const handleClickDrawPieChartBtn = async () => {
+    // 이전 애니메이션 정리
+    if (animationListenerRef.current) {
+      unByKey(animationListenerRef.current);
+      animationListenerRef.current = null;
     }
 
-    const handleClickDrawBarChartBtn = async() => {
-      // 이전 애니메이션 정리
-      if (animationListenerRef.current) {
-        unByKey(animationListenerRef.current);
-        animationListenerRef.current = null;
-      }
-      
-      setChartType('bar');
-      setRadius(20);
-      setColor('classic');
-      
-      sourceChart.clear();
-      layerChart.getSource().clear();
-      layerChart.setStyle(null);
+    setChartType('pie');
+    setRadius(20);
+    setColor('classic');
 
-      await addChartFeature('bar');
-      layerChart.setStyle(chartStyle);
-      doAnimate();
+    sourceChart.clear();
+    layerChart.getSource().clear();
+
+    await addChartFeature('pie');
+
+    layerChart.setStyle(chartStyle);
+
+    doAnimate();
+
+    layerChart.changed();
+    map.render();
+  };
+
+  const handleClickDrawBarChartBtn = async () => {
+    // 이전 애니메이션 정리
+    if (animationListenerRef.current) {
+      unByKey(animationListenerRef.current);
+      animationListenerRef.current = null;
     }
 
-    // 차트 설정 변경(color, radius)
-    useEffect(() => {
-      if(!layerChart || !sourceChart.getFeatures().length) return;
+    setChartType('bar');
+    setRadius(20);
+    setColor('classic');
 
-      const features = sourceChart.getFeatures();
+    sourceChart.clear();
+    layerChart.getSource().clear();
+    layerChart.setStyle(null);
 
-      features.forEach((feature) => {
-        const newStyle = [
-          new Style({
-            image: new Chart({
-              type: chartType,
-              colors: color,   // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
-              radius: radius,
-              data: feature.get('data'),
-              rotateWithView: true,
-              animation: animationRef.current,
-              stroke: new Stroke({
-                  color: 'white',
-                  width: 2
-              })
+    await addChartFeature('bar');
+
+    layerChart.setStyle(chartStyle);
+
+    doAnimate();
+
+    layerChart.changed();
+    map.render();
+  };
+
+  // 차트 설정 변경(color, radius)
+  useEffect(() => {
+    if (!layerChart || !sourceChart.getFeatures().length) return;
+
+    const features = sourceChart.getFeatures();
+
+    features.forEach(feature => {
+      const newStyle = [
+        new Style({
+          image: new Chart({
+            type: chartType,
+            colors: color, // ['classic', 'dark', 'pale', 'neon', 'red, green, blue, magenta']
+            radius: radius,
+            data: feature.get('data'),
+            rotateWithView: true,
+            animation: animationRef.current,
+            stroke: new Stroke({
+              color: 'white',
+              width: 2,
             }),
-          })
-        ];
+          }),
+        }),
+      ];
 
-        feature.setStyle(newStyle);
-      });
-      
-      layerChart.changed();
-    }, [color, radius]);
+      feature.setStyle(newStyle);
+    });
 
-    const handleChangeColor = (e) => {
-      setColor(e.target.value);
-    }
+    layerChart.changed();
+  }, [color, radius]);
 
-    const handleChangeRadius = (e) => {
-      setRadius(Number(e.target.value));
-    }
-  
-    return (
-      <Container id={mapId}>
-        <div className="draw-chart-btn-wrapper">
-          <button className='draw-chart-btn' onClick={handleClickDrawPieChartBtn}>
-              파이 차트 그리기
-          </button>
-          <button className='draw-chart-btn' onClick={handleClickDrawBarChartBtn}>
-              바 차트 그리기
-          </button>
-        </div>
-        <div className='set-chart-wrapper'>
-          <span>차트 설정</span>
-          <GridWrapper className='grid-cols-[1fr_2fr] justify-start gap-2'>
-            <span className='m-auto'>Radius</span>
-            <Input type="number" defaultValue={radius} className="w-[113px]" onChange={handleChangeRadius} />
-          </GridWrapper>
-          <GridWrapper className='grid-cols-[1fr_2fr] justify-start gap-2'>
-            <span className='m-auto'>Color</span>
-            <Select value={color} onChange={handleChangeColor}>
-              <Option value="classic">Classic</Option>
-              <Option value="dark">Dark</Option>
-              <Option value="pale">Pale</Option>
-              <Option value="pastel">Pastel</Option>
-              <Option value="neon">Neon</Option>
-            </Select>
-          </GridWrapper>
-        </div>
-      </Container>
-    )
-}
+  const handleChangeColor = e => {
+    setColor(e.target.value);
+  };
+
+  const handleChangeRadius = e => {
+    setRadius(Number(e.target.value));
+  };
+
+  return (
+    <Container id={mapId}>
+      <div className="draw-chart-btn-wrapper">
+        <button className="draw-chart-btn" onClick={handleClickDrawPieChartBtn}>
+          파이 차트 그리기
+        </button>
+        <button className="draw-chart-btn" onClick={handleClickDrawBarChartBtn}>
+          바 차트 그리기
+        </button>
+      </div>
+      <div className="set-chart-wrapper">
+        <span>차트 설정</span>
+        <GridWrapper className="grid-cols-[1fr_2fr] justify-start gap-2">
+          <span className="m-auto">Radius</span>
+          <Input
+            type="number"
+            defaultValue={radius}
+            className="w-[113px]"
+            onChange={handleChangeRadius}
+          />
+        </GridWrapper>
+        <GridWrapper className="grid-cols-[1fr_2fr] justify-start gap-2">
+          <span className="m-auto">Color</span>
+          <Select value={color} onChange={handleChangeColor}>
+            <Option value="classic">Classic</Option>
+            <Option value="dark">Dark</Option>
+            <Option value="pale">Pale</Option>
+            <Option value="pastel">Pastel</Option>
+            <Option value="neon">Neon</Option>
+          </Select>
+        </GridWrapper>
+      </div>
+    </Container>
+  );
+};
 
 export { GisPie };
 
 const Container = styled.div`
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 
   // 국토정보지리원 로고
   .ol-attribution {
@@ -344,7 +409,6 @@ const Container = styled.div`
     position: absolute;
     line-height: normal;
   }
-
 
   // 줌 컨트롤러
   .ol-zoom {
@@ -377,12 +441,12 @@ const Container = styled.div`
     .ol-zoom-out {
       border-radius: 0 0 2px 2px;
     }
-    .ol-zoom-in.ol-has-tooltip:hover[role="tooltip"],
-    .ol-zoom-in.ol-has-tooltip:focus[role="tooltip"] {
+    .ol-zoom-in.ol-has-tooltip:hover[role='tooltip'],
+    .ol-zoom-in.ol-has-tooltip:focus[role='tooltip'] {
       top: 3px;
     }
-    .ol-zoom-out.ol-has-tooltip:hover [role="tooltip"],
-    .ol-zoom-out.ol-has-tooltip:focus [role="tooltip"] {
+    .ol-zoom-out.ol-has-tooltip:hover [role='tooltip'],
+    .ol-zoom-out.ol-has-tooltip:focus [role='tooltip'] {
       top: 232px;
     }
   }
@@ -454,7 +518,7 @@ const Container = styled.div`
       border: 5px solid transparent;
       border-left-color: #333;
       display: block;
-      content: "";
+      content: '';
     }
     .gis-list.active {
       height: calc(36px * 3 - 1px);
@@ -548,7 +612,7 @@ const PopupContainer = styled.div`
     height: 0;
     bottom: 100%;
     border: solid transparent;
-    content: " ";
+    content: ' ';
     pointer-event: none;
   }
   &:after {
