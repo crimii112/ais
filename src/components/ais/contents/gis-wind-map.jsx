@@ -1,12 +1,15 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
+
 import { WindLayer } from 'ol-wind';
 
 import MapContext from '@/components/map/MapContext';
-import axios from 'axios';
 
 const GisWindMap = ({ SetMap, mapId }) => {
   const map = useContext(MapContext);
+  const [startWindAnimation, setStartWindAnimation] = useState(true);
+  const [onWindAnimation, setOnWindAnimation] = useState(true);
 
   useEffect(() => {
     if (!map.ol_uid) {
@@ -22,27 +25,37 @@ const GisWindMap = ({ SetMap, mapId }) => {
   }, [map, map.ol_uid]);
 
   const handleClickWindLayerBtn = async () => {
+    const prevLayers = map.getLayers().getArray();
+
+    prevLayers.forEach(layer => {
+      if (layer instanceof WindLayer) {
+        console.log('WindLayer found, removing it');
+        map.removeLayer(layer);
+      }
+    });
+
+    map.getView().setZoom(1);
+    map.getView().setCenter([1005321.0, 1771271.0]);
+
     await axios
       .get('http://localhost:5000/api/wind')
       .then(res => res.data)
       .then(data => {
         console.log(data);
 
-        console.log('uMin', typeof data.uMin);
-        console.log('data isArray', Array.isArray(data.data));
-        console.log('data[0]', data.data[0]);
-        console.log(
-          'nx * ny * 2 ===',
-          data.nx * data.ny * 2 === data.data.length
-        );
-
         const windLayer = new WindLayer(data, {
+          forceRender: true,
+          zIndex: 1000,
+          projection: 'EPSG:5179',
           windOptions: {
-            velocityScale: 0.005,
-            paths: 5000,
-            particleAge: 60,
-            lineWidth: 1,
+            velocityScale: 0.0005, // 바람 속도에 따라 움직이는 속도 배율 (기본: 0.005)
+            paths: 5000, // 동시에 렌더링할 입자 수 (기본: 5000)
+            particleAge: 60, // 입자의 수명 (기본: 60)
+            lineWidth: 3, // 입자 선의 두께 (기본: 1)
+            speedFactor: 0.5, // 입자 속도 배율 (velocityScale과 별개) (기본: 1)
+            particleAge: 90, // 입자의 수명 (기본: 60)
             colorScale: [
+              // 속도에 따른 색상 배열
               'rgb(36,104, 180)',
               'rgb(60,157, 194)',
               'rgb(128,205,193)',
@@ -63,14 +76,66 @@ const GisWindMap = ({ SetMap, mapId }) => {
         });
 
         map.addLayer(windLayer);
+
+        console.log(windLayer.getData());
       });
   };
+
+  const handleClickWindLayerStartStopBtn = () => {
+    setStartWindAnimation(prev => !prev);
+  };
+
+  useEffect(() => {
+    if (!map.ol_uid) return;
+
+    const windLayer = map
+      .getLayers()
+      .getArray()
+      .find(layer => layer instanceof WindLayer);
+
+    if (!windLayer) return;
+
+    if (startWindAnimation) {
+      windLayer.renderer_.wind.start();
+    } else {
+      windLayer.renderer_.wind.stop();
+    }
+  }, [startWindAnimation]);
+
+  const handleClickWindLayerOnOffBtn = () => {
+    setOnWindAnimation(prev => !prev);
+  };
+
+  useEffect(() => {
+    if (!map.ol_uid) return;
+
+    const windLayer = map
+      .getLayers()
+      .getArray()
+      .find(layer => layer instanceof WindLayer);
+
+    if (!windLayer) return;
+
+    windLayer.setVisible(onWindAnimation);
+  }, [onWindAnimation]);
 
   return (
     <Container id={mapId}>
       <div className="draw-chart-btn-wrapper">
         <button className="draw-chart-btn" onClick={handleClickWindLayerBtn}>
           바람 지도 그리기
+        </button>
+        <button
+          className="draw-chart-btn"
+          onClick={handleClickWindLayerStartStopBtn}
+        >
+          start/stop
+        </button>
+        <button
+          className="draw-chart-btn"
+          onClick={handleClickWindLayerOnOffBtn}
+        >
+          on/off
         </button>
       </div>
     </Container>
