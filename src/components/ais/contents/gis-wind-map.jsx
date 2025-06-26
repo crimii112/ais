@@ -5,11 +5,20 @@ import styled from 'styled-components';
 import { WindLayer } from 'ol-wind';
 
 import MapContext from '@/components/map/MapContext';
+import { Input, Button, GridWrapper } from '@/components/ui/common';
+import { Select, Option } from '@/components/ui/select-box';
 
 const GisWindMap = ({ SetMap, mapId }) => {
   const map = useContext(MapContext);
-  const [startWindAnimation, setStartWindAnimation] = useState(true);
-  const [onWindAnimation, setOnWindAnimation] = useState(true);
+
+  const [startWindAnimation, setStartWindAnimation] = useState(true); // 시작/정지
+  const [onWindAnimation, setOnWindAnimation] = useState(true); // 켜기/끄기
+
+  const [selectedDateJson, setSelectedDateJson] = useState({
+    // api에 보낼 날짜와 시간 정보
+    date: '2025-06-25',
+    time: '00',
+  });
 
   useEffect(() => {
     if (!map.ol_uid) {
@@ -24,12 +33,14 @@ const GisWindMap = ({ SetMap, mapId }) => {
     }
   }, [map, map.ol_uid]);
 
+  // 바람 레이어 그리기 버튼 핸들러
   const handleClickWindLayerBtn = async () => {
+    document.body.style.cursor = 'progress';
+
     const prevLayers = map.getLayers().getArray();
 
     prevLayers.forEach(layer => {
       if (layer instanceof WindLayer) {
-        console.log('WindLayer found, removing it');
         map.removeLayer(layer);
       }
     });
@@ -37,8 +48,13 @@ const GisWindMap = ({ SetMap, mapId }) => {
     map.getView().setZoom(1);
     map.getView().setCenter([1005321.0, 1771271.0]);
 
+    //날짜 형식 바꿔서 데이터 보내기
+    const newJson = { ...selectedDateJson };
+    const formattedDate = newJson.date.replace(/-/g, '');
+    newJson.date = formattedDate;
+
     await axios
-      .get('http://localhost:5000/api/wind')
+      .post('http://localhost:5000/api/wind', newJson)
       .then(res => res.data)
       .then(data => {
         console.log(data);
@@ -50,7 +66,6 @@ const GisWindMap = ({ SetMap, mapId }) => {
           windOptions: {
             velocityScale: 0.0005, // 바람 속도에 따라 움직이는 속도 배율 (기본: 0.005)
             paths: 5000, // 동시에 렌더링할 입자 수 (기본: 5000)
-            particleAge: 60, // 입자의 수명 (기본: 60)
             lineWidth: 3, // 입자 선의 두께 (기본: 1)
             speedFactor: 0.5, // 입자 속도 배율 (velocityScale과 별개) (기본: 1)
             particleAge: 90, // 입자의 수명 (기본: 60)
@@ -78,13 +93,21 @@ const GisWindMap = ({ SetMap, mapId }) => {
         map.addLayer(windLayer);
 
         console.log(windLayer.getData());
+      })
+      .catch(error => {
+        console.error('Error fetching wind data:', error);
+        alert(
+          '바람 데이터를 가져오는 데 실패했습니다. 나중에 다시 시도해주세요.'
+        );
       });
+
+    document.body.style.cursor = 'default';
   };
 
+  // 바람 레이어 시작/정지 버튼 핸들러
   const handleClickWindLayerStartStopBtn = () => {
     setStartWindAnimation(prev => !prev);
   };
-
   useEffect(() => {
     if (!map.ol_uid) return;
 
@@ -102,10 +125,10 @@ const GisWindMap = ({ SetMap, mapId }) => {
     }
   }, [startWindAnimation]);
 
+  // 바람 레이어 켜기/끄기 버튼 핸들러
   const handleClickWindLayerOnOffBtn = () => {
     setOnWindAnimation(prev => !prev);
   };
-
   useEffect(() => {
     if (!map.ol_uid) return;
 
@@ -121,23 +144,56 @@ const GisWindMap = ({ SetMap, mapId }) => {
 
   return (
     <Container id={mapId}>
-      <div className="draw-chart-btn-wrapper">
-        <button className="draw-chart-btn" onClick={handleClickWindLayerBtn}>
+      <div className="setting-wrapper">
+        <Input
+          type="date"
+          className="text-sm"
+          value={selectedDateJson.date}
+          onChange={e =>
+            setSelectedDateJson(prev => ({
+              ...prev,
+              date: e.target.value,
+            }))
+          }
+        />
+        <Select
+          className="text-sm"
+          defaultValue={selectedDateJson.time}
+          onChange={e =>
+            setSelectedDateJson(prev => ({
+              ...prev,
+              time: e.target.value,
+            }))
+          }
+        >
+          <Option value="00">00시</Option>
+          <Option value="06">06시</Option>
+          <Option value="12">12시</Option>
+          <Option value="18">18시</Option>
+        </Select>
+        <Button className="text-sm" onClick={handleClickWindLayerBtn}>
           바람 지도 그리기
-        </button>
-        <button
-          className="draw-chart-btn"
-          onClick={handleClickWindLayerStartStopBtn}
-        >
-          start/stop
-        </button>
-        <button
-          className="draw-chart-btn"
-          onClick={handleClickWindLayerOnOffBtn}
-        >
-          on/off
-        </button>
+        </Button>
       </div>
+      {/* <div className="options-wrapper">
+        <span className="pb-1 text-center border-b-1 border-b-gray-300">
+          옵션 설정
+        </span>
+        <GridWrapper className="grid-cols-[1fr_2fr] gap-2">
+          <span className="text-sm text-center">velocityScale</span>{' '}
+        </GridWrapper>
+        <GridWrapper className="grid-cols-2 gap-2">
+          <Button
+            className="text-sm"
+            onClick={handleClickWindLayerStartStopBtn}
+          >
+            start/stop
+          </Button>
+          <Button className="text-sm" onClick={handleClickWindLayerOnOffBtn}>
+            on/off
+          </Button>
+        </GridWrapper>
+      </div> */}
     </Container>
   );
 };
@@ -322,21 +378,33 @@ const Container = styled.div`
     display: none;
   }
 
-  // 차트 그리기 버튼
-  .draw-chart-btn-wrapper {
+  .setting-wrapper {
     position: absolute;
     top: 40px;
     left: 40px;
+    width: 200px;
     z-index: 100;
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .draw-chart-btn {
-    background: #ffffff;
     padding: 10px;
-    border-radius: 10px;
+    background: #ffffff;
+    border-radius: 5px;
     border: 1px solid #cccccc;
-    cursor: pointer;
+  }
+
+  .options-wrapper {
+    position: absolute;
+    top: 180px;
+    left: 40px;
+    width: 200px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
   }
 `;
