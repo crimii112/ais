@@ -54,7 +54,7 @@ const GisWindMap = ({ SetMap, mapId }) => {
     newJson.date = formattedDate;
 
     await axios
-      .post('http://localhost:5000/api/wind', newJson)
+      .post('http://localhost:5000/api/wind/test', newJson)
       .then(res => res.data)
       .then(data => {
         console.log(data);
