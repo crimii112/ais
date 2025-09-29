@@ -1,5 +1,12 @@
-/* @import 'tailwindcss'; */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-gov.min.css');
+@import 'tailwindcss';
+/* @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-gov.min.css'); */
+
+@font-face {
+  font-family: 'Pretendard GOV Variable';
+  src: url('/font/PretendardGOVVariable.ttf') format('truetype');
+  font-weight: 30 920;
+  font-style: normal;
+}
 
 * {
   font-family: 'Pretendard GOV Variable', 'Pretendard GOV', sans-serif;
