@@ -23,6 +23,7 @@ import { GisPie } from './contents/gispie';
 import { MapNgii } from '@/components/map';
 import { FlexColWrapper } from '@/components/ui/common';
 import { GisWindMap } from './contents/gis-wind-map';
+import { Iabnrm5M } from './contents/iabnrm/iabnrm-5m';
 
 /**
  * 대기측정망 자료관리 시스템 네비게이션 아이템 데이터
@@ -229,6 +230,23 @@ const data = {
               pathName: 'intensive/weatherpivot',
               title: '(선택)기상자료(PIVOT)',
               content: <IntensiveWeather type="weatherPivot" />,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 3,
+      title: '대기환경연구소 1차확정(5M)',
+      subTitles: [
+        {
+          id: 'iabnrm5MGaseous',
+          title: 'Gaseous 자료 저장',
+          subItems: [
+            {
+              pathName: 'iabnrm5M/gaseous',
+              title: 'Gas(5M) 자료 확정',
+              content: <Iabnrm5M type="Gaseous" />,
             },
           ],
         },

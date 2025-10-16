@@ -11,7 +11,6 @@ import {
 import { Select, Option } from '@/components/ui/select-box';
 import usePostRequest from '@/hooks/usePostRequest';
 
-
 /**
  * 기간 선택 컴포넌트
  * - dateType에 따라 선택 항목이 달라집니다.
@@ -22,7 +21,6 @@ import usePostRequest from '@/hooks/usePostRequest';
  * @param {string} type - 기간 타입 ['photoch', 'toxic', 'intensive']
  * @returns {React.ReactNode} 기간 선택 컴포넌트
  */
-
 
 const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const postMutation = usePostRequest();
@@ -39,6 +37,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const startTimeRef = useRef();
   const endDateRef = useRef();
   const endTimeRef = useRef();
+  const skipTermRef = useRef();
 
   const multipleSelectRef = useRef();
 
@@ -47,7 +46,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   }, [multipleDateList]);
 
   useEffect(() => {
-    if(dateType === 'onlyMonth') {
+    if (dateType === 'onlyMonth') {
       const date = startMonth.replaceAll('-', '');
       setMultipleDateList([date]);
     }
@@ -55,8 +54,8 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
 
   // 기간 선택 버튼 클릭 이벤트
   const handleClickSelectDate = async () => {
-
-    let startDateTime = '', endDateTime = '';
+    let startDateTime = '',
+      endDateTime = '';
     if (dateType === 'all') {
       startDateTime = `${startDateRef.current.value} ${startTimeRef.current.value}`;
       endDateTime = `${endDateRef.current.value} ${endTimeRef.current.value}`;
@@ -72,7 +71,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     if (moment(startDateTime) > moment(endDateTime)) {
       alert('입력하신 끝 날짜가 시작 날짜보다 빠릅니다.');
 
-      if(dateType === 'month') {
+      if (dateType === 'month') {
         setMultipleDateList([]);
         setSelectedMonth('');
       }
@@ -82,7 +81,10 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
 
     // month 일 때는 날짜 표시 및 설정 후 종료
     if (dateType === 'month') {
-      const date = startDateTime.replaceAll('-', '') + ';' + endDateTime.replaceAll('-', '');
+      const date =
+        startDateTime.replaceAll('-', '') +
+        ';' +
+        endDateTime.replaceAll('-', '');
       setSelectedMonth(date);
       setMultipleDateList([date]);
       alert(`[${date}]\n기간이 선택되었습니다.`);
@@ -161,6 +163,16 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   // 전체 삭제 버튼 클릭 이벤트
   const handleClickDeleteAll = () => setMultipleDateList([]);
 
+  const handleClickSkipTerm = e => {
+    const skipTerm = parseInt(skipTermRef.current.value);
+    const btnSymbol = e.target.textContent;
+
+    console.log(btnSymbol);
+
+    if (btnSymbol === '<') {
+    }
+  };
+
   // 기간 선택 컴포넌트 - 년-월-일 시간 선택
   const allDateSelect = (
     <>
@@ -228,19 +240,72 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   // 기간 선택 컴포넌트 - 년-월 선택
   const monthSelect = (
     <>
-      <Input type="month" value={startMonth} onChange={(e) => setStartMonth(e.target.value)} className="px-4" />
+      <Input
+        type="month"
+        value={startMonth}
+        onChange={e => setStartMonth(e.target.value)}
+        className="px-4"
+      />
       &nbsp;~&nbsp;
-      <Input type="month" value={endMonth} onChange={(e) => setEndMonth(e.target.value)} className="px-4" />
-      <Input type='text' value={selectedMonth} className='w-[210px] px-4 bg-gray-200 text-gray-600' readOnly />
+      <Input
+        type="month"
+        value={endMonth}
+        onChange={e => setEndMonth(e.target.value)}
+        className="px-4"
+      />
+      <Input
+        type="text"
+        value={selectedMonth}
+        className="w-[210px] px-4 bg-gray-200 text-gray-600"
+        readOnly
+      />
     </>
-  )
+  );
 
   const onlyMonthSelect = (
     <>
-      <label className='flex items-center px-3'>월 선택: </label>
-      <Input type="month" value={startMonth} onChange={(e) => {setStartMonth(e.target.value)}} className="px-4" />
+      <label className="flex items-center px-3">월 선택: </label>
+      <Input
+        type="month"
+        value={startMonth}
+        onChange={e => {
+          setStartMonth(e.target.value);
+        }}
+        className="px-4"
+      />
     </>
-  )
+  );
+
+  const iabnrmSelect = (
+    <>
+      <Input
+        type="date"
+        defaultValue={'2024-05-01'}
+        ref={startDateRef}
+        className="px-4"
+      />
+      &nbsp;~&nbsp;
+      <Input
+        type="date"
+        defaultValue={'2024-05-31'}
+        ref={endDateRef}
+        className="px-4"
+      />
+      <Button className="w-fit px-3" onClick={handleClickSkipTerm}>
+        {'<'}
+      </Button>
+      <Input type="text" className="w-8" defaultValue={7} ref={skipTermRef} />
+      <Button className="w-fit px-3" onClick={handleClickSkipTerm}>
+        {'>'}
+      </Button>
+      <Button className="w-fit px-3" onClick={handleClickSkipTerm}>
+        {'<<'}
+      </Button>
+      <Button className="w-fit px-3" onClick={handleClickSkipTerm}>
+        {'>>'}
+      </Button>
+    </>
+  );
 
   return (
     <SearchCondFrame title="기간">
@@ -250,37 +315,40 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
           {dateType === 'day' && daySelect}
           {dateType === 'month' && monthSelect}
           {dateType === 'onlyMonth' && onlyMonthSelect}
+          {dateType === 'iabnrm' && iabnrmSelect}
         </FlexRowWrapper>
-        {
-          dateType !== 'onlyMonth' && (
-            <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
-              <Button
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
-                onClick={handleClickSelectDate}
-              >
-                기간 선택
-              </Button>
-            </FlexColWrapper>
-          )
-        }
-      </FlexRowWrapper>
-      {dateType !== 'month' && dateType !== 'onlyMonth' &&  // 년-월 선택 시 multiple select box 숨김
-        <FlexRowWrapper className="items-stretch gap-1 w-full">
-          <FlexRowWrapper className="items-stretch grow">
-            <Select multiple ref={multipleSelectRef}>
-              {multipleDateList &&
-                multipleDateList.map(item => <Option key={item}>{item}</Option>)}
-            </Select>
-          </FlexRowWrapper>
+        {dateType !== 'onlyMonth' && dateType !== 'iabnrm' && (
           <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
-            <Button className="px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
-              관리기간선택
+            <Button
+              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+              onClick={handleClickSelectDate}
+            >
+              기간 선택
             </Button>
-            <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
-            <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
           </FlexColWrapper>
-        </FlexRowWrapper>
-      }
+        )}
+      </FlexRowWrapper>
+      {dateType !== 'month' &&
+        dateType !== 'onlyMonth' &&
+        dateType !== 'iabnrm' && ( // 년-월 선택 시 multiple select box 숨김
+          <FlexRowWrapper className="items-stretch gap-1 w-full">
+            <FlexRowWrapper className="items-stretch grow">
+              <Select multiple ref={multipleSelectRef}>
+                {multipleDateList &&
+                  multipleDateList.map(item => (
+                    <Option key={item}>{item}</Option>
+                  ))}
+              </Select>
+            </FlexRowWrapper>
+            <FlexColWrapper className="w-23 gap-0.5 justify-between items-start">
+              <Button className="px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200">
+                관리기간선택
+              </Button>
+              <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
+              <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
+            </FlexColWrapper>
+          </FlexRowWrapper>
+        )}
     </SearchCondFrame>
   );
 };
