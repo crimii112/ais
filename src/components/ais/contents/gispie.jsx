@@ -123,7 +123,7 @@ const GisPie = ({ SetMap, mapId }) => {
       url: 'ais/srch/datas.do',
       data: apiData,
     });
-    console.log(apiRes);
+    // console.log(apiRes);
 
     if (chartType === 'pie') {
       apiRes.rstList.forEach(data => {
@@ -233,11 +233,11 @@ const GisPie = ({ SetMap, mapId }) => {
     const duration = 1000;
     animationRef.current = 0;
 
-    console.log('Adding prerender listener again');
+    // console.log('Adding prerender listener again');
     animationListenerRef.current = layerChart.on(
       ['precompose', 'prerender'],
       event => {
-        console.log('🔥 prerender event fired');
+        // console.log('🔥 prerender event fired');
         const frameState = event.frameState;
         const elapsed = frameState.time - start;
 

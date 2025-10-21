@@ -31,13 +31,17 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   const [endMonth, setEndMonth] = useState('2015-01');
   const [selectedMonth, setSelectedMonth] = useState('');
 
+  // dateType === 'iabnrm' 일 때 사용
+  const [iabnrmStartDate, setIabnrmStartDate] = useState('2024-05-01');
+  const [iabnrmEndDate, setIabnrmEndDate] = useState('2024-05-31');
+  const skipTermRef = useRef();
+
   // select, input 요소
   const dataCategoryRef = useRef();
   const startDateRef = useRef();
   const startTimeRef = useRef();
   const endDateRef = useRef();
   const endTimeRef = useRef();
-  const skipTermRef = useRef();
 
   const multipleSelectRef = useRef();
 
@@ -51,6 +55,16 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
       setMultipleDateList([date]);
     }
   }, [dateType, startMonth]);
+
+  useEffect(() => {
+    if (dateType === 'iabnrm') {
+      const date =
+        iabnrmStartDate.replaceAll('-', '') +
+        ';' +
+        iabnrmEndDate.replaceAll('-', '');
+      setDateList(date);
+    }
+  }, [dateType, iabnrmStartDate, iabnrmEndDate]);
 
   // 기간 선택 버튼 클릭 이벤트
   const handleClickSelectDate = async () => {
@@ -163,13 +177,51 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
   // 전체 삭제 버튼 클릭 이벤트
   const handleClickDeleteAll = () => setMultipleDateList([]);
 
+  // iabnrm 기간 skip 버튼 클릭 이벤트
   const handleClickSkipTerm = e => {
-    const skipTerm = parseInt(skipTermRef.current.value);
-    const btnSymbol = e.target.textContent;
+    const skipTerm = parseInt(skipTermRef.current.value, 10) || 0;
+    const btnSymbol = e.target.textContent.trim();
 
-    console.log(btnSymbol);
+    const start = moment(iabnrmStartDate);
 
-    if (btnSymbol === '<') {
+    switch (btnSymbol) {
+      case '<': {
+        const newStart = start.clone().subtract(skipTerm, 'days');
+        const newEnd = newStart.clone().add(skipTerm, 'days');
+        setIabnrmStartDate(newStart.format('YYYY-MM-DD'));
+        setIabnrmEndDate(newEnd.format('YYYY-MM-DD'));
+        break;
+      }
+
+      case '>': {
+        const newStart = start.clone().add(skipTerm, 'days');
+        const newEnd = newStart.clone().add(skipTerm, 'days');
+        setIabnrmStartDate(newStart.format('YYYY-MM-DD'));
+        setIabnrmEndDate(newEnd.format('YYYY-MM-DD'));
+        break;
+      }
+
+      case '<<': {
+        const prevMonthStart = start
+          .clone()
+          .subtract(1, 'month')
+          .startOf('month');
+        const prevMonthEnd = start.clone().subtract(1, 'month').endOf('month');
+        setIabnrmStartDate(prevMonthStart.format('YYYY-MM-DD'));
+        setIabnrmEndDate(prevMonthEnd.format('YYYY-MM-DD'));
+        break;
+      }
+
+      case '>>': {
+        const nextMonthStart = start.clone().add(1, 'month').startOf('month');
+        const nextMonthEnd = start.clone().add(1, 'month').endOf('month');
+        setIabnrmStartDate(nextMonthStart.format('YYYY-MM-DD'));
+        setIabnrmEndDate(nextMonthEnd.format('YYYY-MM-DD'));
+        break;
+      }
+
+      default:
+        break;
     }
   };
 
@@ -262,6 +314,7 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     </>
   );
 
+  // 기간 선택 컴포넌트 - 월 선택
   const onlyMonthSelect = (
     <>
       <label className="flex items-center px-3">월 선택: </label>
@@ -276,19 +329,20 @@ const SearchDate = ({ setDateList, dateType = 'all', type }) => {
     </>
   );
 
+  // 기간 선택 컴포넌트 - 대기환경연구소 1차확정(5M) 기간 선택
   const iabnrmSelect = (
     <>
       <Input
         type="date"
-        defaultValue={'2024-05-01'}
-        ref={startDateRef}
+        value={iabnrmStartDate}
+        onChange={e => setIabnrmStartDate(e.target.value)}
         className="px-4"
       />
       &nbsp;~&nbsp;
       <Input
         type="date"
-        defaultValue={'2024-05-31'}
-        ref={endDateRef}
+        value={iabnrmEndDate}
+        onChange={e => setIabnrmEndDate(e.target.value)}
         className="px-4"
       />
       <Button className="w-fit px-3" onClick={handleClickSkipTerm}>

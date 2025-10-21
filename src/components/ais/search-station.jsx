@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-import {
-  FlexRowWrapper,
-  FlexColWrapper,
-  Button,
-} from '@/components/ui/common';
+import { FlexRowWrapper, FlexColWrapper, Button } from '@/components/ui/common';
 import { Select, Option } from '@/components/ui/select-box';
 import { SearchCondFrame } from './search-cond-frame';
 import { SearchStationModal } from './search-station-modal';
-
 
 /**
  * 측정소 선택 컴포넌트
@@ -18,7 +13,6 @@ import { SearchStationModal } from './search-station-modal';
  * @param {function} setStationList - 측정소 리스트 설정 함수
  * @returns {React.ReactNode} 측정소 선택 컴포넌트
  */
-
 
 const SearchStation = ({
   title,
@@ -31,12 +25,19 @@ const SearchStation = ({
   const [isModalOpened, setIsModalOpened] = useState(false);
 
   const multipleSelectRef = useRef();
+  const iabnrmSelectRef = useRef();
 
   useEffect(() => {
     const arr = [];
     multipleStationList.forEach(station => arr.push(station.siteCd.toString()));
     setStationList(arr);
   }, [multipleStationList]);
+
+  useEffect(() => {
+    if (siteType === 'iabnrm') {
+      setStationList([Number(iabnrmSelectRef.current.value)]);
+    }
+  }, []);
 
   // 모달 open
   const handleClickSelectStationBtn = () => {
@@ -62,36 +63,44 @@ const SearchStation = ({
   return (
     <>
       <SearchCondFrame title={title}>
-        <FlexRowWrapper className="items-stretch gap-1 w-full h-full">
-          <FlexRowWrapper className="items-stretch grow">
-            <Select multiple ref={multipleSelectRef}>
-              {multipleStationList &&
-                multipleStationList.map(station => (
-                  <Option key={station.siteCd}>{station.siteData}</Option>
-                ))}
+        {siteType === 'iabnrm' ? (
+          <>
+            <Select ref={iabnrmSelectRef}>
+              <Option value={132001}>강원권;132001</Option>
             </Select>
+          </>
+        ) : (
+          <FlexRowWrapper className="items-stretch gap-1 w-full h-full">
+            <FlexRowWrapper className="items-stretch grow">
+              <Select multiple ref={multipleSelectRef}>
+                {multipleStationList &&
+                  multipleStationList.map(station => (
+                    <Option key={station.siteCd}>{station.siteData}</Option>
+                  ))}
+              </Select>
+            </FlexRowWrapper>
+            <FlexColWrapper className="justify-baseline w-23 gap-0.5">
+              <Button
+                className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+                onClick={handleClickSelectStationBtn}
+              >
+                측정소 선택
+              </Button>
+              <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
+              <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
+            </FlexColWrapper>
           </FlexRowWrapper>
-          <FlexColWrapper className="justify-baseline w-23 gap-0.5">
-            <Button
-              className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
-              onClick={handleClickSelectStationBtn}
-            >
-              측정소 선택
-            </Button>
-            <Button onClick={handleClickDeleteSelected}>선택 삭제</Button>
-            <Button onClick={handleClickDeleteAll}>전체 삭제</Button>
-          </FlexColWrapper>
-        </FlexRowWrapper>
+        )}
       </SearchCondFrame>
       {isModalOpened && (
-          <SearchStationModal
-            title={title}
-            siteType={siteType}
-            onTms={onTms}
-            setIsModalOpened={setIsModalOpened}
-            initialStationList={multipleStationList}
-            setMultipleStationList={setMultipleStationList}
-          />
+        <SearchStationModal
+          title={title}
+          siteType={siteType}
+          onTms={onTms}
+          setIsModalOpened={setIsModalOpened}
+          initialStationList={multipleStationList}
+          setMultipleStationList={setMultipleStationList}
+        />
       )}
     </>
   );

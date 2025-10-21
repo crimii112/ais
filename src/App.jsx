@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MainNav from '@/components/main-nav';
 import Ais from '@/pages/Ais';
 import Home from '@/pages/Home';
+import Control from '@/pages/Control';
 
 import { AisNavProvider } from '@/context/AisNavContext';
 import { MapFrame } from '@/components/map';
@@ -31,15 +32,7 @@ function App() {
               </AisNavProvider>
             }
           />
-          <Route
-            path="/contact"
-            element={
-              <div className="flex flex-col w-[1440px] h-screen max-w-[1440px] min-h-screen mx-auto bg-white">
-                <MainNav />
-                <div className="p-3">Contact</div>
-              </div>
-            }
-          />
+          <Route path="/control" element={<Control />} />
           <Route
             path="/ngii"
             element={

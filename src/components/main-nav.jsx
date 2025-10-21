@@ -22,14 +22,14 @@ const data = {
       url: '/ais',
     },
     {
-      id: 'contact',
-      title: 'Contact',
-      url: '/contact',
+      id: 'control',
+      title: '관제',
+      url: '/control',
     },
   ],
 };
 
-/** 
+/**
  * 메인 네비게이션 컴포넌트
  * - url 변경되는 Navigation
  * - dropdown 기능 없음
