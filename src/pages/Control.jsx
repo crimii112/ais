@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import { RefreshCw } from 'lucide-react';
 
-// import '@/import.css';
 import usePostRequest from '@/hooks/usePostRequest';
 import Timer from '@/worker/Timer';
 import GroupCard from '@/components/ui/group-card';
@@ -13,6 +13,12 @@ import GroupCard from '@/components/ui/group-card';
  */
 function Control() {
   const postMutation = usePostRequest();
+
+  // url 관련
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryParams = new URLSearchParams(location.search);
+  const sitecdParam = queryParams.get('sitecd');
 
   const [siteList, setSiteList] = useState([]);
   const [selectedSite, setSelectedSite] = useState({});
@@ -35,22 +41,31 @@ function Control() {
   );
 
   useEffect(() => {
-    // main.css로 삽입된 <style> 제거 (Vite 방식 대응)
+    // main.css로 삽입된 <style> 제거
     const mainStyle = Array.from(document.querySelectorAll('style')).find(el =>
       el.getAttribute('data-vite-dev-id')?.includes('main.css')
     );
-    if (mainStyle) mainStyle.remove();
+
+    let mainStyleContent = '';
+    if (mainStyle) {
+      mainStyleContent = mainStyle.textContent;
+      mainStyle.remove();
+    }
 
     // import.css 동적 로드
     const importLink = document.createElement('link');
     importLink.rel = 'stylesheet';
-    importLink.href = '/import.css'; // ✅ public 폴더 기준
+    importLink.href = '/import.css';
     document.head.appendChild(importLink);
 
     return () => {
       importLink.remove();
+
       // 페이지 벗어날 때 다시 main.css 복구
-      import('@/main.css');
+      const mainStyle = document.createElement('style');
+      mainStyle.setAttribute('data-vite-dev-id', 'main.css');
+      mainStyle.textContent = mainStyleContent;
+      document.head.appendChild(mainStyle);
     };
   }, []);
 
@@ -60,13 +75,27 @@ function Control() {
 
   useEffect(() => {
     if (siteList.length > 0) {
-      const firstSite = siteList[0];
-      setSelectedSite(firstSite);
-      getControlData(firstSite.sitecd);
+      const targetSite =
+        siteList.find(site => site.sitecd === Number(sitecdParam)) ||
+        siteList[0];
+
+      setSelectedSite(targetSite);
+      getControlData(targetSite.sitecd);
+
+      if (!sitecdParam) {
+        navigate(`/control?sitecd=${targetSite.sitecd}`, { replace: true });
+      }
     }
 
     worker.postMessage(300000);
   }, [siteList]);
+
+  const handleClickSiteBtn = site => {
+    setSelectedSite(site);
+    getControlData(site.sitecd);
+
+    navigate(`/control?sitecd=${site.sitecd}`, { replace: false });
+  };
 
   useEffect(() => {
     if (selectedSite.sitecd) {
@@ -124,7 +153,9 @@ function Control() {
   }, [data]);
 
   const handleClickRefresh = () => {
-    window.location.reload();
+    // window.location.reload();
+    setDefaultSeconds(300);
+    setClickedTime(moment());
   };
 
   const handleChangeType = e => {
@@ -161,10 +192,7 @@ function Control() {
             className={`site-btn ${
               selectedSite?.sitecd === site.sitecd ? 'active' : ''
             }`}
-            onClick={() => {
-              setSelectedSite(site);
-              getControlData(site.sitecd);
-            }}
+            onClick={() => handleClickSiteBtn(site)}
           >
             {site.site.slice(0, 3)}
           </button>
