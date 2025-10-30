@@ -19,6 +19,7 @@ import { IntensiveCorrelation } from './contents/intensive/intensive-correlation
 import { IntensiveGraph } from './contents/intensive/intensive-graph';
 import { IntensivePieGraph } from './contents/intensive/intensive-piegraph';
 import { IntensiveWeather } from './contents/intensive/intensive-weather';
+import { IntensiveTimeSeries } from './contents/intensive/intensive-timeseries';
 import { GisPie } from './contents/gispie';
 import { MapNgii } from '@/components/map';
 import { FlexColWrapper } from '@/components/ui/common';
@@ -172,6 +173,11 @@ const data = {
               pathName: 'intensive/autopiegraph',
               title: '자동-(단일)성분파이그래프',
               content: <IntensivePieGraph />,
+            },
+            {
+              pathName: 'intensive/autotimeseries',
+              title: '자동-(선택)성분시계열',
+              content: <IntensiveTimeSeries type="auto" />,
             },
           ],
         },

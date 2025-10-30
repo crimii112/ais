@@ -51,7 +51,6 @@ const IntensiveDataFrame = ({
       onLoadingChange(isLoading);
     }
   }, [isLoading, onLoadingChange]);
-  
 
   const handleClickSearchBtn = async () => {
     if (!dateList.length) return alert('기간을 설정하여 주십시오.');
@@ -99,8 +98,8 @@ const IntensiveDataFrame = ({
         };
       }
 
-      console.log(JSON.stringify(apiData));
-      console.log(apiRes);
+      // console.log(JSON.stringify(apiData));
+      // console.log(apiRes);
       setContentData(apiRes);
 
       setEndIndex(apiRes.headList.length - 1);
@@ -697,6 +696,34 @@ const INTENSIVE_SETTINGS = {
     numberEndIndex: 20,
     dateType: 'all',
   },
+  autoTimeSeries: {
+    page: 'intensive/autotimeseries',
+    initCond: [
+      {
+        sect: 'time',
+        poll: 'calc',
+        dust: 'include',
+        stats: '',
+        eqType: 'SMPS_APS_O',
+      },
+      { id: 'unit1', checked: false }, // markList
+      { id: 'unit2', checked: false },
+    ],
+    initPollutant: [
+      { pm: 1, lon: 3, carbon: 1, metal: 1, gas: 1, other: 6 },
+      { id: 'High', checked: true, signvalue: '#' },
+      { id: 'Low', checked: true, signvalue: '##' },
+      { id: 'dumy', checked: false },
+    ],
+    condList: condList_3,
+    markList: markList_1,
+    digitList: digitList,
+    signList: signList,
+    title: '자동-(선택)성분시계열',
+    numberStartIndex: 3,
+    numberEndIndex: 20,
+    dateType: 'all',
+  },
   manualCorrelation: {
     page: 'intensive/manualcorrelation',
     initCond: [
@@ -856,5 +883,5 @@ const INTENSIVE_SETTINGS = {
     numberStartIndex: 3,
     numberEndIndex: 16,
     dateType: 'all',
-  }
+  },
 };

@@ -17,9 +17,11 @@ function App() {
           <Route
             path="/"
             element={
-              <div className="flex flex-col w-[1440px] h-screen max-w-[1440px] min-h-screen mx-auto bg-white">
-                <Home />
-              </div>
+              <AisNavProvider>
+                <div className="flex flex-col w-[1440px] h-screen max-w-[1440px] min-h-screen mx-auto bg-white">
+                  <Ais />
+                </div>
+              </AisNavProvider>
             }
           />
           <Route

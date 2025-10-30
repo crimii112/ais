@@ -18,10 +18,38 @@ const CHART_SETTINGS = {
   line: {
     onScale: true,
     axisSettings: [
-      { label: 'Y-Left1', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: [] },
-      { label: 'Y-Left2', orientation: 'left', isAuto: true, min: 0, max: 100, selectedOptions: [] },
-      { label: 'Y-Right1', orientation: 'right', isAuto: true, min: 0, max: 100, selectedOptions: [] },
-      { label: 'Y-Right2', orientation: 'right', isAuto: true, min: 0, max: 100, selectedOptions: [] },
+      {
+        label: 'Y-Left1',
+        orientation: 'left',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Left2',
+        orientation: 'left',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Right1',
+        orientation: 'right',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
+      {
+        label: 'Y-Right2',
+        orientation: 'right',
+        isAuto: true,
+        min: 0,
+        max: 100,
+        selectedOptions: [],
+      },
     ],
   },
   pie: {
@@ -30,7 +58,9 @@ const CHART_SETTINGS = {
   },
   bar: {
     onScale: true,
-    axisSettings: [{ label: '물질', isAuto: true, min: 0, max: 100, selectedOptions: [] }],
+    axisSettings: [
+      { label: '물질', isAuto: true, min: 0, max: 100, selectedOptions: [] },
+    ],
   },
 };
 
@@ -44,7 +74,13 @@ const CHART_SETTINGS = {
  * @param {string} title - 그래프 제목
  * @returns {React.ReactNode} 그래프 프레임 컴포넌트
  */
-const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow }) => {
+const ContentChartFrame = ({
+  datas,
+  isLoading,
+  type,
+  title,
+  setHighlightedRow,
+}) => {
   const config = CHART_SETTINGS[type];
 
   const [pollutantList, setPollutantList] = useState([]); //multiSelect Options
@@ -63,14 +99,19 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
     }));
 
     let startIndex = 2; // 날짜/측정소명 이후부터 시작
-    if(title.includes('기상')) startIndex = 3;  // 기상자료검토의 경우 날짜/측정소명/코드 이후부터 시작
-    if(title === '(선택)성분계산') startIndex = 3;
-    
+    if (title.includes('기상') || title.includes('(선택)성분시계열'))
+      startIndex = 3; // 기상자료검토의 경우 날짜/측정소명/코드 이후부터 시작
+    if (title === '(선택)성분계산') startIndex = 3;
+
     // 'FLAG' 위치
     let flagIndex;
-    if(title.includes('중금속')) {  //중금속의 경우 'FLAG'가 존재하지 않음
+    if (title.includes('중금속')) {
+      //중금속의 경우 'FLAG'가 존재하지 않음
       flagIndex = 14;
-    } else if(title.includes('기상')) {
+    } else if (title.includes('(선택)성분시계열')) {
+      //성분시계열의 경우 'FLAG'가 존재하지 않음
+      flagIndex = 21;
+    } else if (title.includes('기상')) {
       flagIndex = options.findIndex(option => option.value === 'flag');
     } else {
       flagIndex = options.findIndex(option => option.value === 'rflag');
@@ -106,14 +147,16 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
               {axisSettings.map((axis, idx) => (
                 <FlexRowWrapper key={axis.label} className="items-center gap-4">
                   <div className="w-20 text-center">
-                    <span className="text-base font-medium text-gray-700">{axis.label}</span>
+                    <span className="text-base font-medium text-gray-700">
+                      {axis.label}
+                    </span>
                   </div>
-                  
+
                   <div className="flex-1">
                     <CustomMultiSelect
                       options={pollutantList}
                       setOutsideSelectedOptions={selected =>
-                        updateAxisSettings(idx, {selectedOptions: selected})
+                        updateAxisSettings(idx, { selectedOptions: selected })
                       }
                     />
                   </div>
@@ -124,16 +167,24 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
                         <Input
                           type="checkbox"
                           checked={axis.isAuto}
-                          onChange={e => updateAxisSettings(idx, {isAuto: e.target.checked})}
+                          onChange={e =>
+                            updateAxisSettings(idx, {
+                              isAuto: e.target.checked,
+                            })
+                          }
                           className="w-4 h-4 rounded border-gray-300"
                         />
                         자동
                       </label>
-                      
+
                       <Input
                         type="number"
                         value={axis.min}
-                        onChange={e => updateAxisSettings(idx, {min: Number(e.target.value)})}
+                        onChange={e =>
+                          updateAxisSettings(idx, {
+                            min: Number(e.target.value),
+                          })
+                        }
                         readOnly={axis.isAuto}
                         className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded read-only:bg-gray-50 text-center"
                       />
@@ -141,7 +192,11 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
                       <Input
                         type="number"
                         value={axis.max}
-                        onChange={e => updateAxisSettings(idx, {max: Number(e.target.value)})}
+                        onChange={e =>
+                          updateAxisSettings(idx, {
+                            max: Number(e.target.value),
+                          })
+                        }
                         readOnly={axis.isAuto}
                         className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded read-only:bg-gray-50 text-center"
                       />
@@ -163,7 +218,7 @@ const ContentChartFrame = ({ datas, isLoading, type, title, setHighlightedRow })
           {chartConfig && (
             <>
               <div className="w-full border-t border-gray-200" />
-              <ChartWrapper title={title} >
+              <ChartWrapper title={title}>
                 {type === 'line' && (
                   <LineChart
                     datas={chartConfig.datas}
