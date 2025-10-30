@@ -98,12 +98,13 @@ const ContentChartFrame = ({
       text: datas.headNameList[idx],
     }));
 
+    // option 시작 인덱스
     let startIndex = 2; // 날짜/측정소명 이후부터 시작
     if (title.includes('기상') || title.includes('(선택)성분시계열'))
       startIndex = 3; // 기상자료검토의 경우 날짜/측정소명/코드 이후부터 시작
     if (title === '(선택)성분계산') startIndex = 3;
 
-    // 'FLAG' 위치
+    // option 마지막 인덱스 + 1 => 보통 'FLAG' 위치
     let flagIndex;
     if (title.includes('중금속')) {
       //중금속의 경우 'FLAG'가 존재하지 않음
