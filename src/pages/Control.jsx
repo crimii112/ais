@@ -70,6 +70,21 @@ function Control() {
   }, []);
 
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && selectedSite.sitecd) {
+        getControlData(selectedSite.sitecd);
+        worker.postMessage(300000);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [selectedSite]);
+
+  useEffect(() => {
     getSiteList();
   }, []);
 
