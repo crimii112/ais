@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import moment from 'moment';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 
 import usePostRequest from '@/hooks/usePostRequest';
 import Timer from '@/worker/Timer';
 import GroupCard from '@/components/ui/group-card';
+import SimpleTimeSeriesGraph from '@/components/ui/simple-time-series-graph';
 
 /**
  * 대기물질 관제 페이지
@@ -32,6 +33,8 @@ function Control() {
 
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [expandedHeights, setExpandedHeights] = useState({});
+
+  const [graphData, setGraphData] = useState(null);
 
   const scrollPosition = useRef(0);
 
@@ -197,6 +200,23 @@ function Control() {
     return diff >= 2;
   };
 
+  // 카드 헤드 클릭 시 시계열 그래프 표출
+  const handleClickCardHead = async itemcd => {
+    const sitecd = selectedSite.sitecd;
+
+    const dataRes = await postMutation.mutateAsync({
+      url: '/ais/srch/datas.do',
+      data: { page: 'iabnrm/selectlast72hour', sitecd: sitecd, itemcd: itemcd },
+    });
+
+    if (!dataRes || !dataRes.rstList || dataRes.rstList[0] === 'NO DATA') {
+      alert('그래프를 그릴 데이터가 없습니다.');
+      return;
+    }
+
+    setGraphData(dataRes.rstList);
+  };
+
   return (
     <>
       <div className="site-btns-container">
@@ -257,6 +277,20 @@ function Control() {
         </div>
       </header>
 
+      {/* 시계열 그래프 */}
+      {graphData && graphData.length !== 0 && (
+        <section className="graph-section">
+          <button
+            className="graph-close-btn"
+            onClick={() => setGraphData(null)}
+          >
+            <X />
+          </button>
+          <SimpleTimeSeriesGraph data={graphData} />
+        </section>
+      )}
+
+      {/* 메인 카드 */}
       <main className="aq-grid" id="grid">
         {data[type]?.map((d, idx) => {
           if (type === '1') {
@@ -273,6 +307,7 @@ function Control() {
                   groupSubItems={groupSubItems}
                   isOpen={selectedGroup === d.groupNm}
                   onToggle={toggleGroup}
+                  handleClickCardHead={handleClickCardHead}
                 />
               );
             }
@@ -282,7 +317,10 @@ function Control() {
               const sd = groupSubItems[0];
               return (
                 <article key={sd.itemNm} className="aq-card">
-                  <div className="aq-card__head">
+                  <div
+                    className="aq-card__head"
+                    onClick={() => handleClickCardHead(sd.itemCd)}
+                  >
                     <span>{sd.itemNm}</span>
                   </div>
                   <div
@@ -308,7 +346,7 @@ function Control() {
           return (
             <article key={d.itemNm + idx} className="aq-card">
               <div className="aq-card__head">
-                <span>{d.itemNm}</span>
+                <span>{`${d.itemNm}(${d.groupNm})`}</span>
               </div>
               <div
                 className="aq-card__date"
