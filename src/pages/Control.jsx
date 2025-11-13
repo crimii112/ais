@@ -35,8 +35,10 @@ function Control() {
   const [expandedHeights, setExpandedHeights] = useState({});
 
   const [graphData, setGraphData] = useState(null);
+  const [insertIndex, setInsertIndex] = useState(null);
 
   const scrollPosition = useRef(0);
+  const selectedItemRef = useRef(null);
 
   const worker = new Worker(
     new URL('../worker/timerWorker.js', import.meta.url),
@@ -201,7 +203,7 @@ function Control() {
   };
 
   // 카드 헤드 클릭 시 시계열 그래프 표출
-  const handleClickCardHead = async itemcd => {
+  const handleClickCardHead = async (e, itemcd) => {
     const sitecd = selectedSite.sitecd;
 
     const dataRes = await postMutation.mutateAsync({
@@ -214,8 +216,71 @@ function Control() {
       return;
     }
 
+    // 클릭된 카드 요소
+    let card = e.target.closest('.aq-card');
+    if (card) {
+      // 일반 카드 => 그룹카드 닫기
+      setSelectedGroup(null);
+    } else {
+      // sgr-card 클릭 시 gr-card를 기준으로
+      const sgrCard = e.target.closest('.sgr-card');
+      if (sgrCard) {
+        card = sgrCard.closest('.gr-expand')?.previousElementSibling;
+      }
+    }
+
+    // 클릭된 카드 요소 저장 => resize 시 사용
+    selectedItemRef.current = card;
+
+    // 현재 줄의 첫 번째 카드 인덱스 찾기
+    const grid = document.querySelector('.aq-grid');
+    const cards = Array.from(grid.querySelectorAll('.aq-card, .gr-card'));
+
+    const clickedTop = card.offsetTop;
+
+    // 같은 줄에 있는 카드들 찾기
+    const sameRowCards = cards.filter(c => {
+      return c.offsetTop === clickedTop;
+    });
+    const firstCardOfRow = sameRowCards[0];
+    const rowStartIndex = cards.indexOf(firstCardOfRow);
+
+    setInsertIndex(rowStartIndex);
+
     setGraphData(dataRes.rstList);
   };
+
+  // 창 크기 변경 시 그래프 삽입 위치 재계산
+  useEffect(() => {
+    if (!graphData) return;
+
+    const handleResize = () => {
+      // 클릭된 카드 요소
+      const card = selectedItemRef.current;
+      if (!card) return;
+
+      // 현재 줄의 첫 번째 카드 인덱스 찾기
+      const grid = document.querySelector('.aq-grid');
+      const cards = Array.from(grid.querySelectorAll('.aq-card, .gr-card'));
+
+      const clickedTop = card.offsetTop;
+
+      // 같은 줄에 있는 카드들 찾기
+      const sameRowCards = cards.filter(c => {
+        return c.offsetTop === clickedTop;
+      });
+      const firstCardOfRow = sameRowCards[0];
+      const rowStartIndex = cards.indexOf(firstCardOfRow);
+
+      setInsertIndex(rowStartIndex);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [graphData, insertIndex]);
 
   return (
     <>
@@ -245,14 +310,14 @@ function Control() {
           update{'  '}
           <span id="aq-time">
             <Timer defaultSeconds={defaultSeconds} clickedTime={clickedTime} />
+            {'  '}
+            <RefreshCw
+              width={16}
+              height={16}
+              style={{ cursor: 'pointer' }}
+              onClick={handleClickRefresh}
+            />
           </span>
-          {'  '}
-          <RefreshCw
-            width={16}
-            height={16}
-            style={{ cursor: 'pointer' }}
-            onClick={handleClickRefresh}
-          />
         </div>
         <div className="aq-options">
           <label className="aq-radio">
@@ -278,7 +343,7 @@ function Control() {
       </header>
 
       {/* 시계열 그래프 */}
-      {graphData && graphData.length !== 0 && (
+      {/* {graphData && graphData.length !== 0 && (
         <section className="graph-section">
           <button
             className="graph-close-btn"
@@ -288,7 +353,7 @@ function Control() {
           </button>
           <SimpleTimeSeriesGraph data={graphData} />
         </section>
-      )}
+      )} */}
 
       {/* 메인 카드 */}
       <main className="aq-grid" id="grid">
@@ -301,14 +366,33 @@ function Control() {
             // 상세 데이터가 여러 개 → 그룹
             if (d.groupCnt > 1) {
               return (
-                <GroupCard
-                  key={d.groupNm + idx}
-                  d={d}
-                  groupSubItems={groupSubItems}
-                  isOpen={selectedGroup === d.groupNm}
-                  onToggle={toggleGroup}
-                  handleClickCardHead={handleClickCardHead}
-                />
+                <React.Fragment key={d.groupNm + idx}>
+                  {/* 그래프 삽입 위치 */}
+                  {graphData && idx === insertIndex && (
+                    <section className="graph-section">
+                      <button
+                        className="graph-close-btn"
+                        onClick={() => {
+                          setGraphData(null);
+                          setInsertIndex(null);
+                          selectedItemRef.current = null;
+                        }}
+                      >
+                        <X />
+                      </button>
+                      <SimpleTimeSeriesGraph data={graphData} />
+                    </section>
+                  )}
+
+                  <GroupCard
+                    d={d}
+                    groupSubItems={groupSubItems}
+                    isOpen={selectedGroup === d.groupNm}
+                    onToggle={toggleGroup}
+                    isOverTwoHours={isOverTwoHours}
+                    handleClickCardHead={handleClickCardHead}
+                  />
+                </React.Fragment>
               );
             }
 
@@ -316,26 +400,44 @@ function Control() {
             if (d.groupCnt === 1) {
               const sd = groupSubItems[0];
               return (
-                <article key={sd.itemNm} className="aq-card">
-                  <div
-                    className="aq-card__head"
-                    onClick={() => handleClickCardHead(sd.itemCd)}
-                  >
-                    <span>{sd.itemNm}</span>
-                  </div>
-                  <div
-                    className="aq-card__date"
-                    style={{
-                      color: isOverTwoHours(sd.mdatetime) ? 'red' : 'inherit',
-                    }}
-                  >
-                    {sd.mdatetime}
-                  </div>
-                  <div className="aq-card__value">
-                    {sd.conc}{' '}
-                    <span className="aq-card__unit">{sd.itemUnit}</span>
-                  </div>
-                </article>
+                <React.Fragment key={sd.itemNm}>
+                  {graphData && idx === insertIndex && (
+                    <section className="graph-section">
+                      <button
+                        className="graph-close-btn"
+                        onClick={() => {
+                          setGraphData(null);
+                          setInsertIndex(null);
+                          selectedItemRef.current = null;
+                        }}
+                      >
+                        <X />
+                      </button>
+                      <SimpleTimeSeriesGraph data={graphData} />
+                    </section>
+                  )}
+
+                  <article className="aq-card">
+                    <div
+                      className="aq-card__head"
+                      onClick={e => handleClickCardHead(e, sd.itemCd)}
+                    >
+                      <span>{sd.itemNm}</span>
+                    </div>
+                    <div
+                      className="aq-card__date"
+                      style={{
+                        color: isOverTwoHours(sd.mdatetime) ? 'red' : 'inherit',
+                      }}
+                    >
+                      {sd.mdatetime}
+                    </div>
+                    <div className="aq-card__value">
+                      {sd.conc}{' '}
+                      <span className="aq-card__unit">{sd.itemUnit}</span>
+                    </div>
+                  </article>
+                </React.Fragment>
               );
             }
 

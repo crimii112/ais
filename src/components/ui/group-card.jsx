@@ -6,6 +6,7 @@ const GroupCard = ({
   groupSubItems,
   isOpen,
   onToggle,
+  isOverTwoHours,
   handleClickCardHead,
 }) => {
   const innerRef = useRef(null);
@@ -18,12 +19,6 @@ const GroupCard = ({
       setHeight(0);
     }
   }, [isOpen, groupSubItems]);
-
-  const isOverTwoHours = mdatetime => {
-    const mdatetimeMoment = moment(mdatetime);
-    const diff = moment().diff(mdatetimeMoment, 'hours');
-    return diff >= 2;
-  };
 
   return (
     <>
@@ -70,7 +65,7 @@ const GroupCard = ({
             <article key={sd.itemNm} className="sgr-card">
               <div
                 className="sgr-card__head"
-                onClick={() => handleClickCardHead(sd.itemCd)}
+                onClick={e => handleClickCardHead(e, sd.itemCd)}
               >
                 <span>{sd.itemNm}</span>
               </div>
