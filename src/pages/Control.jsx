@@ -251,7 +251,21 @@ function Control() {
     setGraphData(dataRes.rstList);
   };
 
-  // 창 크기 변경 시 그래프 삽입 위치 재계산
+  // 그래프 데이터 변경 시 그래프 위치로 스크롤
+  useEffect(() => {
+    if (graphData && graphRef.current) {
+      setTimeout(() => {
+        const top =
+          graphRef.current.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: top - 20,
+          behavior: 'smooth',
+        });
+      }, 50);
+    }
+  }, [graphData]);
+
+  // 창 크기 변경 시 그래프 삽입 위치 재계산, 스크롤 위치 조정
   useEffect(() => {
     if (!graphData) return;
 
@@ -274,18 +288,7 @@ function Control() {
       const rowStartIndex = cards.indexOf(firstCardOfRow);
 
       setInsertIndex(rowStartIndex);
-    };
 
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [graphData, insertIndex]);
-
-  // 그래프 데이터 변경 시 그래프 위치로 스크롤
-  useEffect(() => {
-    if (graphData && graphRef.current) {
       setTimeout(() => {
         const top =
           graphRef.current.getBoundingClientRect().top + window.scrollY;
@@ -294,8 +297,14 @@ function Control() {
           behavior: 'smooth',
         });
       }, 50);
-    }
-  }, [graphData]);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [graphData, insertIndex]);
 
   return (
     <>
