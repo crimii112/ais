@@ -366,19 +366,6 @@ function Control() {
         </div>
       </header>
 
-      {/* 시계열 그래프 */}
-      {/* {graphData && graphData.length !== 0 && (
-        <section className="graph-section">
-          <button
-            className="graph-close-btn"
-            onClick={() => setGraphData(null)}
-          >
-            <X />
-          </button>
-          <SimpleTimeSeriesGraph data={graphData} />
-        </section>
-      )} */}
-
       {/* 메인 카드 */}
       <main className="aq-grid" id="grid">
         {data[type]?.map((d, idx) => {
