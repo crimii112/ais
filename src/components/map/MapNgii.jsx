@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Map as OlMap, View } from 'ol';
 import { Attribution, Control, defaults as defaultControls } from 'ol/control';
-import { MouseWheelZoom, defaults as defaultInteractions, } from 'ol/interaction';
+import {
+  MouseWheelZoom,
+  defaults as defaultInteractions,
+} from 'ol/interaction';
 import { Tile as TileLayer } from 'ol/layer';
 import { WMTS } from 'ol/source';
 import { get as getProjection } from 'ol/proj';
@@ -17,17 +20,24 @@ import MapContext from './MapContext';
    - layer는 기본이미지, 백지도, (위성지도-국토정보플랫폼 폐쇄망 서비스가 없음), 지도없음 으로 되어있음
  */
 
-const MapNgii = ({ children, id='ngii' }) => {
+const MapNgii = ({ children, id = 'ngii' }) => {
   const [mapObj, setMapObj] = useState({});
   const [btnBActive, setBtnBActive] = useState('active'); //Base
-  const [btnWActive, setBtnWActive] = useState('');       // White
-  const [btnSActive, setBtnSActive] = useState('');       // Satellite
-  const [btnNctive, setBtnNActive] = useState('');        //null
+  const [btnWActive, setBtnWActive] = useState(''); // White
+  const [btnSActive, setBtnSActive] = useState(''); // Satellite
+  const [btnNctive, setBtnNActive] = useState(''); //null
 
-  proj4.defs( 'EPSG:5179', '+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs' );
+  proj4.defs(
+    'EPSG:5179',
+    '+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs'
+  );
+  proj4.defs(
+    'EPSG:5174',
+    '+proj=tmerc +lat_0=38 +lon_0=127.0028902777778 +k=1 +x_0=200000 +y_0=500000 +ellps=bessel +units=m +no_defs'
+  );
   register(proj4);
   const epsg = getProjection('EPSG:5179');
-  epsg.setExtent( [-200000.0, -28024123.62, 31824123.62, 4000000.0] );
+  epsg.setExtent([-200000.0, -28024123.62, 31824123.62, 4000000.0]);
 
   // 측정소 데이터에 맞춘 extent
   const [mapLayer, setMapLayer] = useState([
@@ -39,8 +49,26 @@ const MapNgii = ({ children, id='ngii' }) => {
         projection: epsg,
         tileGrid: new WMTSTileGrid({
           origin: getTopLeft(epsg.getExtent()),
-          resolutions: [ 2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16, 4.08, 2.04, 1.02, 0.51, 0.255, ],
-          matrixIds: [ 'L05','L06','L07','L08','L09','L10','L11','L12','L13','L14','L15','L16','L17','L18', ],
+          resolutions: [
+            2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16,
+            4.08, 2.04, 1.02, 0.51, 0.255,
+          ],
+          matrixIds: [
+            'L05',
+            'L06',
+            'L07',
+            'L08',
+            'L09',
+            'L10',
+            'L11',
+            'L12',
+            'L13',
+            'L14',
+            'L15',
+            'L16',
+            'L17',
+            'L18',
+          ],
         }),
         style: 'korean',
         layer: 'korean_map',
@@ -59,8 +87,26 @@ const MapNgii = ({ children, id='ngii' }) => {
         projection: epsg,
         tileGrid: new WMTSTileGrid({
           origin: getTopLeft(epsg.getExtent()),
-          resolutions: [ 2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16, 4.08, 2.04, 1.02, 0.51, 0.255, ],
-          matrixIds: [ 'L05','L06','L07','L08','L09','L10','L11','L12','L13','L14','L15','L16','L17','L18', ],
+          resolutions: [
+            2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16,
+            4.08, 2.04, 1.02, 0.51, 0.255,
+          ],
+          matrixIds: [
+            'L05',
+            'L06',
+            'L07',
+            'L08',
+            'L09',
+            'L10',
+            'L11',
+            'L12',
+            'L13',
+            'L14',
+            'L15',
+            'L16',
+            'L17',
+            'L18',
+          ],
         }),
         style: 'korean',
         layer: 'white_map',
@@ -155,14 +201,13 @@ const MapNgii = ({ children, id='ngii' }) => {
       setBtnWActive('');
       setBtnSActive('');
       setBtnNActive('');
-    } 
-    else if (id === 'white') {
+    } else if (id === 'white') {
       mapLayer[1].setVisible(true);
       setBtnBActive('');
       setBtnWActive('active');
       setBtnSActive('');
       setBtnNActive('');
-    } 
+    }
     // else if (id === 'satellite') {
     //   mapLayer[2].setVisible(true);
     //   setBtnBActive('');
