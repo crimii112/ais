@@ -21,6 +21,7 @@ import axios from 'axios';
 import VectorImageLayer from 'ol/layer/VectorImage';
 import CircleStyle from 'ol/style/Circle';
 import LegendControl from './legend/legendControl';
+import WebGLVectorLayer from 'ol/layer/WebGLVector';
 
 const Ngii = ({ SetMap }) => {
   //common
@@ -81,7 +82,7 @@ const Ngii = ({ SetMap }) => {
   });
   // CAPSS측정소
   const sourceCapssP = new VectorSource({ wrapX: false });
-  let layerCapssP = new WebGLPointsLayer({
+  let layerCapssP = new WebGLVectorLayer({
     source: sourceCapssP,
     id: 'capss_p',
     style: {
@@ -129,21 +130,21 @@ const Ngii = ({ SetMap }) => {
   });
   // 공간정보
   const sourceSandan = new VectorSource({ wrapX: false });
-  let layerSandan = new VectorLayer({
+  let layerSandan = new VectorImageLayer({
     source: sourceSandan,
     style: null,
     id: 'sandan',
     zIndex: 4,
   });
   const sourceSido = new VectorSource({ wrapX: false });
-  let layerSido = new VectorLayer({
+  let layerSido = new VectorImageLayer({
     source: sourceSido,
     style: null,
     id: 'sido',
     zIndex: 3,
   });
   const sourceSigungu = new VectorSource({ wrapX: false });
-  let layerSigungu = new VectorLayer({
+  let layerSigungu = new VectorImageLayer({
     source: sourceSigungu,
     style: null,
     id: 'sigungu',
@@ -168,7 +169,7 @@ const Ngii = ({ SetMap }) => {
     zIndex: 3,
   });
   const sourceMoctLinkVol = new VectorSource({ wrapX: false });
-  const layerMoctLinkVol = new WebGLPointsLayer({
+  const layerMoctLinkVol = new WebGLVectorLayer({
     source: sourceMoctLinkVol,
     id: 'moct_link_vol',
     style: {
@@ -332,7 +333,7 @@ const Ngii = ({ SetMap }) => {
         'EPSG:5179'
       );
       let addStr = '';
-      console.log(tm);
+
       window.chrome.webview.postMessage({
         type: 'mapClick',
         data: {
@@ -575,7 +576,7 @@ const Ngii = ({ SetMap }) => {
       StylingLayers(message);
     } else if (message.pagetype.includes('searchradius')) {
       document.body.style.cursor = 'progress';
-      console.log(message);
+
       await axios
         .post('/ais/gis/datas.do', message, {
           responseEncoding: 'UTF-8',
@@ -587,7 +588,6 @@ const Ngii = ({ SetMap }) => {
           // 반경을 feature로 만들어서 sourceSearchRadius에 넣어야함. 검색된 site들은 gsonFormat.readFeatures()로 넣으려고 함
           sourceSearchRadius.clear();
           sourceSearchedSites.clear();
-          console.log(data);
           const searchList = data.searchList;
 
           if (message.searchType.find(ele => ele === 'landuse')) {
@@ -684,9 +684,30 @@ const Ngii = ({ SetMap }) => {
             'stroke-width': 2,
           });
 
+          /* 2025-12-15 수정
+                searchList 
+                [
+                    { allGeom, intersectGeom },
+                    { allGeom, intersectGeom },
+                    { allGeom, intersectGeom }, ...
+
+                    allGeom :: 짤리지 않은 전체 polygon, 아마 산업단지 등 객체 가져오기 하지 않고 검색했을때 온전한 polygon도 보여주기 위해서 넣은 거 같음...
+                    intersectGeom :: 반경내에만 들어오는 짤린 polygon
+                ]
+                 */
+          console.log(message);
+          let keySearchList = 'allGeom';
+
+          if (message.searchMethod === 'intersects') {
+            keySearchList = 'intersectGeom';
+          }
+
           searchList.forEach(item => {
-            // console.log(item);
-            sourceSearchedSites.addFeature(gsonFormat.readFeature(item.gis));
+            if (item.intersectGeom) {
+              sourceSearchedSites.addFeature(
+                gsonFormat.readFeature(item[keySearchList])
+              );
+            }
           });
           if (data.centerList) {
             const centerList = data.centerList;
@@ -715,10 +736,8 @@ const Ngii = ({ SetMap }) => {
                 })
               );
               // , fill_color: message.radius_fill_color, stroke_color: message.radius_stroke_color
-              map
-                .getView()
-                .setCenter([message.centerInfo.x, message.centerInfo.y]);
-              map.getView().setZoom(3);
+              // map.getView().setCenter([message.centerInfo.x, message.centerInfo.y]);
+              // map.getView().setZoom(3);
             }
           }
         })
@@ -1146,44 +1165,6 @@ const Ngii = ({ SetMap }) => {
         }
       }
     });
-  };
-  /*
-        target: [ 'geo' || 'reverseGeo' || 'poi' || 'des' ]
-        x, y: EPSG:5179
-
-        // reverseGeo = coordinate -> addr
-        // geo = addr -> coordinate
-        // poi = 관심지점 :: keyword로 주소 찾음
-        // des = 지명 :: keyword로 주소 찾음
-    */
-  const Geocoding = async (target = 'reverseGeo', x, y) => {
-    let returnValue;
-    let url = '/ais/proxy/ngii/geocode?apikey=airinfo'; // 뒤에 지오코딩 타입을 붙이기 위해서 임의로 apikey를 넣음
-
-    if (target === 'geo') {
-      url += `&juso=${x}`;
-    } else if (target === 'reverseGeo') {
-      url += `&x=${x}&y=${y}`;
-    } else if (target === 'poi') {
-      url += `&keyword=${x}`;
-    } else if (target === 'des') {
-      url += `&keyword=${x}`;
-    }
-
-    await fetchJsonp(url, {
-      method: 'GET',
-      mode: 'cors',
-      headers: { 'Content-Type': 'jsonp' },
-    })
-      .then(res => res.json())
-      .then(result => {
-        returnValue = result.search.contents;
-      })
-      .catch(err => {
-        console.log(err);
-      });
-
-    return returnValue;
   };
 
   useEffect(() => {

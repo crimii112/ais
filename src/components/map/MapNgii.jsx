@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Map as OlMap, View } from 'ol';
-import { Attribution, Control, defaults as defaultControls } from 'ol/control';
+import { Control, defaults as defaultControls } from 'ol/control';
 import {
   MouseWheelZoom,
   defaults as defaultInteractions,
 } from 'ol/interaction';
-import { Tile as TileLayer } from 'ol/layer';
 import { WMTS } from 'ol/source';
 import { get as getProjection } from 'ol/proj';
 import WMTSTileGrid from 'ol/tilegrid/WMTS';
@@ -13,6 +12,7 @@ import { getTopLeft } from 'ol/extent';
 import proj4 from 'proj4';
 import { register } from 'ol/proj/proj4';
 import MapContext from './MapContext';
+import WebGLTileLayer from 'ol/layer/WebGLTile';
 
 /*
  * Openlayers 지도 객체 만드는 파일
@@ -26,6 +26,8 @@ const MapNgii = ({ children, id = 'ngii' }) => {
   const [btnWActive, setBtnWActive] = useState(''); // White
   const [btnSActive, setBtnSActive] = useState(''); // Satellite
   const [btnNctive, setBtnNActive] = useState(''); //null
+  const [btnNTActive, setBtnNTActive] = useState(''); // night
+  const [btnEGActive, setBtnEGActive] = useState(''); // english
 
   proj4.defs(
     'EPSG:5179',
@@ -41,7 +43,7 @@ const MapNgii = ({ children, id = 'ngii' }) => {
 
   // 측정소 데이터에 맞춘 extent
   const [mapLayer, setMapLayer] = useState([
-    new TileLayer({
+    new WebGLTileLayer({
       source: new WMTS({
         url: '/ais/proxy/ngii/hybrid',
         matrixSet: 'EPSG:5179',
@@ -78,7 +80,7 @@ const MapNgii = ({ children, id = 'ngii' }) => {
       }),
       id: 'base',
     }),
-    new TileLayer({
+    new WebGLTileLayer({
       // 백지도
       source: new WMTS({
         url: '/ais/proxy/ngii/hybrid',
@@ -115,6 +117,123 @@ const MapNgii = ({ children, id = 'ngii' }) => {
         crossOrigin: 'anonymous',
       }),
       id: 'white',
+      visible: false,
+    }),
+    new WebGLTileLayer({
+      // 위성지도
+      source: new WMTS({
+        url: '/ais/proxy/ngii/hybrid',
+        matrixSet: 'EPSG:5179',
+        format: 'image/png',
+        projection: epsg,
+        tileGrid: new WMTSTileGrid({
+          origin: getTopLeft(epsg.getExtent()),
+          resolutions: [
+            2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16,
+            4.08, 2.04, 1.02, 0.51, 0.255,
+          ],
+          matrixIds: [
+            'L05',
+            'L06',
+            'L07',
+            'L08',
+            'L09',
+            'L10',
+            'L11',
+            'L12',
+            'L13',
+            'L14',
+            'L15',
+            'L16',
+            'L17',
+            'L18',
+          ],
+        }),
+        style: 'korean',
+        layer: 'satellite_map',
+        wrapX: true,
+        // attributions: [ `<img style="width:96px; height:16px;"src="${urlvalue}/img/process/ms/map/common/img_btoLogo3.png" alt="로고">` ],
+        crossOrigin: 'anonymous',
+      }),
+      id: 'satellite',
+      visible: false,
+    }),
+    new WebGLTileLayer({
+      // 야간지도
+      source: new WMTS({
+        url: '/ais/proxy/ngii/hybrid',
+        matrixSet: 'EPSG:5179',
+        format: 'image/png',
+        projection: epsg,
+        tileGrid: new WMTSTileGrid({
+          origin: getTopLeft(epsg.getExtent()),
+          resolutions: [
+            2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16,
+            4.08, 2.04, 1.02, 0.51, 0.255,
+          ],
+          matrixIds: [
+            'L05',
+            'L06',
+            'L07',
+            'L08',
+            'L09',
+            'L10',
+            'L11',
+            'L12',
+            'L13',
+            'L14',
+            'L15',
+            'L16',
+            'L17',
+            'L18',
+          ],
+        }),
+        style: 'korean',
+        layer: 'night_map',
+        wrapX: true,
+        // attributions: [ `<img style="width:96px; height:16px;"src="${urlvalue}/img/process/ms/map/common/img_btoLogo3.png" alt="로고">` ],
+        crossOrigin: 'anonymous',
+      }),
+      id: 'night',
+      visible: false,
+    }),
+    new WebGLTileLayer({
+      // 영문지도
+      source: new WMTS({
+        url: '/ais/proxy/ngii/hybrid',
+        matrixSet: 'EPSG:5179',
+        format: 'image/png',
+        projection: epsg,
+        tileGrid: new WMTSTileGrid({
+          origin: getTopLeft(epsg.getExtent()),
+          resolutions: [
+            2088.96, 1044.48, 522.24, 261.12, 130.56, 65.28, 32.64, 16.32, 8.16,
+            4.08, 2.04, 1.02, 0.51, 0.255,
+          ],
+          matrixIds: [
+            'L05',
+            'L06',
+            'L07',
+            'L08',
+            'L09',
+            'L10',
+            'L11',
+            'L12',
+            'L13',
+            'L14',
+            'L15',
+            'L16',
+            'L17',
+            'L18',
+          ],
+        }),
+        style: 'korean',
+        layer: 'english_map',
+        wrapX: true,
+        // attributions: [ `<img style="width:96px; height:16px;"src="${urlvalue}/img/process/ms/map/common/img_btoLogo3.png" alt="로고">` ],
+        crossOrigin: 'anonymous',
+      }),
+      id: 'english',
       visible: false,
     }),
   ]);
@@ -164,11 +283,23 @@ const MapNgii = ({ children, id = 'ngii' }) => {
     buttonMap2.id = 'white';
     buttonMap2.innerText = '백지도';
     buttonMap2.onclick = OnClickButtonMap;
-    // const buttonMap3 = document.createElement('button');
-    // buttonMap3.className = 'gis-type';
-    // buttonMap3.id = 'satellite';
-    // buttonMap3.innerText = '위성지도';
-    // buttonMap3.onclick = OnClickButtonMap;
+    const buttonMap3 = document.createElement('button');
+    buttonMap3.className = 'gis-type';
+    buttonMap3.id = 'satellite';
+    buttonMap3.innerText = '위성지도';
+    buttonMap3.onclick = OnClickButtonMap;
+
+    const buttonMap5 = document.createElement('button');
+    buttonMap5.className = 'gis-type';
+    buttonMap5.id = 'night';
+    buttonMap5.innerText = '야간지도';
+    buttonMap5.onclick = OnClickButtonMap;
+    const buttonMap6 = document.createElement('button');
+    buttonMap6.className = 'gis-type';
+    buttonMap6.id = 'english';
+    buttonMap6.innerText = '영문지도';
+    buttonMap6.onclick = OnClickButtonMap;
+
     const buttonMap4 = document.createElement('button');
     buttonMap4.className = 'gis-type';
     buttonMap4.id = 'null';
@@ -176,8 +307,10 @@ const MapNgii = ({ children, id = 'ngii' }) => {
     buttonMap4.onclick = OnClickButtonMap;
     divMapControlSub.append(buttonMap1);
     divMapControlSub.append(buttonMap2);
-    // divMapControlSub.append(buttonMap3);
+    divMapControlSub.append(buttonMap3);
     divMapControlSub.append(buttonMap4);
+    divMapControlSub.append(buttonMap5);
+    divMapControlSub.append(buttonMap6);
     divMapControl.append(buttonMapChoose);
     divMapControlContainer.append(divMapControlSub);
     divMapControlContainer.append(divMapControl);
@@ -201,20 +334,25 @@ const MapNgii = ({ children, id = 'ngii' }) => {
       setBtnWActive('');
       setBtnSActive('');
       setBtnNActive('');
+      setBtnNTActive('');
+      setBtnEGActive('');
     } else if (id === 'white') {
       mapLayer[1].setVisible(true);
       setBtnBActive('');
       setBtnWActive('active');
       setBtnSActive('');
       setBtnNActive('');
+      setBtnNTActive('');
+      setBtnEGActive('');
+    } else if (id === 'satellite') {
+      mapLayer[2].setVisible(true);
+      setBtnBActive('');
+      setBtnWActive('');
+      setBtnSActive('active');
+      setBtnNActive('');
+      setBtnNTActive('');
+      setBtnEGActive('');
     }
-    // else if (id === 'satellite') {
-    //   mapLayer[2].setVisible(true);
-    //   setBtnBActive('');
-    //   setBtnWActive('');
-    //   setBtnSActive('active');
-    //   setBtnNActive('');
-    // }
     // else if(id === 'hybrid') {
     //     mapLayer[1].setVisible(true);
     //     mapLayer[2].setVisible(true);
@@ -227,7 +365,25 @@ const MapNgii = ({ children, id = 'ngii' }) => {
       setBtnNActive('active');
       mapLayer[0].setVisible(false);
       mapLayer[1].setVisible(false);
-      // mapLayer[2].setVisible(false);
+      mapLayer[2].setVisible(false);
+      mapLayer[3].setVisible(false);
+      mapLayer[4].setVisible(false);
+    } else if (id === 'night') {
+      mapLayer[3].setVisible(true);
+      setBtnBActive('');
+      setBtnWActive('');
+      setBtnSActive('');
+      setBtnNActive('');
+      setBtnNTActive('active');
+      setBtnEGActive('');
+    } else if (id === 'english') {
+      mapLayer[4].setVisible(true);
+      setBtnBActive('');
+      setBtnWActive('');
+      setBtnSActive('');
+      setBtnNActive('');
+      setBtnNTActive('');
+      setBtnEGActive('active');
     }
   };
   const BtnChooseMapOnClick = () => {
