@@ -1323,7 +1323,7 @@ const Container = styled.div`
       content: '';
     }
     .gis-list.active {
-      height: calc(36px * 3 - 1px);
+      height: calc(36px * 6 - 1px);
     }
   }
 
